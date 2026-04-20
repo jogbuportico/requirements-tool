@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portico | Requirements Document Builder</title>
+<style>
+:root{--gold:#F1C400;--gray:#54585A;--blue:#009CDE;--orange:#D86018;--green:#A2AD00;--red:#C5003E;--lgray:#F4F4F4;--mgray:#D0D7DE;--dgray:#3A3A3A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Calibri,'Segoe UI',sans-serif;font-size:14px;color:var(--dgray);background:#EEF1F4;min-height:100vh} *{font-size:inherit}
+.topbar{background:var(--gray);padding:0 28px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.tb-brand{display:flex;align-items:center;gap:12px}
+.tb-logo{color:var(--gold);font-size:20px;font-weight:800;letter-spacing:3px}
+.tb-title{color:#ccc;font-size:14px}
+.tb-save{color:var(--gold);font-size:12px;opacity:0;transition:opacity .4s}
+.tb-save.show{opacity:1}
+.stepper{background:#fff;border-bottom:1px solid var(--mgray);padding:0 24px;display:flex;overflow-x:auto}
+.stp{display:flex;align-items:center;gap:8px;padding:14px 16px;cursor:default;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s}
+.stp.done{cursor:pointer}.stp.done:hover{background:var(--lgray)}
+.stp.active{border-bottom-color:var(--gold)}
+.stp-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:#ddd;color:var(--gray);flex-shrink:0;transition:all .2s}
+.stp.active .stp-num{background:var(--gold);color:#fff}
+.stp.done .stp-num{background:var(--green);color:#fff}
+.stp-lbl{font-size:14px;color:#888;font-weight:500}
+.stp.active .stp-lbl{color:var(--gray);font-weight:700}
+.stp.done .stp-lbl{color:var(--green)}
+.stp-sep{width:20px;height:2px;background:#ddd;flex-shrink:0;align-self:center}
+.stp-sep.done{background:var(--green)}
+.main{max-width:980px;margin:0 auto;padding:24px 16px 60px}
+.panel{display:none}.panel.active{display:block}
+.card{background:#fff;border-radius:10px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,.08);margin-bottom:16px}
+.cover{background:var(--gray);border-radius:10px 10px 0 0;padding:28px 32px;margin:-28px -28px 22px}
+.cover h1{color:var(--gold);font-size:26px;letter-spacing:3px;font-weight:800}
+.cover p{color:#ccc;font-size:12px;margin-top:5px}
+.stag{display:flex;align-items:center;gap:10px;margin:20px 0 14px}
+.stag-pill{color:#fff;font-weight:700;font-size:10px;padding:3px 12px;border-radius:3px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.stag-line{flex:1;height:1px;background:var(--mgray)}
+.alert{border-radius:6px;padding:10px 14px;font-size:14px;margin-bottom:14px;border-left:4px solid}
+.alert-gold{background:#FFFDE6;border-color:var(--gold);color:#5a4a00}
+.alert-blue{background:#E8F4FD;border-color:var(--blue);color:#004d7a}
+.alert-green{background:#F0FFF4;border-color:var(--green);color:#3a4200}
+.alert-red{background:#FFF0F3;border-color:var(--red);color:#7a0025}
+.alert-orange{background:#FFF3E0;border-color:var(--orange);color:#7a3600}
+.fl{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+label.lbl{display:block;font-size:12px;font-weight:700;color:var(--gray);letter-spacing:.4px;margin-bottom:4px}
+.src{display:block;font-size:12px;color:var(--blue);font-style:italic;margin-bottom:4px}
+input[type=text],input[type=password],textarea,select{width:100%;border:1.5px solid var(--mgray);border-radius:6px;padding:7px 10px;font-family:Calibri,'Segoe UI',sans-serif;font-size:13px;color:var(--dgray);background:#fff;outline:none;resize:vertical;transition:border-color .15s}
+input[type=text]:focus,input[type=password]:focus,textarea:focus,select:focus{border-color:var(--blue)}
+.fg{margin-bottom:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 22px;border:none;border-radius:6px;font-family:Calibri,'Segoe UI',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;text-decoration:none}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover:not(:disabled){background:#007db8}
+.btn-gold{background:var(--gold);color:var(--gray)}.btn-gold:hover:not(:disabled){background:#d9b000}
+.btn-gray{background:var(--gray);color:#fff}.btn-gray:hover:not(:disabled){background:#3d4042}
+.btn-outline{background:none;border:1.5px solid var(--gray);color:var(--gray)}.btn-outline:hover:not(:disabled){background:var(--lgray)}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover:not(:disabled){background:#8a9200}
+.btn-danger{background:none;border:1.5px solid var(--red);color:var(--red)}.btn-danger:hover:not(:disabled){background:#fff0f3}
+.btn-add{background:none;border:1.5px dashed var(--blue);border-radius:6px;padding:6px 16px;font-family:Calibri,'Segoe UI',sans-serif;font-size:14px;font-weight:600;color:var(--blue);cursor:pointer;transition:all .15s}
+.btn-add:hover{background:#e8f6fd}
+.btn-add.green{border-color:var(--green);color:var(--green)}.btn-add.green:hover{background:#f0fff4}
+.btn-add.red{border-color:var(--red);color:var(--red)}.btn-add.red:hover{background:#fff0f3}
+.block{border:1px solid var(--mgray);border-radius:8px;margin-bottom:14px;overflow:hidden}
+.bh{padding:9px 14px;display:flex;justify-content:space-between;align-items:center;color:#fff;font-weight:700;font-size:14px}
+.bb{padding:14px;background:#FAFAFA}
+.rm-btn{background:none;border:1px solid rgba(255,255,255,.5);border-radius:4px;color:#fff;cursor:pointer;padding:2px 8px;font-size:11px;font-family:Calibri,sans-serif}
+.rm-btn:hover{background:rgba(255,255,255,.15)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.tab-btn{padding:5px 14px;border-radius:20px;border:none;cursor:pointer;font-family:Calibri,'Segoe UI',sans-serif;font-size:14px;font-weight:500;background:#eee;color:var(--gray);transition:all .15s}
+.tab-btn.active{background:var(--blue);color:#fff;font-weight:700}
+.tab-pane{display:none}.tab-pane.active{display:block}
+.welcome-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+.wopt{border:2px solid var(--mgray);border-radius:10px;padding:22px;cursor:pointer;transition:all .2s;background:#fff;text-align:left}
+.wopt:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,156,222,.12)}
+.wopt-icon{font-size:28px;margin-bottom:10px}
+.wopt h3{font-size:15px;color:var(--gray);margin-bottom:6px}
+.wopt p{font-size:14px;color:#666;line-height:1.5}
+.score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:8px 0 14px}
+.score-box{border:1.5px solid;border-radius:8px;padding:10px;text-align:center}
+.score-lbl{font-size:10px;font-weight:700;margin-bottom:6px}
+.score-box input{border:1px solid;border-radius:4px;padding:4px;text-align:center;font-size:12px;width:100%;font-family:Calibri,sans-serif}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.stat-box{background:var(--lgray);border-radius:8px;padding:14px 10px;text-align:center;border-top:3px solid}
+.stat-n{font-size:26px;font-weight:800}
+.stat-l{font-size:11px;color:var(--gray);margin-top:3px}
+.itbl{width:100%;border-collapse:collapse;margin:8px 0}
+.itbl td{border:1px solid var(--mgray);padding:6px 10px;font-size:14px;vertical-align:top}
+.itbl td:first-child{background:var(--lgray);font-weight:700;width:35%;color:var(--gray)}
+.scope-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.scope-item{display:flex;gap:6px;margin-bottom:8px}
+.scope-item input{flex:1}
+.scp-rm{background:none;border:1px solid var(--red);border-radius:4px;color:var(--red);cursor:pointer;padding:0 8px;font-size:13px}
+.row-list{max-height:380px;overflow-y:auto}
+.sheet-row{padding:11px 14px;border:1.5px solid var(--mgray);border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:#fff;margin-bottom:7px;transition:all .15s}
+.sheet-row:hover{border-color:var(--blue);background:#f0faff}
+.sr-title{font-weight:700;font-size:14px;color:var(--dgray)}
+.sr-sub{font-size:11px;color:#888;margin-top:2px}
+.sr-badge{background:var(--blue);color:#fff;border-radius:5px;padding:3px 12px;font-size:12px;font-weight:700;flex-shrink:0}
+.nfr-row{display:grid;grid-template-columns:1fr 1.5fr 2fr 1fr;gap:8px;align-items:end;padding:10px;background:#FAFAFA;border-radius:8px;border:1px solid var(--mgray);margin-bottom:8px}
+.nfr-row .fg{margin:0}
+.nfr-actions{display:flex;gap:6px;align-items:flex-end}
+#ss-panel{display:none;margin-top:18px;padding-top:18px;border-top:1px solid var(--mgray)}
+#resume-panel{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--mgray)}
+@media(max-width:680px){.g2,.scope-cols,.welcome-grid{grid-template-columns:1fr}.score-grid,.stat-grid{grid-template-columns:1fr 1fr}.stp-lbl{display:none}}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="tb-brand">
+    <div class="tb-logo">PORTICO</div>
+    <div class="tb-title">Opportunity Canvas &rarr; Requirements Document</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <button data-action="topbar-import" style="background:var(--gold);color:var(--gray);border:none;border-radius:6px;padding:6px 14px;font-family:Calibri,'Segoe UI',sans-serif;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap">&#x1F4CA; Import from Smartsheet</button>
+    <div class="tb-save" id="save-ind">&#x2713; Progress saved</div>
+  </div>
+</div>
+
+<!-- STEPPER -->
+<div class="stepper" id="stepper-bar">
+  <div class="stp active" id="si0" data-action="goto" data-step="0"><div class="stp-num">1</div><div class="stp-lbl">Start</div></div>
+  <div class="stp-sep" id="sep0"></div>
+  <div class="stp" id="si1" data-action="goto" data-step="1"><div class="stp-num">2</div><div class="stp-lbl">Canvas Fields</div></div>
+  <div class="stp-sep" id="sep1"></div>
+  <div class="stp" id="si2" data-action="goto" data-step="2"><div class="stp-num">3</div><div class="stp-lbl">Stakeholders</div></div>
+  <div class="stp-sep" id="sep2"></div>
+  <div class="stp" id="si3" data-action="goto" data-step="3"><div class="stp-num">4</div><div class="stp-lbl">Requirements</div></div>
+  <div class="stp-sep" id="sep3"></div>
+  <div class="stp" id="si4" data-action="goto" data-step="4"><div class="stp-num">5</div><div class="stp-lbl">Use Cases &amp; Testing</div></div>
+  <div class="stp-sep" id="sep4"></div>
+  <div class="stp" id="si5" data-action="goto" data-step="5"><div class="stp-num">6</div><div class="stp-lbl">Generate &amp; Export</div></div>
+</div>
+
+<div class="main">
+
+<!-- ═══════════════════════════ PANEL 0: START ═══════════════════════════ -->
+<div id="panel-0" class="panel active">
+<div class="card">
+  <div class="cover"><h1>OPPORTUNITY CANVAS</h1><p>Requirements Document Builder &nbsp;|&nbsp; Portico Benefit Services &nbsp;|&nbsp; A Ministry of the ELCA</p></div>
+  <div class="alert alert-gold"><strong>Welcome!</strong> This tool walks you through building a complete requirements document &mdash; from the Opportunity Canvas intake all the way to a finished Word document ready for developers, testers, and business sign-off. Your progress saves automatically as you type.</div>
+
+  <div class="welcome-grid">
+    <button class="wopt" data-action="show-import">
+      <div class="wopt-icon">&#x1F4CA;</div>
+      <h3>Import from Smartsheet</h3>
+      <p>Connect to your Opportunity Canvas sheet and auto-populate canvas fields from an existing intake row. Best when the canvas has already been filled in.</p>
+    </button>
+    <button class="wopt" data-action="next">
+      <div class="wopt-icon">&#x1F4C4;</div>
+      <h3>Start with Blank Template</h3>
+      <p>Begin with an empty requirements template and fill in all fields manually. Use this if you don't have a Smartsheet entry yet or prefer to type everything.</p>
+    </button>
+  </div>
+
+  <!-- Resume panel (shown only when saved data exists) -->
+  <div id="resume-panel" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--mgray)">
+    <div class="alert alert-blue"><strong>&#x1F4C2; You have a document in progress:</strong> <span id="resume-title" style="font-weight:700"></span></div>
+    <div class="fl">
+      <button class="btn btn-primary" data-action="resume">&#x25B6; Resume In-Progress Document</button>
+      <button class="btn btn-danger" data-action="clear-all">&#x2715; Start Over (Clear Saved Data)</button>
+    </div>
+  </div>
+
+  <!-- Import panel — revealed inline when user clicks "Import from Smartsheet" -->
+  <div id="import-section" style="display:none;margin-top:20px;padding-top:20px;border-top:3px solid var(--gold)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-size:16px;font-weight:800;color:var(--gray);letter-spacing:1px">IMPORT FROM SMARTSHEET</div>
+      <button data-action="hide-import" style="background:none;border:none;font-size:20px;color:#888;cursor:pointer;padding:2px 8px">&times; Close</button>
+    </div>
+
+    <div class="tabs" style="margin-bottom:16px">
+      <button class="tab-btn active" data-imp-tab="paste">&#x1F4CB; Paste Row (Recommended)</button>
+      <button class="tab-btn" data-imp-tab="api">&#x1F517; API Connection</button>
+    </div>
+
+    <!-- PASTE METHOD -->
+    <div id="imp-pane-paste" class="tab-pane active">
+      <div class="alert alert-gold" style="margin-bottom:10px"><strong>&#x2B50; No token needed &mdash; works from SharePoint and any browser.</strong></div>
+      <div class="alert alert-blue" style="margin-bottom:12px">
+        <strong>How to copy your row from Smartsheet:</strong><br>
+        1. Go to <strong>app.smartsheet.com</strong> &rarr; open your Opportunity Canvas sheet<br>
+        2. Click the <strong>column header row</strong> row number to select headers, then <strong>Shift+click your data row</strong> number &mdash; both rows highlight<br>
+        3. Press <strong>Ctrl+C</strong><br>
+        4. Click in the box below and press <strong>Ctrl+V</strong><br>
+        5. Click <strong>Import Pasted Data</strong>
+      </div>
+      <div class="fg">
+        <label class="lbl">Paste your copied Smartsheet rows here (header row + data row)</label>
+        <textarea id="paste-area" rows="5" placeholder="Paste here (Ctrl+V)...&#10;&#10;If you copy both the header row and your data row together, the tool will automatically match columns by name &mdash; even if columns are added or reordered later."></textarea>
+      </div>
+      <div id="paste-preview" style="display:none;margin-top:10px"></div>
+      <div class="fl">
+        <button class="btn btn-primary" data-action="paste-import">&#x2B07; Import Pasted Data</button>
+        <button class="btn btn-outline" data-action="hide-import">Cancel</button>
+      </div>
+    </div>
+
+    <!-- API METHOD -->
+    <div id="imp-pane-api" class="tab-pane">
+      <div class="alert alert-blue" style="margin-bottom:10px">
+        <strong>Step 1 &mdash; Get your token:</strong> Smartsheet &rarr; profile picture (top-right) &rarr; Personal Settings &rarr; API Access &rarr; Generate New Access Token. Copy it immediately &mdash; it only shows once.<br><br>
+        <strong>Step 2 &mdash; Sheet ID:</strong> Your sheet ID is already filled in below. Just paste your token and connect.
+      </div>
+      <div class="alert alert-gold" style="margin-bottom:12px">
+        <strong>&#x26A0; Note:</strong> The API method requires the tool to be opened from SharePoint (https://...), not from a downloaded local file.
+      </div>
+      <div class="g2">
+        <div class="fg">
+          <label class="lbl">Personal Access Token</label>
+          <input type="password" id="ss-token" placeholder="Paste your Smartsheet API token here" autocomplete="off">
+        </div>
+        <div class="fg">
+          <label class="lbl">Sheet URL or ID</label>
+          <input type="text" id="ss-sheet" placeholder="Sheet ID or full URL" value="jWC2qVrhgqrjjJ8JrF7C929Vgv8WM6x5Q93G55q1">
+        </div>
+      </div>
+      <div id="ss-error" class="alert alert-red" style="display:none"></div>
+      <div class="fl">
+        <button class="btn btn-primary" data-action="ss-connect">Connect to Smartsheet</button>
+        <button class="btn btn-outline" data-action="hide-import">Cancel</button>
+      </div>
+      <div id="ss-rows" style="margin-top:14px"></div>
+    </div>
+  </div><!-- /import-section -->
+
+</div><!-- /card -->
+</div><!-- /panel-0 -->
+
+<!-- ═══════════════════════════ PANEL 1: CANVAS FIELDS ═══════════════════════════ -->
+<div id="panel-1" class="panel">
+<div class="card">
+  <div class="cover"><h1>CANVAS FIELDS</h1><p>Sections 1&ndash;5 of the requirements document &mdash; sourced directly from the Opportunity Canvas PowerPoint.</p></div>
+  <div class="alert alert-gold"><strong>Instructions:</strong> If you imported from Smartsheet these fields are already filled in &mdash; review and edit as needed. If you started blank, fill in each field from your completed Opportunity Canvas.</div>
+
+  <div class="stag"><div class="stag-pill" style="background:var(--gray)">Document Header</div><div class="stag-line"></div></div>
+  <div class="g2">
+    <div class="fg"><label class="lbl">Opportunity Title</label><span class="src">&#x25B6; Canvas: Opportunity Title</span><input type="text" data-bind="canvas.title" placeholder="e.g. Contribution Share Optimization"></div>
+    <div class="fg"><label class="lbl">Sponsor(s)</label><span class="src">&#x25B6; Canvas: Who are the sponsors?</span><input type="text" data-bind="canvas.sponsor" placeholder="e.g. Jessica Wollner"></div>
+    <div class="fg"><label class="lbl">Target Date / Deadline</label><span class="src">&#x25B6; Canvas: When does this need to be addressed?</span><input type="text" data-bind="canvas.targetDate" placeholder="e.g. Prior to Annual Enrollment 2026"></div>
+    <div class="fg"><label class="lbl">Business Unit</label><input type="text" data-bind="canvas.businessUnit" placeholder="e.g. Benefits Administration"></div>
+    <div class="fg"><label class="lbl">Document Owner (BA/PM)</label><input type="text" data-bind="canvas.docOwner" placeholder="Your name"></div>
+    <div class="fg"><label class="lbl">Version</label><input type="text" data-bind="canvas.version" placeholder="1.0 DRAFT"></div>
+  </div>
+
+  <div class="stag"><div class="stag-pill" style="background:var(--gray)">Problem Statement</div><div class="stag-line"></div></div>
+  <div class="fg"><label class="lbl">What problem are we solving?</label><span class="src">&#x25B6; Canvas: What problem are we trying to solve?</span><textarea rows="4" data-bind="canvas.problem" placeholder="Describe the current state problem, pain point, or gap..."></textarea></div>
+  <div class="fg"><label class="lbl">Severity &mdash; Impact if not solved</label><span class="src">&#x25B6; Canvas: Severity &ndash; Impact if not solved</span><textarea rows="3" data-bind="canvas.severity" placeholder="Describe the risk, cost, or consequence of inaction..."></textarea></div>
+  <div class="g2">
+    <div class="fg"><label class="lbl">Who are we solving this for?</label><span class="src">&#x25B6; Canvas: Who are we solving this problem for?</span><input type="text" data-bind="canvas.audience" placeholder="e.g. Large Flex employers, Internal teams"></div>
+    <div class="fg"><label class="lbl">Number of Users / Groups Affected</label><span class="src">&#x25B6; Canvas: How many people/users have this problem?</span><input type="text" data-bind="canvas.userCount" placeholder="e.g. 14 Large Flex, 10 Small Flex, 20+ internal"></div>
+  </div>
+
+  <div class="stag"><div class="stag-pill" style="background:var(--blue)">Strategic Alignment</div><div class="stag-line"></div></div>
+  <div class="fg"><label class="lbl">Business Objective Alignment</label><span class="src">&#x25B6; Canvas: What business objective does this align to?</span><textarea rows="3" data-bind="canvas.objective" placeholder="State the business objective and how this opportunity supports it..."></textarea></div>
+  <div class="fg"><label class="lbl">Existing Strategy Connection</label><span class="src">&#x25B6; Canvas: Is this part of an existing strategy?</span><input type="text" data-bind="canvas.strategy" placeholder="e.g. Connected Execution, Connected Platforms, Connected Offerings"></div>
+
+  <div class="stag"><div class="stag-pill" style="background:var(--orange)">Future State &amp; Dependencies</div><div class="stag-line"></div></div>
+  <div class="fg"><label class="lbl">Future State Vision</label><span class="src">&#x25B6; Canvas: What is the future state vision?</span><textarea rows="4" data-bind="canvas.vision" placeholder="Describe the desired end state — what will be different, faster, or eliminated..."></textarea></div>
+  <div class="fg"><label class="lbl">Known Dependencies</label><span class="src">&#x25B6; Canvas: Dependencies</span><input type="text" data-bind="canvas.dependencies" placeholder="e.g. MOSAIC, BenefitCenter, SAP/HCM (comma-separated)"></div>
+
+  <div class="stag"><div class="stag-pill" style="background:var(--gray)">Scoring &amp; Priority</div><div class="stag-line"></div></div>
+  <span class="src" style="display:block;margin-bottom:8px">&#x25B6; Canvas: MoSCoW Score &middot; Severity &middot; Impact Score &middot; Confidence</span>
+  <div class="score-grid">
+    <div class="score-box" style="border-color:var(--blue);color:var(--blue)"><div class="score-lbl">MoSCoW Score</div><input type="text" data-bind="canvas.moscow" placeholder="Must / Should / Could / Won't" style="border-color:var(--blue);color:var(--blue)"></div>
+    <div class="score-box" style="border-color:var(--red);color:var(--red)"><div class="score-lbl">Severity</div><input type="text" data-bind="canvas.impactSeverity" placeholder="Critical / High / Medium" style="border-color:var(--red);color:var(--red)"></div>
+    <div class="score-box" style="border-color:var(--orange);color:var(--orange)"><div class="score-lbl">Impact Score</div><input type="text" data-bind="canvas.impactScore" placeholder="Score from canvas" style="border-color:var(--orange);color:var(--orange)"></div>
+    <div class="score-box" style="border-color:var(--green);color:var(--green)"><div class="score-lbl">Confidence %</div><input type="text" data-bind="canvas.confidence" placeholder="e.g. 75%" style="border-color:var(--green);color:var(--green)"></div>
+  </div>
+
+  <div class="stag"><div class="stag-pill" style="background:var(--green)">Value &amp; Success Metrics</div><div class="stag-line"></div></div>
+  <div class="fg"><label class="lbl">Targeted Value / ROI</label><span class="src">&#x25B6; Canvas: Targeted Value (ROI / Cost Savings)</span><textarea rows="2" data-bind="canvas.roiValue" placeholder="e.g. Labor cost reduction, error elimination, reputational risk avoidance..."></textarea></div>
+  <div class="fg"><label class="lbl">Success Metrics</label><span class="src">&#x25B6; Canvas: How will impact / success be measured?</span><textarea rows="3" data-bind="canvas.successMetrics" placeholder="e.g. Elimination of manual effort, client satisfaction, processing time reduction..."></textarea></div>
+
+  <div class="fl">
+    <button class="btn btn-gold" data-action="next">Continue to Stakeholders &rarr;</button>
+    <button class="btn btn-outline" data-action="prev">&larr; Back</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════ PANEL 2: STAKEHOLDERS ═══════════════════════════ -->
+<div id="panel-2" class="panel">
+<div class="card">
+  <div class="cover"><h1>STAKEHOLDERS &amp; SCOPE</h1><p>Captured during your first stakeholder interview session.</p></div>
+  <div class="alert alert-gold"><strong>BA Tip:</strong> Complete this section through interviews with the business sponsor and key stakeholders. Ask: Who else is affected? Who needs to approve? Who will test?</div>
+
+  <div class="stag"><div class="stag-pill" style="background:var(--blue)">Stakeholder Map</div><div class="stag-line"></div></div>
+  <div id="stakeholder-list"></div>
+  <button class="btn-add" data-action="add-stakeholder">+ Add Stakeholder</button>
+
+  <div class="stag" style="margin-top:22px"><div class="stag-pill" style="background:var(--green)">In Scope</div><div class="stag-line"></div><div class="stag-pill" style="background:var(--red)">Out of Scope</div></div>
+  <div class="scope-cols">
+    <div>
+      <div style="font-weight:700;color:var(--green);font-size:13px;margin-bottom:8px">&#x2713; IN SCOPE &mdash; What this effort will address</div>
+      <div id="inscope-list"></div>
+      <button class="btn-add green" data-action="add-inscope">+ Add in-scope item</button>
+    </div>
+    <div>
+      <div style="font-weight:700;color:var(--red);font-size:13px;margin-bottom:8px">&#x2715; OUT OF SCOPE &mdash; Explicitly excluded</div>
+      <div id="outscope-list"></div>
+      <button class="btn-add red" data-action="add-outscope">+ Add out-of-scope item</button>
+    </div>
+  </div>
+  <div class="fl">
+    <button class="btn btn-gold" data-action="next">Continue to Requirements &rarr;</button>
+    <button class="btn btn-outline" data-action="prev">&larr; Back</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════ PANEL 3: REQUIREMENTS ═══════════════════════════ -->
+<div id="panel-3" class="panel">
+<div class="card">
+  <div class="cover"><h1>FUNCTIONAL REQUIREMENTS</h1><p>Captured during structured stakeholder interviews. Each requirement maps to a use case and acceptance criteria.</p></div>
+  <div class="alert alert-gold"><strong>BA Tip:</strong> For each requirement, ask: "What must the system do?" Keep each requirement atomic — one action, one result. Prioritize with the sponsor.</div>
+
+  <div class="stag"><div class="stag-pill" style="background:var(--gray)">Functional Requirements</div><div class="stag-line"></div></div>
+  <div id="req-list"></div>
+  <button class="btn-add" data-action="add-req">+ Add Requirement</button>
+
+  <div class="stag" style="margin-top:22px"><div class="stag-pill" style="background:var(--blue)">Non-Functional Requirements</div><div class="stag-line"></div></div>
+  <div class="alert alert-blue" style="margin-bottom:10px">NFRs define <em>how</em> the system performs — performance, security, availability, compliance. These go to both developers and testers.</div>
+  <div id="nfr-list"></div>
+  <button class="btn-add" data-action="add-nfr">+ Add Non-Functional Requirement</button>
+
+  <div class="stag" style="margin-top:22px"><div class="stag-pill" style="background:var(--gray)">Developer Handover Checklist</div><div class="stag-line"></div></div>
+  <div class="alert alert-blue" style="margin-bottom:10px">Complete this so developers can begin sprint planning without additional discovery meetings.</div>
+  <div class="g2">
+    <div class="fg"><label class="lbl">System Components Affected</label><textarea rows="2" data-bind="devHandover.systemComponents" placeholder="e.g. MOSAIC CRM, BenefitCenter, SAP/HCM, Service Desk"></textarea></div>
+    <div class="fg"><label class="lbl">Data Model / Schema Changes</label><textarea rows="2" data-bind="devHandover.dataModel" placeholder="Describe any new tables, columns, or data structure changes"></textarea></div>
+    <div class="fg"><label class="lbl">API Changes / New Endpoints</label><textarea rows="2" data-bind="devHandover.apiChanges" placeholder="List API endpoints being created, modified, or deprecated"></textarea></div>
+    <div class="fg"><label class="lbl">Integration Points</label><textarea rows="2" data-bind="devHandover.integrations" placeholder="e.g. Emarsys, CPI, LIfeworks, vendor feeds"></textarea></div>
+    <div class="fg"><label class="lbl">Environment Requirements</label><input type="text" data-bind="devHandover.envReqs" placeholder="e.g. new config variables, infrastructure changes"></div>
+    <div class="fg"><label class="lbl">Deployment Notes</label><textarea rows="2" data-bind="devHandover.deployNotes" placeholder="Steps, sequence, or timing for deployment"></textarea></div>
+    <div class="fg"><label class="lbl">Rollback Plan</label><textarea rows="2" data-bind="devHandover.rollback" placeholder="How to revert if deployment fails"></textarea></div>
+  </div>
+  <div class="fl">
+    <button class="btn btn-gold" data-action="next">Continue to Use Cases &amp; Testing &rarr;</button>
+    <button class="btn btn-outline" data-action="prev">&larr; Back</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════ PANEL 4: USE CASES & TESTING ═══════════════════════════ -->
+<div id="panel-4" class="panel">
+<div class="card">
+  <div class="cover"><h1>USE CASES &amp; TESTING</h1><p>Use cases define how users interact with the system. Test cases go to QA; UAT cases go to the business team.</p></div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="uc">&#x1F504; Use Cases</button>
+    <button class="tab-btn" data-tab="tc">&#x1F9EA; Test Cases</button>
+    <button class="tab-btn" data-tab="uat">&#x2705; UAT Cases</button>
+  </div>
+  <div id="pane-uc" class="tab-pane active">
+    <div class="alert alert-gold" style="margin-bottom:10px"><strong>BA Tip:</strong> Write use cases from the user's perspective — "what does the user need to accomplish?" Link each use case to at least one functional requirement.</div>
+    <div id="uc-list"></div>
+    <button class="btn-add" data-action="add-uc">+ Add Use Case</button>
+  </div>
+  <div id="pane-tc" class="tab-pane">
+    <div class="alert alert-orange" style="margin-bottom:10px"><strong>For the QA/Testing Team:</strong> Test cases are technical and system-focused. Write steps clearly enough that a tester can follow them without asking questions.</div>
+    <div id="tc-list"></div>
+    <button class="btn-add" data-action="add-tc">+ Add Test Case</button>
+  </div>
+  <div id="pane-uat" class="tab-pane">
+    <div class="alert alert-green" style="margin-bottom:10px"><strong>For the Business Team:</strong> UAT cases are written in plain business language using Given/When/Then format. The business team uses these to confirm the solution meets their needs.</div>
+    <div id="uat-list"></div>
+    <button class="btn-add green" data-action="add-uat">+ Add UAT Case</button>
+  </div>
+  <div class="fl">
+    <button class="btn btn-gold" data-action="next">Generate Document &rarr;</button>
+    <button class="btn btn-outline" data-action="prev">&larr; Back</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════ PANEL 5: GENERATE ═══════════════════════════ -->
+<div id="panel-5" class="panel">
+<div class="card">
+  <div class="cover"><h1>GENERATE &amp; EXPORT</h1><p>Your requirements document is ready. Download as Word or upload directly to SharePoint.</p></div>
+  <div class="stat-grid">
+    <div class="stat-box" style="border-top-color:var(--blue)"><div class="stat-n" style="color:var(--blue)" id="stat-canvas">0</div><div class="stat-l">Canvas Fields</div></div>
+    <div class="stat-box" style="border-top-color:var(--gray)"><div class="stat-n" style="color:var(--gray)" id="stat-req">0</div><div class="stat-l">Requirements</div></div>
+    <div class="stat-box" style="border-top-color:var(--orange)"><div class="stat-n" style="color:var(--orange)" id="stat-tc">0</div><div class="stat-l">Test Cases</div></div>
+    <div class="stat-box" style="border-top-color:var(--green)"><div class="stat-n" style="color:var(--green)" id="stat-uat">0</div><div class="stat-l">UAT Cases</div></div>
+  </div>
+  <table class="itbl" style="margin-bottom:18px">
+    <tr><td>Opportunity</td><td id="sum-title" style="color:#BBBBBB;font-style:italic">[ not entered ]</td></tr>
+    <tr><td>Sponsor</td><td id="sum-sponsor" style="color:#BBBBBB;font-style:italic">[ not entered ]</td></tr>
+    <tr><td>Target Date</td><td id="sum-date" style="color:#BBBBBB;font-style:italic">[ not entered ]</td></tr>
+    <tr><td>Document Owner</td><td id="sum-owner" style="color:#BBBBBB;font-style:italic">[ not entered ]</td></tr>
+    <tr><td>Version</td><td id="sum-ver">1.0 DRAFT</td></tr>
+  </table>
+
+  <div class="stag"><div class="stag-pill" style="background:var(--gray)">Download Word Document</div><div class="stag-line"></div></div>
+  <div class="alert alert-gold" style="margin-bottom:12px">The document opens in Microsoft Word. All 14 sections included &mdash; canvas fields, requirements, use cases, dev handover, test cases, and UAT cases. Font: Calibri 14pt &middot; Portico branded.</div>
+  <button class="btn btn-gray" data-action="download" style="font-size:14px;padding:11px 30px">&#x2B07; Download Requirements Document (.doc)</button>
+
+  <div class="stag" style="margin-top:26px"><div class="stag-pill" style="background:var(--blue)">Upload to SharePoint</div><div class="stag-line"></div></div>
+  <div class="alert alert-blue" style="margin-bottom:12px"><strong>How to get a Graph API token:</strong> Go to <strong>developer.microsoft.com/graph/graph-explorer</strong> &rarr; sign in with your Portico Microsoft account &rarr; copy the Access Token from the Access Token tab.</div>
+  <div class="g2">
+    <div class="fg"><label class="lbl">Microsoft Graph Access Token</label><input type="password" id="sp-token" placeholder="eyJ0eXAiOiJKV1QiLCJhbGci..." autocomplete="off"></div>
+    <div class="fg"><label class="lbl">SharePoint Library URL</label><input type="text" id="sp-url" placeholder="https://porticobenefits.sharepoint.com/sites/Requirements/Shared Documents"></div>
+  </div>
+  <button class="btn btn-primary" data-action="sp-upload" id="sp-btn">&#x2B06; Upload to SharePoint</button>
+  <div id="sp-msg" style="margin-top:10px"></div>
+
+  <div class="fl" style="margin-top:22px;padding-top:18px;border-top:1px solid var(--mgray)">
+    <button class="btn btn-outline" data-action="prev">&larr; Back to Review</button>
+    <button class="btn btn-danger" data-action="clear-all">&#x2715; Start New Document</button>
+  </div>
+</div>
+</div>
+
+</div><!-- /main -->
+<script>
+(function(){
+'use strict';
+// ─── State ────────────────────────────────────────────────────────────
+const SKEY='portico-req-v3';
+let step=0;
+let ssData=null,colMap={};
+
+const S={
+  canvas:{title:'',sponsor:'',targetDate:'',moscow:'',problem:'',severity:'',audience:'',userCount:'',objective:'',strategy:'',vision:'',dependencies:'',roiValue:'',successMetrics:'',confidence:'',impactScore:'',impactSeverity:'',docOwner:'',businessUnit:'',version:'1.0 DRAFT'},
+  stakeholders:[mk_sh()],
+  inScope:[''],outScope:[''],
+  requirements:[mk_req(1),mk_req(2)],
+  useCases:[mk_uc(1)],
+  nfrs:[mk_nfr(1)],
+  devHandover:{systemComponents:'',dataModel:'',apiChanges:'',integrations:'',envReqs:'',deployNotes:'',rollback:''},
+  testCases:[mk_tc(1),mk_tc(2)],
+  uatCases:[mk_uat(1)]
+};
+function mk_sh(){return{name:'',role:'',type:'Sponsor',involvement:'Approver',commsNeeds:'Executive summary updates'}}
+function mk_req(n){return{id:'REQ-001-'+pad(n),title:'',priority:'Critical',type:'Functional',description:'',actors:'',preconditions:'',postconditions:'',ac:''}}
+function mk_uc(n){return{id:'UC-'+pad(n),title:'',actor:'',trigger:'',mainFlow:'',altFlows:'',post:'',linkedReqs:''}}
+function mk_tc(n){return{id:'TC-'+pad(n),scenario:'',steps:'',expected:'',priority:'High'}}
+function mk_uat(n){return{id:'UAT-'+pad(n),scenario:'',userStory:'',given:'',when:'',then:'',acceptance:''}}
+function mk_nfr(n){return{id:'NFR-'+pad(n),category:'Performance',requirement:'',priority:'High'}}
+function pad(n){return n<10?'00'+n:n<100?'0'+n:n}
+
+// ─── Persist ──────────────────────────────────────────────────────────
+function save(){
+  try{localStorage.setItem(SKEY,JSON.stringify({canvas:S.canvas,stakeholders:S.stakeholders,inScope:S.inScope,outScope:S.outScope,requirements:S.requirements,useCases:S.useCases,nfrs:S.nfrs,devHandover:S.devHandover,testCases:S.testCases,uatCases:S.uatCases,step:step}));
+  var el=document.getElementById('save-ind');if(el){el.classList.add('show');setTimeout(function(){el.classList.remove('show')},1800)}}catch(e){}
+}
+function loadSaved(){
+  try{
+    var raw=localStorage.getItem(SKEY);if(!raw)return false;
+    var d=JSON.parse(raw);
+    if(d.canvas)Object.assign(S.canvas,d.canvas);
+    if(d.stakeholders&&d.stakeholders.length)S.stakeholders=d.stakeholders;
+    if(d.inScope)S.inScope=d.inScope;
+    if(d.outScope)S.outScope=d.outScope;
+    if(d.requirements&&d.requirements.length)S.requirements=d.requirements;
+    if(d.useCases&&d.useCases.length)S.useCases=d.useCases;
+    if(d.nfrs&&d.nfrs.length)S.nfrs=d.nfrs;
+    if(d.devHandover)Object.assign(S.devHandover,d.devHandover);
+    if(d.testCases&&d.testCases.length)S.testCases=d.testCases;
+    if(d.uatCases&&d.uatCases.length)S.uatCases=d.uatCases;
+    if(d.step)step=d.step;
+    return true;
+  }catch(e){return false}
+}
+var saveTimer;
+function qSave(){clearTimeout(saveTimer);saveTimer=setTimeout(save,700)}
+
+// ─── Step navigation ──────────────────────────────────────────────────
+function goStep(n){
+  if(n<0||n>5)return;
+  document.getElementById('panel-'+step).classList.remove('active');
+  step=n;
+  document.getElementById('panel-'+step).classList.add('active');
+  updateStepper();
+  if(step===1)fillCanvasFields();
+  if(step===2){renderStakeholders();renderScope()}
+  if(step===3){renderReqs();renderNFRs();fillDevHandover()}
+  if(step===4){renderUCs();renderTCs();renderUATs()}
+  if(step===5)fillStats();
+  window.scrollTo(0,0);
+  qSave();
+}
+function updateStepper(){
+  for(var i=0;i<6;i++){
+    var el=document.getElementById('si'+i);if(!el)continue;
+    var n=el.querySelector('.stp-num');
+    el.classList.remove('active','done');
+    if(i===step){el.classList.add('active');if(n)n.textContent=i+1}
+    else if(i<step){el.classList.add('done');if(n)n.textContent='✓'}
+    else{if(n)n.textContent=i+1}
+    var sep=document.getElementById('sep'+i);
+    if(sep)sep.classList.toggle('done',i<step);
+  }
+}
+
+// ─── Fill panel 1 form fields from state ─────────────────────────────
+function fillCanvasFields(){
+  document.querySelectorAll('[data-bind]').forEach(function(el){
+    var path=el.dataset.bind.split('.');
+    if(path[0]==='canvas'&&S.canvas[path[1]]!==undefined)el.value=S.canvas[path[1]];
+    if(path[0]==='devHandover'&&S.devHandover[path[1]]!==undefined)el.value=S.devHandover[path[1]];
+  });
+}
+function fillDevHandover(){
+  document.querySelectorAll('[data-bind^="devHandover"]').forEach(function(el){
+    var key=el.dataset.bind.split('.')[1];
+    if(S.devHandover[key]!==undefined)el.value=S.devHandover[key];
+  });
+}
+
+// ─── Render dynamic lists ─────────────────────────────────────────────
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function renderStakeholders(){
+  var h='';
+  S.stakeholders.forEach(function(s,i){
+    h+='<div class="block"><div class="bh" style="background:var(--blue)">Stakeholder '+(i+1);
+    if(i>0)h+=' <button class="rm-btn" data-action="rm-sh" data-idx="'+i+'">&#x2715; Remove</button>';
+    h+='</div><div class="bb"><div class="g2">';
+    h+='<div class="fg"><label class="lbl">Name / Role</label><input type="text" data-sh="'+i+'" data-key="name" value="'+esc(s.name)+'" placeholder="Full name and title"></div>';
+    h+='<div class="fg"><label class="lbl">Type</label><select data-sh="'+i+'" data-key="type">';
+    ['Sponsor','Business Owner','BA / PM','IT / Technical','End User','Legal / Compliance','Testing Lead','Other'].forEach(function(t){h+='<option'+(s.type===t?' selected':'')+'>'+t+'</option>'});
+    h+='</select></div>';
+    h+='<div class="fg"><label class="lbl">Involvement</label><select data-sh="'+i+'" data-key="involvement">';
+    ['Approver','Author / Driver','Consulted','Informed / UAT','Reviewer'].forEach(function(t){h+='<option'+(s.involvement===t?' selected':'')+'>'+t+'</option>'});
+    h+='</select></div>';
+    h+='<div class="fg"><label class="lbl">Communication Needs</label><input type="text" data-sh="'+i+'" data-key="commsNeeds" value="'+esc(s.commsNeeds)+'" placeholder="e.g. Weekly status, UAT results"></div>';
+    h+='</div></div></div>';
+  });
+  document.getElementById('stakeholder-list').innerHTML=h;
+}
+function renderScope(){
+  var ih='',oh='';
+  S.inScope.forEach(function(v,i){ih+='<div class="scope-item"><input type="text" data-scope="in" data-idx="'+i+'" value="'+esc(v)+'" placeholder="Enter in-scope item"><button class="scp-rm" data-action="rm-scope" data-dir="in" data-idx="'+i+'">&#x2715;</button></div>'});
+  S.outScope.forEach(function(v,i){oh+='<div class="scope-item"><input type="text" data-scope="out" data-idx="'+i+'" value="'+esc(v)+'" placeholder="Enter out-of-scope item"><button class="scp-rm" data-action="rm-scope" data-dir="out" data-idx="'+i+'">&#x2715;</button></div>'});
+  document.getElementById('inscope-list').innerHTML=ih;
+  document.getElementById('outscope-list').innerHTML=oh;
+}
+function renderReqs(){
+  var h='';
+  S.requirements.forEach(function(r,i){
+    h+='<div class="block"><div class="bh" style="background:var(--gray)">Requirement '+esc(r.id);
+    if(i>0)h+=' <button class="rm-btn" data-action="rm-item" data-arr="requirements" data-idx="'+i+'">&#x2715; Remove</button>';
+    h+='</div><div class="bb"><div class="g3">';
+    h+='<div class="fg"><label class="lbl">Title</label><input type="text" data-ri="'+i+'" data-rk="title" value="'+esc(r.title)+'" placeholder="Short descriptive title"></div>';
+    h+='<div class="fg"><label class="lbl">Priority</label><select data-ri="'+i+'" data-rk="priority">';
+    ['Critical','High','Medium','Low'].forEach(function(p){h+='<option'+(r.priority===p?' selected':'')+'>'+p+'</option>'});
+    h+='</select></div><div class="fg"><label class="lbl">Type</label><select data-ri="'+i+'" data-rk="type">';
+    ['Functional','Non-Functional','Compliance','Business Rule'].forEach(function(t){h+='<option'+(r.type===t?' selected':'')+'>'+t+'</option>'});
+    h+='</select></div></div>';
+    [['Description','description',4,'Full requirement statement — what must the system do?'],['Primary Actors','actors',1,'Roles or systems involved'],['Preconditions','preconditions',2,'What must be true before this starts?'],['Postconditions','postconditions',2,'Expected system state after completion'],['Acceptance Criteria','ac',4,'1. ...\n2. ...\n3. ...\nBusiness will accept when these are met.']].forEach(function(x){
+      h+='<div class="fg"><label class="lbl">'+x[0]+'</label><textarea rows="'+x[2]+'" data-ri="'+i+'" data-rk="'+x[1]+'" placeholder="'+esc(x[3])+'">'+esc(r[x[1]])+'</textarea></div>';
+    });
+    h+='</div></div>';
+  });
+  document.getElementById('req-list').innerHTML=h;
+}
+function renderNFRs(){
+  var h='';
+  S.nfrs.forEach(function(n,i){
+    h+='<div class="nfr-row">';
+    h+='<div class="fg"><label class="lbl">NFR ID</label><input type="text" data-ni="'+i+'" data-nk="id" value="'+esc(n.id)+'" placeholder="NFR-001"></div>';
+    h+='<div class="fg"><label class="lbl">Category</label><select data-ni="'+i+'" data-nk="category">';
+    ['Performance','Security','Scalability','Availability','Usability','Compliance','Data Retention','Audit Logging'].forEach(function(c){h+='<option'+(n.category===c?' selected':'')+'>'+c+'</option>'});
+    h+='</select></div>';
+    h+='<div class="fg"><label class="lbl">Requirement</label><input type="text" data-ni="'+i+'" data-nk="requirement" value="'+esc(n.requirement)+'" placeholder="Describe the non-functional requirement"></div>';
+    h+='<div class="nfr-actions"><div class="fg" style="flex:1"><label class="lbl">Priority</label><select data-ni="'+i+'" data-nk="priority">';
+    ['Critical','High','Medium','Low'].forEach(function(p){h+='<option'+(n.priority===p?' selected':'')+'>'+p+'</option>'});
+    h+='</select></div>';
+    if(i>0)h+='<button class="rm-btn" style="background:none;border:1px solid var(--red);color:var(--red);margin-bottom:14px" data-action="rm-item" data-arr="nfrs" data-idx="'+i+'">&#x2715;</button>';
+    h+='</div></div>';
+  });
+  document.getElementById('nfr-list').innerHTML=h;
+}
+function renderUCs(){
+  var h='';
+  S.useCases.forEach(function(u,i){
+    h+='<div class="block"><div class="bh" style="background:var(--orange)">'+esc(u.id);
+    if(i>0)h+=' <button class="rm-btn" data-action="rm-item" data-arr="useCases" data-idx="'+i+'">&#x2715; Remove</button>';
+    h+='</div><div class="bb"><div class="g2">';
+    h+='<div class="fg"><label class="lbl">Title</label><input type="text" data-ui="'+i+'" data-uk="title" value="'+esc(u.title)+'" placeholder="Use case title"></div>';
+    h+='<div class="fg"><label class="lbl">Primary Actor</label><input type="text" data-ui="'+i+'" data-uk="actor" value="'+esc(u.actor)+'" placeholder="e.g. Member, Employer Admin"></div></div>';
+    [['Trigger','trigger',1,'What initiates this use case?'],['Main Flow','mainFlow',4,'1. ...\n2. ...\n3. ...'],['Alternate Flows / Exceptions','altFlows',2,'A1. If X happens...'],['Postconditions','post',2,'Expected state after success'],['Linked Requirements','linkedReqs',1,'e.g. REQ-001-001, REQ-001-002']].forEach(function(x){
+      h+='<div class="fg"><label class="lbl">'+x[0]+'</label><textarea rows="'+x[2]+'" data-ui="'+i+'" data-uk="'+x[1]+'" placeholder="'+esc(x[3])+'">'+esc(u[x[1]])+'</textarea></div>';
+    });
+    h+='</div></div>';
+  });
+  document.getElementById('uc-list').innerHTML=h;
+}
+function renderTCs(){
+  var h='';
+  S.testCases.forEach(function(t,i){
+    h+='<div class="block"><div class="bh" style="background:var(--orange)">'+esc(t.id);
+    h+=' <select data-ti="'+i+'" data-tk="priority" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:4px;padding:2px 6px;font-family:Calibri,sans-serif;font-size:12px">';
+    ['Critical','High','Medium','Low'].forEach(function(p){h+='<option'+(t.priority===p?' selected':'')+'>'+p+'</option>'});
+    h+='</select>';
+    if(i>0)h+=' <button class="rm-btn" data-action="rm-item" data-arr="testCases" data-idx="'+i+'">&#x2715;</button>';
+    h+='</div><div class="bb">';
+    [['Test Scenario','scenario',1,'e.g. Member submits enrollment during open window'],['Test Steps (numbered)','steps',4,'1. Navigate to...\n2. Select...\n3. Confirm...'],['Expected Result','expected',3,'System should...']].forEach(function(x){
+      h+='<div class="fg"><label class="lbl">'+x[0]+'</label><textarea rows="'+x[2]+'" data-ti="'+i+'" data-tk="'+x[1]+'" placeholder="'+esc(x[3])+'">'+esc(t[x[1]])+'</textarea></div>';
+    });
+    h+='</div></div>';
+  });
+  document.getElementById('tc-list').innerHTML=h;
+}
+function renderUATs(){
+  var h='';
+  S.uatCases.forEach(function(u,i){
+    h+='<div class="block"><div class="bh" style="background:var(--green)">'+esc(u.id);
+    if(i>0)h+=' <button class="rm-btn" data-action="rm-item" data-arr="uatCases" data-idx="'+i+'">&#x2715; Remove</button>';
+    h+='</div><div class="bb">';
+    [['Business Scenario','scenario',1,'Describe the business scenario being tested'],['User Story','userStory',1,'As a [role], I want to [action] so that [benefit]'],['Given (starting state)','given',2,'Given that...'],['When (action taken)','when',2,'When I...'],['Then (expected outcome)','then',2,'Then...'],['Acceptance Criteria','acceptance',2,'The business will accept this if...']].forEach(function(x){
+      h+='<div class="fg"><label class="lbl">'+x[0]+'</label><textarea rows="'+x[2]+'" data-uai="'+i+'" data-uak="'+x[1]+'" placeholder="'+esc(x[3])+'">'+esc(u[x[1]])+'</textarea></div>';
+    });
+    h+='</div></div>';
+  });
+  document.getElementById('uat-list').innerHTML=h;
+}
+function fillStats(){
+  var filled=Object.values(S.canvas).filter(function(v){return v&&v!=='1.0 DRAFT'}).length;
+  var t,e;
+  t=document.getElementById('stat-canvas');if(t)t.textContent=filled;
+  t=document.getElementById('stat-req');if(t)t.textContent=S.requirements.length;
+  t=document.getElementById('stat-tc');if(t)t.textContent=S.testCases.length;
+  t=document.getElementById('stat-uat');if(t)t.textContent=S.uatCases.length;
+  function setSum(id,val){e=document.getElementById(id);if(!e)return;if(val){e.textContent=val;e.style.color='';e.style.fontStyle=''}else{e.textContent='[ not entered ]';e.style.color='#BBBBBB';e.style.fontStyle='italic'}}
+  setSum('sum-title',S.canvas.title);setSum('sum-sponsor',S.canvas.sponsor);
+  setSum('sum-date',S.canvas.targetDate);setSum('sum-owner',S.canvas.docOwner);
+  e=document.getElementById('sum-ver');if(e)e.textContent=S.canvas.version||'1.0 DRAFT';
+}
+
+// ─── Smartsheet import — fully dynamic, no hardcoded positions ────────
+//
+// CANVAS FIELD DEFINITIONS
+// Each entry has:
+//   id        — key in S.canvas state
+//   labels    — list of synonyms to match against Smartsheet column titles
+//              (case-insensitive, partial-match — so "Opportunity Title" matches
+//               "Opportunity Title", "Title", "Opp Title", etc.)
+//   category  — used only for the mapping review UI
+//
+// TO ADD A NEW CANVAS FIELD: add one entry here. Nothing else to change.
+// TO HANDLE A RENAMED SMARTSHEET COLUMN: add the new name to its labels array.
+//
+var CF = [
+  {id:'title',          labels:['opportunity title','title','opportunity name','opp title'],                  category:'header'},
+  {id:'sponsor',        labels:['sponsor','sponsors','who are the sponsors','sponsored by'],                   category:'header'},
+  {id:'targetDate',     labels:['target date','deadline','when','date needed','due date','need by'],           category:'header'},
+  {id:'moscow',         labels:['moscow','must have','priority score','moscow score'],                         category:'scoring'},
+  {id:'problem',        labels:['problem statement','problem','what problem','description','outlines'],        category:'problem'},
+  {id:'severity',       labels:['severity','impact if not solved','impact if','consequence'],                  category:'problem'},
+  {id:'audience',       labels:['who are we solving','audience','segment','who is affected','solving for'],    category:'problem'},
+  {id:'userCount',      labels:['how many','user count','users affected','groups affected','number of users'], category:'problem'},
+  {id:'objective',      labels:['business objective','objective','goal','what objective','aligns to'],         category:'strategic'},
+  {id:'strategy',       labels:['existing strategy','strategy','connected to','strategic connection'],         category:'strategic'},
+  {id:'vision',         labels:['future state','vision','future state vision','desired end state'],            category:'future'},
+  {id:'dependencies',   labels:['dependencies','dependency','depends on','blockers'],                          category:'future'},
+  {id:'roiValue',       labels:['roi','targeted value','cost savings','return on investment','value'],         category:'value'},
+  {id:'successMetrics', labels:['success metrics','how will','measured','kpi','metrics','measure impact'],     category:'value'},
+  {id:'confidence',     labels:['confidence','confidence %','conf %','certainty'],                             category:'scoring'},
+  {id:'impactScore',    labels:['impact score','impact','score','impact criteria'],                            category:'scoring'},
+];
+
+// ── Core matching engine ────────────────────────────────────────────────
+// Normalise a string for comparison: lowercase, strip non-alpha
+function norm(s){ return (s||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+
+// Score how well a Smartsheet column title matches a CF field's labels.
+// Returns 0 (no match) to 100 (exact match).
+function matchScore(colTitle, fieldLabels){
+  var ct = norm(colTitle);
+  if(!ct) return 0;
+  var best = 0;
+  for(var i=0; i<fieldLabels.length; i++){
+    var lbl = norm(fieldLabels[i]);
+    if(!lbl) continue;
+    if(ct === lbl){ best = 100; break; }                          // exact
+    if(ct.indexOf(lbl) >= 0 || lbl.indexOf(ct) >= 0){            // substring
+      var score = Math.round(70 * Math.min(ct.length,lbl.length) / Math.max(ct.length,lbl.length));
+      if(score > best) best = score;
+    }
+  }
+  return best;
+}
+
+// Build column→field map from an array of column title strings.
+// Returns { fieldId: colIndex, ... } plus an array of unmapped column titles.
+function buildMapFromHeaders(headers){
+  var result = {};
+  var usedCols = {};
+  // For each CF field, find the best-matching column
+  CF.forEach(function(f){
+    var bestScore = 0, bestIdx = -1;
+    headers.forEach(function(h, idx){
+      if(usedCols[idx]) return;
+      var s = matchScore(h, f.labels);
+      if(s > bestScore){ bestScore = s; bestIdx = idx; }
+    });
+    if(bestScore >= 40 && bestIdx >= 0){ // threshold: must be at least 40% confident
+      result[f.id] = bestIdx;
+      usedCols[bestIdx] = true;
+    }
+  });
+  // Collect unmapped columns for display
+  var unmapped = [];
+  headers.forEach(function(h, idx){ if(!usedCols[idx] && h && h.trim()) unmapped.push({idx:idx, title:h.trim()}); });
+  result._unmapped = unmapped;
+  return result;
+}
+
+// Apply a position-based map { fieldId: colIndex } to a data row array
+function applyMapToRow(map, row){
+  var mapped = 0;
+  CF.forEach(function(f){
+    var idx = map[f.id];
+    if(idx !== undefined && idx >= 0 && idx < row.length && row[idx] && row[idx].trim()){
+      S.canvas[f.id] = row[idx].trim();
+      mapped++;
+    }
+  });
+  return mapped;
+}
+
+// ── PASTE IMPORT ─────────────────────────────────────────────────────────
+// Expects either:
+//   (a) Two lines: header row 	 data row  — best, fully dynamic
+//   (b) One line: data row only — falls back to label hints from Smartsheet form
+var _pasteHeaderMap = null; // cached after first successful header parse
+
+function pasteImport(){
+  var raw = (document.getElementById('paste-area')||{}).value || '';
+  var prevEl = document.getElementById('paste-preview');
+  var lines = raw.trim().split('\n').map(function(l){ return l.replace(/\r/g,'') });
+  lines = lines.filter(function(l){ return l.trim() });
+
+  if(!lines.length){
+    if(prevEl){prevEl.style.display='block';prevEl.innerHTML='<div class="alert alert-red">&#x26A0; Nothing pasted. Click in the box and press Ctrl+V.</div>'}
+    return;
+  }
+
+  var headerRow, dataRow, map, mapped;
+
+  if(lines.length >= 2){
+    // Two+ lines: first is header, second is data
+    headerRow = lines[0].split('\t');
+    dataRow   = lines[1].split('\t');
+    map = buildMapFromHeaders(headerRow);
+    _pasteHeaderMap = map; // save for session
+  } else {
+    // Single line — use saved map if available, else show mapping UI
+    dataRow = lines[0].split('\t');
+    if(_pasteHeaderMap){
+      map = _pasteHeaderMap;
+    } else {
+      // No headers — show helper message
+      if(prevEl){
+        prevEl.style.display='block';
+        prevEl.innerHTML='<div class="alert alert-gold"><strong>&#x2728; Tip: For automatic field matching, copy the header row too.</strong><br>In Smartsheet: click the column header area to select headers, then also select your data row, then Ctrl+C. Paste both rows together here.<br><br>Alternatively, if Smartsheet only copies data rows, you can type or paste your column headers manually in the box below and the tool will remember them for the session.</div><div class="fg" style="margin-top:8px"><label class="lbl">Column headers (paste or type your Smartsheet header row here, tab-separated)</label><textarea id="manual-headers" rows="2" placeholder="Opportunity ID&#9;Opportunity Title&#9;Description&#9;..."></textarea></div><div class="fl"><button class="btn btn-primary" data-action="paste-with-headers">Use These Headers &amp; Import</button></div>';
+      }
+      return;
+    }
+  }
+
+  if(dataRow.length < 3){
+    if(prevEl){prevEl.style.display='block';prevEl.innerHTML='<div class="alert alert-red">&#x26A0; Data row has fewer than 3 columns. Make sure you are copying a full row from the Smartsheet grid (not just a cell).</div>'}
+    return;
+  }
+
+  mapped = applyMapToRow(map, dataRow);
+
+  if(mapped === 0){
+    if(prevEl){
+      prevEl.style.display='block';
+      prevEl.innerHTML='<div class="alert alert-red">&#x26A0; Data was read but no canvas fields could be matched. Try copying the header row together with the data row — select both rows before pressing Ctrl+C.</div>';
+    }
+    return;
+  }
+
+  qSave();
+  var unmappedCount = (map._unmapped||[]).length;
+  var unmappedNote = unmappedCount > 0 ? ' &nbsp;&middot;&nbsp; '+unmappedCount+' column(s) not matched to canvas fields (they remain available in Canvas Fields step).' : ' All columns accounted for.';
+  if(prevEl){
+    prevEl.style.display='block';
+    prevEl.innerHTML='<div class="alert alert-green">&#x2713; <strong>'+mapped+' fields imported</strong> from '+dataRow.length+' columns.'+unmappedNote+'<br><strong>Title:</strong> '+esc(S.canvas.title||'(not found)')+' &nbsp;|&nbsp; <strong>Sponsor:</strong> '+esc(S.canvas.sponsor||'(not found)')+' &nbsp;|&nbsp; <strong>MoSCoW:</strong> '+esc(S.canvas.moscow||'(not found)')+'<br><em>Advancing to Canvas Review in 2 seconds...</em></div>';
+  }
+  setTimeout(function(){
+    var sec=document.getElementById('import-section');if(sec)sec.style.display='none';
+    goStep(1);
+  }, 1800);
+}
+
+function pasteWithHeaders(){
+  var headerEl = document.getElementById('manual-headers');
+  var dataArea = document.getElementById('paste-area');
+  if(!headerEl||!dataArea) return;
+  var headers = headerEl.value.split('\t');
+  var dataRow  = dataArea.value.trim().split('\n')[0].split('\t');
+  if(headers.length < 2){
+    var prevEl=document.getElementById('paste-preview');
+    if(prevEl){prevEl.innerHTML='<div class="alert alert-red">&#x26A0; Please enter at least 2 column headers.</div>'}
+    return;
+  }
+  var map = buildMapFromHeaders(headers);
+  _pasteHeaderMap = map;
+  var mapped = applyMapToRow(map, dataRow);
+  qSave();
+  var prevEl=document.getElementById('paste-preview');
+  if(prevEl) prevEl.innerHTML='<div class="alert alert-green">&#x2713; Mapped '+mapped+' fields. Advancing...</div>';
+  setTimeout(function(){ goStep(1); }, 1200);
+}
+
+// ── API IMPORT ────────────────────────────────────────────────────────────
+
+function ssConnect(){
+  var token=(document.getElementById('ss-token')||{}).value;
+  var raw=(document.getElementById('ss-sheet')||{}).value||'';
+  if(!token||!raw)return;
+  var sid=raw.trim();
+  var urlMatch=sid.match(/sheets\/([^/?#\/]+)/);
+  if(urlMatch)sid=urlMatch[1];
+  sid=sid.split('?')[0].split('#')[0].split('/')[0].trim();
+  var errEl=document.getElementById('ss-error');
+  if(errEl)errEl.style.display='none';
+  fetch('https://api.smartsheet.com/2.0/sheets/'+sid,{headers:{Authorization:'Bearer '+token.trim(),Accept:'application/json'}})
+  .then(function(r){if(!r.ok)throw new Error('Smartsheet returned '+r.status+'. Check token and Sheet ID.');return r.json()})
+  .then(function(data){
+    ssData=data;
+    // Build colMap using the same dynamic matching engine
+    colMap={};
+    if(data.columns){
+      var headers=data.columns.map(function(c){return c.title||''});
+      var posMap=buildMapFromHeaders(headers);
+      // Convert position map back to columnId map for the API row structure
+      CF.forEach(function(f){
+        var posIdx=posMap[f.id];
+        if(posIdx!==undefined&&data.columns[posIdx]){
+          colMap[f.id]=data.columns[posIdx].id;
+        }
+      });
+    }
+    renderSSRows(data);
+  })
+  .catch(function(e){if(errEl){errEl.textContent='⚠ '+e.message+' (If running from a local file or SharePoint, try the Paste method — it works without a direct API connection.)';errEl.style.display='block'}});
+}
+
+function renderSSRows(data){
+  var el=document.getElementById('ss-rows');if(!el)return;
+  if(!data.rows||!data.rows.length){el.innerHTML='<p style="color:#888;font-size:13px">No rows found in this sheet.</p>';return}
+  var matched=Object.keys(colMap).length;
+  var total=CF.length;
+  var matchNote=matched===total?'all '+total+' canvas fields matched':matched+' of '+total+' canvas fields matched';
+  // Show unmatched fields if any
+  var unmatched=CF.filter(function(f){return!colMap[f.id]}).map(function(f){return f.labels[0]});
+  var unmatchedNote=unmatched.length>0?' &mdash; unmatched: <em>'+unmatched.join(', ')+'</em>':'';
+  var h='<div class="alert '+(matched===total?'alert-green':'alert-gold')+'" style="margin-bottom:10px">&#x2713; Connected: <strong>'+esc(data.name)+'</strong> &middot; '+data.rows.length+' rows &middot; '+matchNote+unmatchedNote+'</div><div class="row-list">';
+  data.rows.forEach(function(row){
+    var tColId=colMap['title'];
+    var tCell=tColId&&row.cells&&row.cells.find(function(c){return c.columnId===tColId});
+    var title=tCell&&tCell.value?String(tCell.value):'Row '+row.rowNumber;
+    var filled=(row.cells||[]).filter(function(c){return c.value}).length;
+    h+='<div class="sheet-row" data-action="ss-select" data-rowid="'+row.id+'"><div><div class="sr-title">'+esc(title)+'</div><div class="sr-sub">Row '+row.rowNumber+' &middot; '+filled+' fields populated</div></div><div class="sr-badge">Select &rarr;</div></div>';
+  });
+  h+='</div>';el.innerHTML=h;
+}
+
+function ssSelectRow(rowId){
+  if(!ssData)return;
+  var row=ssData.rows.find(function(r){return String(r.id)===String(rowId)});
+  if(!row)return;
+  CF.forEach(function(f){
+    var colId=colMap[f.id];
+    if(colId){
+      var cell=row.cells&&row.cells.find(function(c){return c.columnId===colId});
+      if(cell&&cell.value!=null) S.canvas[f.id]=String(cell.value);
+    }
+  });
+  var sec=document.getElementById('import-section');if(sec)sec.style.display='none';
+  goStep(1);
+}
+
+// ─── Document generator ───────────────────────────────────────────────
+function val(v,fb){return v||(fb||'<span style="color:#BBBBBB;font-style:italic;">[ to be completed ]</span>')}
+function hc(t,col){return'<td style="background:'+(col||'#54585A')+';color:#fff;font-weight:bold;font-size:11pt;padding:5pt 8pt;border:1pt solid #D0D7DE">'+t+'</td>'}
+function dc(t,bg){return'<td style="background:'+(bg||'#fff')+';font-size:11pt;padding:5pt 8pt;border:1pt solid #D0D7DE;vertical-align:top">'+t+'</td>'}
+function sb(n,title,col,pb){return(pb?'<p style="page-break-before:always;margin:0"> </p>':'')+'<table style="width:100%;border-collapse:collapse;margin:14pt 0 6pt"><tr><td style="background:'+col+';color:#fff;font-weight:bold;font-size:14pt;padding:8pt 14pt;width:38pt;text-align:center;border:none">'+n+'</td><td style="background:#F4F4F4;color:'+col+';font-weight:bold;font-size:12pt;padding:8pt 14pt;letter-spacing:2px;border:none">'+title.toUpperCase()+'</td></tr></table>'}
+function h2(t){return'<h2 style="font-family:Calibri;font-size:16pt;color:#009CDE;font-weight:bold;margin:12pt 0 4pt">'+t+'</h2>'}
+function src(t){return'<p style="font-size:10pt;color:#009CDE;font-style:italic;margin:0 0 6pt">&#x25B6; Canvas: '+t+'</p>'}
+function buildDoc(){
+  var cv=S.canvas,iv=S;
+  var now=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  var reqBlocks=S.requirements.map(function(r){return'<table style="width:100%;border-collapse:collapse;margin:8pt 0"><tr><td colspan="2" style="background:#54585A;color:#fff;font-weight:bold;font-size:11pt;padding:6pt 10pt">Requirement '+r.id+'</td></tr><tr>'+hc('Title')+dc(val(r.title))+'</tr><tr>'+hc('Priority','#009CDE')+dc('<strong style="color:'+(r.priority==='Critical'?'#C5003E':r.priority==='High'?'#D86018':'#A2AD00')+'">'+r.priority+'</strong>')+'</tr><tr>'+hc('Type')+dc(val(r.type))+'</tr><tr>'+hc('Description','#009CDE')+dc(val(r.description),'#F9FBFC')+'</tr><tr>'+hc('Primary Actors')+dc(val(r.actors))+'</tr><tr>'+hc('Preconditions','#009CDE')+dc(val(r.preconditions),'#F9FBFC')+'</tr><tr>'+hc('Postconditions')+dc(val(r.postconditions))+'</tr><tr>'+hc('Acceptance Criteria','#009CDE')+dc(val(r.ac),'#F9FBFC')+'</tr></table>'}).join('<br>');
+  var ucBlocks=S.useCases.map(function(u){return'<table style="width:100%;border-collapse:collapse;margin:8pt 0"><tr><td colspan="2" style="background:#D86018;color:#fff;font-weight:bold;font-size:11pt;padding:6pt 10pt">'+u.id+': '+val(u.title,'[ Use Case Title ]')+'</td></tr>'+[['Goal',u.title],['Actor',u.actor],['Trigger',u.trigger],['Main Flow',u.mainFlow],['Alternate Flows',u.altFlows],['Postconditions',u.post],['Linked Requirements',u.linkedReqs]].map(function(x,i){return'<tr>'+hc(x[0],i%2===0?'#54585A':'#009CDE')+dc(val(x[1]),i%2===0?'#fff':'#F9FBFC')+'</tr>'}).join('')+'</table>'}).join('<br>');
+  var tcBlocks=S.testCases.map(function(t){return'<table style="width:100%;border-collapse:collapse;margin:8pt 0"><tr>'+hc('Test ID')+dc(t.id)+hc('Priority','#009CDE')+dc('<strong style="color:'+(t.priority==='High'?'#D86018':'#A2AD00')+'">'+t.priority+'</strong>')+'</tr><tr>'+hc('Scenario','#009CDE')+dc(val(t.scenario),'#F9FBFC')+'</tr><tr>'+hc('Steps')+dc(val(t.steps))+'</tr><tr>'+hc('Expected Result','#009CDE')+dc(val(t.expected),'#F9FBFC')+'</tr><tr>'+hc('Actual Result')+dc('<span style="color:#BBBBBB;font-style:italic">[ to be completed during testing ]</span>')+'</tr><tr>'+hc('Pass / Fail','#009CDE')+dc('&#x2610; Pass &nbsp;&nbsp; &#x2610; Fail &nbsp;&nbsp; &#x2610; Blocked')+'</tr></table>'}).join('<br>');
+  var uatBlocks=S.uatCases.map(function(u){return'<table style="width:100%;border-collapse:collapse;margin:8pt 0"><tr><td colspan="2" style="background:#A2AD00;color:#fff;font-weight:bold;font-size:11pt;padding:6pt 10pt">'+u.id+': '+val(u.scenario,'[ Business Scenario ]')+'</td></tr><tr>'+hc('User Story')+dc(val(u.userStory))+'</tr><tr>'+hc('Given','#009CDE')+dc(val(u.given),'#F9FBFC')+'</tr><tr>'+hc('When')+dc(val(u.when))+'</tr><tr>'+hc('Then','#009CDE')+dc(val(u.then),'#F9FBFC')+'</tr><tr>'+hc('Acceptance Decision')+dc('&#x2610; Accepted &nbsp;&nbsp; &#x2610; Conditionally Accepted &nbsp;&nbsp; &#x2610; Rejected')+'</tr><tr>'+hc('Business Owner Sign-Off','#009CDE')+dc('Signature: ___________________________&nbsp;&nbsp;Date: ___________','#F9FBFC')+'</tr></table>'}).join('<br>');
+  var inSc=iv.inScope.filter(Boolean).map(function(s){return'&bull; '+s}).join('<br>')||'<span style="color:#BBBBBB;font-style:italic">[ BA to define ]</span>';
+  var outSc=iv.outScope.filter(Boolean).map(function(s){return'&bull; '+s}).join('<br>')||'<span style="color:#BBBBBB;font-style:italic">[ BA to define ]</span>';
+  var stRows=iv.stakeholders.map(function(s,i){return'<tr>'+dc(val(s.name),i%2?'#F9FBFC':'#fff')+dc(val(s.type),i%2?'#F9FBFC':'#fff')+dc(val(s.involvement),i%2?'#F9FBFC':'#fff')+dc(val(s.commsNeeds),i%2?'#F9FBFC':'#fff')+'</tr>'}).join('');
+  var stratRows=(cv.strategy||'').split(',').filter(Boolean).map(function(s){return'<tr>'+dc(s.trim())+dc('Direct')+dc('[ add notes ]')+'</tr>'}).join('')||'<tr>'+dc(val(cv.strategy))+dc('[ strength ]')+dc('[ notes ]')+'</tr>';
+  var depRows=(cv.dependencies||'').split(',').filter(Boolean).map(function(d){return'<tr>'+dc(d.trim())+dc('System / Process / Team')+dc('[ owner / TBD ]')+'</tr>'}).join('')||'<tr>'+dc(val(''))+dc('[ type ]')+dc('[ owner ]')+'</tr>';
+  var metRows=(cv.successMetrics||'').split(/[,\n]/).filter(Boolean).map(function(m){return'<tr>'+dc(m.trim(),'#F9FBFC')+dc('[ current ]')+dc('[ goal ]')+dc('[ how tracked ]')+'</tr>'}).join('')||'<tr>'+dc(val(''),'#F9FBFC')+dc('[ current ]')+dc('[ goal ]')+dc('[ how tracked ]')+'</tr>';
+  var nfrRows=iv.nfrs.map(function(n,i){return'<tr>'+dc(n.id,i%2?'#F9FBFC':'#fff')+dc(n.category,i%2?'#F9FBFC':'#fff')+dc(val(n.requirement),i%2?'#F9FBFC':'#fff')+dc(n.priority,i%2?'#F9FBFC':'#fff')+'</tr>'}).join('');
+  var acRows=iv.requirements.map(function(r,i){return'<tr>'+dc(r.id,i%2?'#F9FBFC':'#fff')+dc(val(r.title),i%2?'#F9FBFC':'#fff')+dc('<strong style="color:'+(r.priority==='Critical'?'#C5003E':'#D86018')+'">'+r.priority+'</strong>',i%2?'#F9FBFC':'#fff')+dc(val(r.ac&&r.ac.split('\n')[0]),i%2?'#F9FBFC':'#fff')+'</tr>'}).join('');
+  var ucRows=iv.useCases.map(function(u,i){return'<tr>'+dc(u.id,i%2?'#F9FBFC':'#fff')+dc(val(u.title),i%2?'#F9FBFC':'#fff')+dc(val(u.actor),i%2?'#F9FBFC':'#fff')+dc(val(u.linkedReqs),i%2?'#F9FBFC':'#fff')+dc('High',i%2?'#F9FBFC':'#fff')+'</tr>'}).join('');
+  var dhRows=[['System Components Affected',iv.devHandover.systemComponents],['Data Model / Schema Changes',iv.devHandover.dataModel],['API Changes / New Endpoints',iv.devHandover.apiChanges],['Integration Points',iv.devHandover.integrations],['Environment Requirements',iv.devHandover.envReqs],['Deployment Notes',iv.devHandover.deployNotes],['Rollback Plan',iv.devHandover.rollback]].map(function(x,i){return'<tr>'+hc(x[0],i%2===0?'#54585A':'#009CDE')+dc(val(x[1]),'#F9FBFC')+dc('&#x2610; Dev Confirmed &nbsp;&nbsp; &#x2610; In Progress &nbsp;&nbsp; &#x2610; TBD')+'</tr>'}).join('');
+  return'<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><meta name="ProgId" content="Word.Document"><style>body{font-family:Calibri,sans-serif;font-size:14pt;color:#3A3A3A;margin:1in;line-height:1.4}h2{font-family:Calibri;font-size:16pt;color:#009CDE;font-weight:bold;margin:12pt 0 4pt}table{width:100%;border-collapse:collapse;margin:6pt 0 14pt;font-size:11pt}td{border:1pt solid #D0D7DE;padding:5pt 8pt;vertical-align:top}p{margin:4pt 0 8pt}@page{margin:1in}</style></head><body><div style="background:#54585A;padding:40pt 36pt;margin:-1in -1in 24pt;display:block"><div style="color:#F1C400;font-size:32pt;font-weight:bold;letter-spacing:4px;font-family:Calibri">OPPORTUNITY CANVAS</div><div style="color:#F1C400;font-size:18pt;font-weight:bold;font-family:Calibri;margin-top:4pt">Requirements Document</div><div style="color:#CCCCCC;font-size:12pt;margin-top:8pt;font-family:Calibri">Portico Benefit Services &nbsp;|&nbsp; A Ministry of the ELCA</div></div><table><tr>'+hc('Opportunity Title')+dc(val(cv.title),'#F9FBFC')+hc('Sponsor(s)')+dc(val(cv.sponsor),'#F9FBFC')+'</tr><tr>'+hc('Target Date')+dc(val(cv.targetDate))+hc('MoSCoW Score')+dc(val(cv.moscow))+'</tr><tr>'+hc('Business Unit')+dc(val(cv.businessUnit),'#F9FBFC')+hc('Document Owner')+dc(val(cv.docOwner),'#F9FBFC')+'</tr><tr>'+hc('Version')+dc(cv.version||'1.0 DRAFT')+hc('Prepared')+dc(now)+'</tr></table><div style="background:#FFFDE6;border-left:4pt solid #F1C400;padding:10pt 14pt;margin:12pt 0;font-size:12pt"><strong>Canvas-sourced fields</strong> (Sections 1&ndash;5) were auto-populated from the Smartsheet intake. <strong>BA-developed fields</strong> (Sections 6&ndash;14) were captured during stakeholder interviews.</div>'+sb('1','Problem Statement','#54585A',false)+h2('1.1 &nbsp;What problem are we solving?')+src('What problem are we trying to solve?')+'<p>'+val(cv.problem)+'</p>'+h2('1.2 &nbsp;Severity &mdash; Impact if not solved')+src('Severity &ndash; Impact if not solved')+'<p>'+val(cv.severity)+'</p>'+h2('1.3 &nbsp;Who are we solving this for?')+src('Who are we solving this problem for?')+'<table><tr>'+hc('Audience / Segment','#54585A')+dc(val(cv.audience),'#F9FBFC')+hc('Users Affected','#54585A')+dc(val(cv.userCount),'#F9FBFC')+'</tr></table>'+h2('1.4 &nbsp;When must this be addressed?')+'<table><tr>'+hc('Required By','#54585A')+dc(val(cv.targetDate),'#F9FBFC')+hc('Urgency Rationale','#54585A')+dc(val(cv.severity),'#F9FBFC')+'</tr></table>'+sb('2','Strategic Alignment','#009CDE',true)+h2('2.1 &nbsp;Business objective alignment')+src('What business objective does this problem align to?')+'<p>'+val(cv.objective)+'</p>'+h2('2.2 &nbsp;Existing strategy connection')+src('Is this part of an existing strategy?')+'<table><tr>'+hc('Strategy / Initiative','#009CDE')+hc('Alignment','#009CDE')+hc('Notes','#009CDE')+'</tr>'+stratRows+'</table>'+sb('3','Future State & Dependencies','#D86018',true)+h2('3.1 &nbsp;Future state vision')+src('What is the future state vision?')+'<p>'+val(cv.vision)+'</p>'+h2('3.2 &nbsp;In-scope / Out-of-scope')+'<table><tr>'+hc('IN SCOPE','#A2AD00')+hc('OUT OF SCOPE','#C5003E')+'</tr><tr><td>'+inSc+'</td><td>'+outSc+'</td></tr></table>'+h2('3.3 &nbsp;Dependencies')+src('Dependencies')+'<table><tr>'+hc('Dependency','#54585A')+hc('Type','#54585A')+hc('Owner / Status','#54585A')+'</tr>'+depRows+'</table>'+sb('4','Scoring & Priority','#54585A',true)+h2('4.1 &nbsp;Canvas scores')+'<table><tr>'+hc('MoSCoW','#009CDE')+hc('Severity','#C5003E')+hc('Impact Score','#D86018')+hc('Confidence','#A2AD00')+'</tr><tr>'+dc('<strong>'+val(cv.moscow)+'</strong>','#F9FBFC')+dc('<strong>'+val(cv.impactSeverity)+'</strong>','#F9FBFC')+dc('<strong>'+val(cv.impactScore)+'</strong>','#F9FBFC')+dc('<strong>'+val(cv.confidence)+'</strong>','#F9FBFC')+'</tr></table>'+h2('4.2 &nbsp;Impact score criteria')+'<table><tr>'+hc('Dimension','#54585A')+hc('Threshold','#54585A')+hc('Applies?','#54585A')+'</tr>'+[['Operational','2+ FTE impact'],['Financial','5+% risk to future revenue'],['Compliance','Risk of loss of confidential information'],['Security / Strategic','Severely limits strategic growth']].map(function(x){return'<tr>'+dc(x[0])+dc(x[1],'#F9FBFC')+dc('&#x2610; Yes &nbsp;&nbsp; &#x2610; No')+'</tr>'}).join('')+'</table>'+sb('5','Value & Success Metrics','#A2AD00',true)+h2('5.1 &nbsp;Targeted value / ROI')+src('Targeted Value (ROI / Cost Savings)')+'<p>'+val(cv.roiValue)+'</p>'+h2('5.2 &nbsp;Success metrics')+src('How will impact / success be measured?')+'<table><tr>'+hc('KPI / Metric','#A2AD00')+hc('Baseline','#A2AD00')+hc('Target','#A2AD00')+hc('Measurement Method','#A2AD00')+'</tr>'+metRows+'</table>'+sb('6','Stakeholders & Roles','#009CDE',true)+h2('6.1 &nbsp;Stakeholder map')+src('Who are the sponsors? &middot; Who are we solving for?')+'<table><tr>'+hc('Name / Role','#009CDE')+hc('Type','#009CDE')+hc('Involvement','#009CDE')+hc('Communication Needs','#009CDE')+'</tr>'+stRows+'</table>'+sb('7','Functional Requirements','#54585A',true)+reqBlocks+sb('8','Use Cases','#D86018',true)+h2('8.1 &nbsp;Use case summary')+'<table><tr>'+hc('UC ID','#D86018')+hc('Title','#D86018')+hc('Actor','#D86018')+hc('Req. ID(s)','#D86018')+hc('Priority','#D86018')+'</tr>'+ucRows+'</table>'+h2('8.2 &nbsp;Detailed use cases')+ucBlocks+sb('9','Non-Functional Requirements','#009CDE',true)+'<table><tr>'+hc('NFR ID','#009CDE')+hc('Category','#009CDE')+hc('Requirement','#009CDE')+hc('Priority','#009CDE')+'</tr>'+nfrRows+'</table>'+sb('10','Acceptance Criteria Summary','#009CDE',true)+'<p style="font-size:12pt">UAT sign-off requires 100% pass on Critical and 90% pass on High requirements prior to go-live.</p><table><tr>'+hc('Req. ID','#009CDE')+hc('Title','#009CDE')+hc('Priority','#009CDE')+hc('Key Acceptance Criterion','#009CDE')+'</tr>'+acRows+'</table>'+sb('11','Developer Handover Checklist','#54585A',true)+'<p style="font-size:12pt">All items must be reviewed before sprint planning begins.</p><table><tr>'+hc('Category','#54585A')+hc('Detail','#54585A')+hc('Status','#54585A')+'</tr>'+dhRows+'</table><table style="margin-top:12pt"><tr>'+hc('Architecture Review Required?','#54585A')+dc('&#x2610; Yes &nbsp;&nbsp; &#x2610; No')+hc('Security Review Required?','#54585A')+dc('&#x2610; Yes &nbsp;&nbsp; &#x2610; No')+'</tr><tr>'+hc('New BAA / Legal Review?','#009CDE')+dc('&#x2610; Yes &nbsp;&nbsp; &#x2610; No')+hc('Estimated Dev Effort','#009CDE')+dc('[ story points or days ]')+'</tr></table>'+sb('12','Test Cases','#D86018',true)+'<p style="font-size:12pt">The following test cases are provided as a starting point for the QA/Testing team.</p>'+tcBlocks+'<table style="margin-top:16pt"><tr>'+hc('Summary','#D86018')+hc('Count','#D86018')+hc('Result','#D86018')+'</tr><tr>'+dc('Total Test Cases')+dc(String(S.testCases.length),'#F9FBFC')+dc('&mdash;')+'</tr><tr>'+dc('Passed')+dc('[ fill in ]','#F9FBFC')+dc('&mdash;')+'</tr><tr>'+dc('Failed')+dc('[ fill in ]','#F9FBFC')+dc('&mdash;')+'</tr></table>'+sb('13','User Acceptance Testing (UAT)','#A2AD00',true)+'<p style="font-size:12pt">UAT cases are written from the business user\'s perspective.</p>'+uatBlocks+'<div style="background:#F4F4F4;border:1pt solid #D0D7DE;padding:10pt;margin-top:16pt"><strong>UAT Sign-Off:</strong> All cases must be Accepted or Conditionally Accepted before production deployment.<table style="margin-top:8pt"><tr>'+hc('Business Owner','#A2AD00')+hc('Signature','#A2AD00')+hc('Date','#A2AD00')+hc('Decision','#A2AD00')+'</tr><tr>'+dc(val(cv.sponsor))+dc('___________________________')+dc('___________')+dc('&#x2610; Accept &nbsp;&nbsp; &#x2610; Reject')+'</tr></table></div>'+sb('14','Approvals & Revision History','#54585A',true)+h2('14.1 &nbsp;Sign-off')+'<table><tr>'+hc('Stakeholder / Role','#54585A')+hc('Signature','#54585A')+hc('Date','#54585A')+'</tr><tr>'+dc('Sponsor &mdash; '+val(cv.sponsor))+dc('___________________________')+dc('___________')+'</tr><tr>'+dc('BA/PM &mdash; '+val(cv.docOwner),'#F9FBFC')+dc('___________________________','#F9FBFC')+dc('___________','#F9FBFC')+'</tr><tr>'+dc('IT Lead &mdash; [ name ]')+dc('___________________________')+dc('___________')+'</tr><tr>'+dc('Testing Lead &mdash; [ name ]','#F9FBFC')+dc('___________________________','#F9FBFC')+dc('___________','#F9FBFC')+'</tr></table>'+h2('14.2 &nbsp;Revision history')+'<table><tr>'+hc('Version','#54585A')+hc('Date','#54585A')+hc('Author','#54585A')+hc('Changes','#54585A')+'</tr><tr>'+dc('1.0','#F9FBFC')+dc(now,'#F9FBFC')+dc(val(cv.docOwner)+' &mdash; BA/PM, Portico','#F9FBFC')+dc('Initial draft from Canvas','#F9FBFC')+'</tr></table><div style="border-top:3pt solid #F1C400;margin-top:24pt;padding-top:8pt;text-align:center;font-size:10pt;color:#888">PORTICO BENEFIT SERVICES &nbsp;|&nbsp; Opportunity Canvas Requirements Document &nbsp;|&nbsp; A Ministry of the ELCA &nbsp;|&nbsp; CONFIDENTIAL &mdash; Internal Use Only</div></body></html>';
+}
+function downloadDoc(){
+  var html=buildDoc();
+  var fname=((S.canvas.title||'Requirements_Document').replace(/[^a-zA-Z0-9]+/g,'_'))+'_BRD.doc';
+  var blob=new Blob([html],{type:'application/msword'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download=fname;a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── SharePoint upload ────────────────────────────────────────────────
+function spUpload(){
+  var token=(document.getElementById('sp-token')||{}).value.trim();
+  var siteUrl=(document.getElementById('sp-url')||{}).value.trim();
+  var btn=document.getElementById('sp-btn');
+  var msg=document.getElementById('sp-msg');
+  if(!token||!siteUrl){if(msg)msg.innerHTML='<div class="alert alert-red">Please enter both a token and a SharePoint URL.</div>';return}
+  if(btn){btn.disabled=true;btn.textContent='Uploading\u2026'}
+  var match=siteUrl.match(/^(https:\/\/[^/]+)(\/sites\/[^/]+)(\/[^?]*)?/);
+  if(!match){if(msg)msg.innerHTML='<div class="alert alert-red">Invalid SharePoint URL. Format: https://porticobenefits.sharepoint.com/sites/SiteName/Library</div>';if(btn){btn.disabled=false;btn.textContent='&#x2B06; Upload to SharePoint'}return}
+  var host=match[1],sitePath=match[2],libPath=match[3]||'/Shared Documents';
+  var folderPath=libPath.replace(/^\/+/,'');
+  fetch('https://graph.microsoft.com/v1.0/sites/'+host.replace('https://','')+':'+sitePath,{headers:{Authorization:'Bearer '+token}})
+  .then(function(r){if(!r.ok)throw new Error('Cannot find SharePoint site ('+r.status+'). Check the URL and token.');return r.json()})
+  .then(function(site){return fetch('https://graph.microsoft.com/v1.0/sites/'+site.id+'/drives',{headers:{Authorization:'Bearer '+token}}).then(function(r){return r.json()}).then(function(d){var drive=d.value&&d.value[0];if(!drive)throw new Error('No document library found.');return drive.id})})
+  .then(function(driveId){
+    var html=buildDoc();
+    var fname=((S.canvas.title||'Requirements_Document').replace(/[^a-zA-Z0-9]+/g,'_'))+'_BRD.doc';
+    var blob=new Blob([html],{type:'application/msword'});
+    return fetch('https://graph.microsoft.com/v1.0/drives/'+driveId+'/root:/'+folderPath+'/'+fname+':/content',{method:'PUT',headers:{Authorization:'Bearer '+token,'Content-Type':'application/msword'},body:blob});
+  })
+  .then(function(r){if(!r.ok)throw new Error('Upload failed ('+r.status+'). Check folder permissions.');return r.json()})
+  .then(function(result){if(msg)msg.innerHTML='<div class="alert alert-green">&#x2713; Uploaded successfully: <strong>'+(result.name||'Requirements Document')+'</strong></div>'})
+  .catch(function(e){if(msg)msg.innerHTML='<div class="alert alert-red">&#x26A0; Error: '+e.message+'</div>'})
+  .finally(function(){if(btn){btn.disabled=false;btn.textContent='&#x2B06; Upload to SharePoint'}});
+}
+
+// ─── Event delegation (all clicks, inputs, changes) ───────────────────
+document.addEventListener('click',function(e){
+  var el=e.target.closest('[data-action]');
+  if(!el)return;
+  var a=el.dataset.action;
+  if(a==='next')goStep(step+1);
+  else if(a==='prev')goStep(step-1);
+  else if(a==='goto'){var s=parseInt(el.dataset.step);if(s<=step||s===0)goStep(s)}
+  else if(a==='show-ss'||a==='show-import'||a==='topbar-import'){var sec=document.getElementById('import-section');if(sec){if(a==='topbar-import'){goStep(0);setTimeout(function(){sec.style.display='block';sec.scrollIntoView({behavior:'smooth'})},150)}else{sec.style.display='block';sec.scrollIntoView({behavior:'smooth'})}}}
+  else if(a==='hide-ss'||a==='hide-import'){var sec=document.getElementById('import-section');if(sec)sec.style.display='none'}
+  else if(a==='ss-connect')ssConnect();
+  else if(a==='paste-import')pasteImport();
+  else if(a==='paste-with-headers')pasteWithHeaders();
+  else if(a==='open-import-modal'||a==='close-import-modal'){var sec=document.getElementById('import-section');if(sec)sec.style.display=(a==='open-import-modal'?'block':'none')}
+  else if(a==='ss-select')ssSelectRow(el.dataset.rowid);
+  else if(a==='resume')goStep(step||1);
+  else if(a==='clear-all'){if(confirm('Clear all saved data and start fresh?')){try{localStorage.removeItem(SKEY)}catch(e){}location.reload()}}
+  else if(a==='add-stakeholder'){S.stakeholders.push(mk_sh());renderStakeholders()}
+  else if(a==='rm-sh'){var i=parseInt(el.dataset.idx);S.stakeholders.splice(i,1);renderStakeholders();qSave()}
+  else if(a==='add-inscope'){S.inScope.push('');renderScope()}
+  else if(a==='add-outscope'){S.outScope.push('');renderScope()}
+  else if(a==='rm-scope'){var dir=el.dataset.dir,i=parseInt(el.dataset.idx);if(dir==='in')S.inScope.splice(i,1);else S.outScope.splice(i,1);renderScope();qSave()}
+  else if(a==='add-req'){S.requirements.push(mk_req(S.requirements.length+1));renderReqs();qSave()}
+  else if(a==='add-nfr'){S.nfrs.push(mk_nfr(S.nfrs.length+1));renderNFRs();qSave()}
+  else if(a==='add-uc'){S.useCases.push(mk_uc(S.useCases.length+1));renderUCs();qSave()}
+  else if(a==='add-tc'){S.testCases.push(mk_tc(S.testCases.length+1));renderTCs();qSave()}
+  else if(a==='add-uat'){S.uatCases.push(mk_uat(S.uatCases.length+1));renderUATs();qSave()}
+  else if(a==='rm-item'){var arr=el.dataset.arr,i=parseInt(el.dataset.idx);S[arr].splice(i,1);if(arr==='requirements')renderReqs();else if(arr==='nfrs')renderNFRs();else if(arr==='useCases')renderUCs();else if(arr==='testCases')renderTCs();else if(arr==='uatCases')renderUATs();qSave()}
+  else if(a==='download')downloadDoc();
+  else if(a==='sp-upload')spUpload();
+});
+
+document.addEventListener('click',function(e){
+  // Main tab switching (Use Cases / Test Cases / UAT)
+  var tb=e.target.closest('[data-tab]');
+  if(tb){
+    var t=tb.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.toggle('active',b.dataset.tab===t)});
+    document.querySelectorAll('.tab-pane').forEach(function(p){p.classList.toggle('active',p.id==='pane-'+t)});
+  }
+  // Import method tab switching (Paste vs API)
+  var itb=e.target.closest('[data-imp-tab]');
+  if(itb){
+    var it=itb.dataset.impTab;
+    document.querySelectorAll('[data-imp-tab]').forEach(function(b){b.classList.toggle('active',b.dataset.impTab===it)});
+    var pp=document.getElementById('imp-pane-paste');
+    var ap=document.getElementById('imp-pane-api');
+    if(pp)pp.classList.toggle('active',it==='paste');
+    if(ap)ap.classList.toggle('active',it==='api');
+  }
+});
+
+document.addEventListener('input',function(e){
+  var el=e.target;
+  // Canvas / devHandover two-way bind
+  if(el.dataset.bind){var p=el.dataset.bind.split('.');if(p[0]==='canvas')S.canvas[p[1]]=el.value;else if(p[0]==='devHandover')S.devHandover[p[1]]=el.value;qSave();return}
+  // Stakeholders
+  if(el.dataset.sh!==undefined){var i=parseInt(el.dataset.sh);if(S.stakeholders[i])S.stakeholders[i][el.dataset.key]=el.value;qSave();return}
+  // Requirements
+  if(el.dataset.ri!==undefined){var i=parseInt(el.dataset.ri);if(S.requirements[i])S.requirements[i][el.dataset.rk]=el.value;qSave();return}
+  // NFRs
+  if(el.dataset.ni!==undefined){var i=parseInt(el.dataset.ni);if(S.nfrs[i])S.nfrs[i][el.dataset.nk]=el.value;qSave();return}
+  // Use Cases
+  if(el.dataset.ui!==undefined){var i=parseInt(el.dataset.ui);if(S.useCases[i])S.useCases[i][el.dataset.uk]=el.value;qSave();return}
+  // Test Cases
+  if(el.dataset.ti!==undefined){var i=parseInt(el.dataset.ti);if(S.testCases[i])S.testCases[i][el.dataset.tk]=el.value;qSave();return}
+  // UAT Cases
+  if(el.dataset.uai!==undefined){var i=parseInt(el.dataset.uai);if(S.uatCases[i])S.uatCases[i][el.dataset.uak]=el.value;qSave();return}
+  // Scope
+  if(el.dataset.scope){var dir=el.dataset.scope,i=parseInt(el.dataset.idx);if(dir==='in')S.inScope[i]=el.value;else S.outScope[i]=el.value;qSave()}
+});
+
+document.addEventListener('change',function(e){
+  var el=e.target;
+  if(el.dataset.sh!==undefined){var i=parseInt(el.dataset.sh);if(S.stakeholders[i])S.stakeholders[i][el.dataset.key]=el.value;qSave();return}
+  if(el.dataset.ri!==undefined){var i=parseInt(el.dataset.ri);if(S.requirements[i])S.requirements[i][el.dataset.rk]=el.value;qSave();return}
+  if(el.dataset.ni!==undefined){var i=parseInt(el.dataset.ni);if(S.nfrs[i])S.nfrs[i][el.dataset.nk]=el.value;qSave();return}
+  if(el.dataset.ti!==undefined){var i=parseInt(el.dataset.ti);if(S.testCases[i])S.testCases[i][el.dataset.tk]=el.value;qSave()}
+});
+
+// ─── Init ─────────────────────────────────────────────────────────────
+var hasSaved=loadSaved();
+updateStepper();
+// Show panel that was saved, or start at 0
+document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active')});
+document.getElementById('panel-'+step).classList.add('active');
+updateStepper();
+
+// If there's saved data, show resume option on panel 0
+if(hasSaved&&S.canvas.title){
+  var rp=document.getElementById('resume-panel');
+  var rt=document.getElementById('resume-title');
+  if(rp&&rt){rt.textContent=S.canvas.title;rp.style.display='block'}
+}
+// If already past step 0, fill in the current panel
+if(step===1)fillCanvasFields();
+if(step===2){renderStakeholders();renderScope()}
+if(step===3){renderReqs();renderNFRs();fillDevHandover()}
+if(step===4){renderUCs();renderTCs();renderUATs()}
+if(step===5)fillStats();
+})();
+</script>
+</body>
+</html>
