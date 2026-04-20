@@ -394,8 +394,8 @@ input[type=text]:focus,input[type=password]:focus,textarea:focus,select:focus{bo
   </table>
 
   <div class="stag"><div class="stag-pill" style="background:var(--gray)">Download Word Document</div><div class="stag-line"></div></div>
-  <div class="alert alert-gold" style="margin-bottom:12px">The document opens in Microsoft Word. All 14 sections included &mdash; canvas fields, requirements, use cases, dev handover, test cases, and UAT cases. Font: Calibri 14pt &middot; Portico branded.</div>
-  <button class="btn btn-gray" data-action="download" style="font-size:14px;padding:11px 30px">&#x2B07; Download Requirements Document (.doc)</button>
+  <div class="alert alert-gold" style="margin-bottom:12px">The document opens in Microsoft Word. All 14 sections included &mdash; canvas fields, requirements, use cases, dev handover, test cases, and UAT cases. Font: Calibri 14pt &middot; Portico branded &middot; Real .docx format with TOC.</div>
+  <button class="btn btn-gray" id="dl-btn" data-action="download" style="font-size:14px;padding:11px 30px">&#x2B07; Download Requirements Document (.docx)</button>
 
   <div class="stag" style="margin-top:26px"><div class="stag-pill" style="background:var(--blue)">Upload to SharePoint</div><div class="stag-line"></div></div>
   <div class="alert alert-blue" style="margin-bottom:12px"><strong>How to get a Graph API token:</strong> Go to <strong>developer.microsoft.com/graph/graph-explorer</strong> &rarr; sign in with your Portico Microsoft account &rarr; copy the Access Token from the Access Token tab.</div>
@@ -880,42 +880,720 @@ function ssSelectRow(rowId){
   goStep(1);
 }
 
-// ─── Document generator ───────────────────────────────────────────────
-function val(v,fb){return v||(fb||'<span style="color:#BBBBBB;font-style:italic;">[ to be completed ]</span>')}
-function hc(t,col){return'<td style="background:'+(col||'#54585A')+';color:#fff;font-weight:bold;font-size:11pt;padding:5pt 8pt;border:1pt solid #D0D7DE">'+t+'</td>'}
-function dc(t,bg){return'<td style="background:'+(bg||'#fff')+';font-size:11pt;padding:5pt 8pt;border:1pt solid #D0D7DE;vertical-align:top">'+t+'</td>'}
-function sb(n,title,col,pb){return(pb?'<p style="page-break-before:always;margin:0"> </p>':'')+'<table style="width:100%;border-collapse:collapse;margin:14pt 0 6pt"><tr><td style="background:'+col+';color:#fff;font-weight:bold;font-size:14pt;padding:8pt 14pt;width:38pt;text-align:center;border:none">'+n+'</td><td style="background:#F4F4F4;color:'+col+';font-weight:bold;font-size:12pt;padding:8pt 14pt;letter-spacing:2px;border:none">'+title.toUpperCase()+'</td></tr></table>'}
-function h2(t){return'<h2 style="font-family:Calibri;font-size:16pt;color:#009CDE;font-weight:bold;margin:12pt 0 4pt">'+t+'</h2>'}
-function src(t){return'<p style="font-size:10pt;color:#009CDE;font-style:italic;margin:0 0 6pt">&#x25B6; Canvas: '+t+'</p>'}
-function buildDoc(){
-  var cv=S.canvas,iv=S;
-  var now=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-  var reqBlocks=S.requirements.map(function(r){return'<table style="width:100%;border-collapse:collapse;margin:8pt 0"><tr><td colspan="2" style="background:#54585A;color:#fff;font-weight:bold;font-size:11pt;padding:6pt 10pt">Requirement '+r.id+'</td></tr><tr>'+hc('Title')+dc(val(r.title))+'</tr><tr>'+hc('Priority','#009CDE')+dc('<strong style="color:'+(r.priority==='Critical'?'#C5003E':r.priority==='High'?'#D86018':'#A2AD00')+'">'+r.priority+'</strong>')+'</tr><tr>'+hc('Type')+dc(val(r.type))+'</tr><tr>'+hc('Description','#009CDE')+dc(val(r.description),'#F9FBFC')+'</tr><tr>'+hc('Primary Actors')+dc(val(r.actors))+'</tr><tr>'+hc('Preconditions','#009CDE')+dc(val(r.preconditions),'#F9FBFC')+'</tr><tr>'+hc('Postconditions')+dc(val(r.postconditions))+'</tr><tr>'+hc('Acceptance Criteria','#009CDE')+dc(val(r.ac),'#F9FBFC')+'</tr></table>'}).join('<br>');
-  var ucBlocks=S.useCases.map(function(u){return'<table style="width:100%;border-collapse:collapse;margin:8pt 0"><tr><td colspan="2" style="background:#D86018;color:#fff;font-weight:bold;font-size:11pt;padding:6pt 10pt">'+u.id+': '+val(u.title,'[ Use Case Title ]')+'</td></tr>'+[['Goal',u.title],['Actor',u.actor],['Trigger',u.trigger],['Main Flow',u.mainFlow],['Alternate Flows',u.altFlows],['Postconditions',u.post],['Linked Requirements',u.linkedReqs]].map(function(x,i){return'<tr>'+hc(x[0],i%2===0?'#54585A':'#009CDE')+dc(val(x[1]),i%2===0?'#fff':'#F9FBFC')+'</tr>'}).join('')+'</table>'}).join('<br>');
-  var tcBlocks=S.testCases.map(function(t){return'<table style="width:100%;border-collapse:collapse;margin:8pt 0"><tr>'+hc('Test ID')+dc(t.id)+hc('Priority','#009CDE')+dc('<strong style="color:'+(t.priority==='High'?'#D86018':'#A2AD00')+'">'+t.priority+'</strong>')+'</tr><tr>'+hc('Scenario','#009CDE')+dc(val(t.scenario),'#F9FBFC')+'</tr><tr>'+hc('Steps')+dc(val(t.steps))+'</tr><tr>'+hc('Expected Result','#009CDE')+dc(val(t.expected),'#F9FBFC')+'</tr><tr>'+hc('Actual Result')+dc('<span style="color:#BBBBBB;font-style:italic">[ to be completed during testing ]</span>')+'</tr><tr>'+hc('Pass / Fail','#009CDE')+dc('&#x2610; Pass &nbsp;&nbsp; &#x2610; Fail &nbsp;&nbsp; &#x2610; Blocked')+'</tr></table>'}).join('<br>');
-  var uatBlocks=S.uatCases.map(function(u){return'<table style="width:100%;border-collapse:collapse;margin:8pt 0"><tr><td colspan="2" style="background:#A2AD00;color:#fff;font-weight:bold;font-size:11pt;padding:6pt 10pt">'+u.id+': '+val(u.scenario,'[ Business Scenario ]')+'</td></tr><tr>'+hc('User Story')+dc(val(u.userStory))+'</tr><tr>'+hc('Given','#009CDE')+dc(val(u.given),'#F9FBFC')+'</tr><tr>'+hc('When')+dc(val(u.when))+'</tr><tr>'+hc('Then','#009CDE')+dc(val(u.then),'#F9FBFC')+'</tr><tr>'+hc('Acceptance Decision')+dc('&#x2610; Accepted &nbsp;&nbsp; &#x2610; Conditionally Accepted &nbsp;&nbsp; &#x2610; Rejected')+'</tr><tr>'+hc('Business Owner Sign-Off','#009CDE')+dc('Signature: ___________________________&nbsp;&nbsp;Date: ___________','#F9FBFC')+'</tr></table>'}).join('<br>');
-  var inSc=iv.inScope.filter(Boolean).map(function(s){return'&bull; '+s}).join('<br>')||'<span style="color:#BBBBBB;font-style:italic">[ BA to define ]</span>';
-  var outSc=iv.outScope.filter(Boolean).map(function(s){return'&bull; '+s}).join('<br>')||'<span style="color:#BBBBBB;font-style:italic">[ BA to define ]</span>';
-  var stRows=iv.stakeholders.map(function(s,i){return'<tr>'+dc(val(s.name),i%2?'#F9FBFC':'#fff')+dc(val(s.type),i%2?'#F9FBFC':'#fff')+dc(val(s.involvement),i%2?'#F9FBFC':'#fff')+dc(val(s.commsNeeds),i%2?'#F9FBFC':'#fff')+'</tr>'}).join('');
-  var stratRows=(cv.strategy||'').split(',').filter(Boolean).map(function(s){return'<tr>'+dc(s.trim())+dc('Direct')+dc('[ add notes ]')+'</tr>'}).join('')||'<tr>'+dc(val(cv.strategy))+dc('[ strength ]')+dc('[ notes ]')+'</tr>';
-  var depRows=(cv.dependencies||'').split(',').filter(Boolean).map(function(d){return'<tr>'+dc(d.trim())+dc('System / Process / Team')+dc('[ owner / TBD ]')+'</tr>'}).join('')||'<tr>'+dc(val(''))+dc('[ type ]')+dc('[ owner ]')+'</tr>';
-  var metRows=(cv.successMetrics||'').split(/[,\n]/).filter(Boolean).map(function(m){return'<tr>'+dc(m.trim(),'#F9FBFC')+dc('[ current ]')+dc('[ goal ]')+dc('[ how tracked ]')+'</tr>'}).join('')||'<tr>'+dc(val(''),'#F9FBFC')+dc('[ current ]')+dc('[ goal ]')+dc('[ how tracked ]')+'</tr>';
-  var nfrRows=iv.nfrs.map(function(n,i){return'<tr>'+dc(n.id,i%2?'#F9FBFC':'#fff')+dc(n.category,i%2?'#F9FBFC':'#fff')+dc(val(n.requirement),i%2?'#F9FBFC':'#fff')+dc(n.priority,i%2?'#F9FBFC':'#fff')+'</tr>'}).join('');
-  var acRows=iv.requirements.map(function(r,i){return'<tr>'+dc(r.id,i%2?'#F9FBFC':'#fff')+dc(val(r.title),i%2?'#F9FBFC':'#fff')+dc('<strong style="color:'+(r.priority==='Critical'?'#C5003E':'#D86018')+'">'+r.priority+'</strong>',i%2?'#F9FBFC':'#fff')+dc(val(r.ac&&r.ac.split('\n')[0]),i%2?'#F9FBFC':'#fff')+'</tr>'}).join('');
-  var ucRows=iv.useCases.map(function(u,i){return'<tr>'+dc(u.id,i%2?'#F9FBFC':'#fff')+dc(val(u.title),i%2?'#F9FBFC':'#fff')+dc(val(u.actor),i%2?'#F9FBFC':'#fff')+dc(val(u.linkedReqs),i%2?'#F9FBFC':'#fff')+dc('High',i%2?'#F9FBFC':'#fff')+'</tr>'}).join('');
-  var dhRows=[['System Components Affected',iv.devHandover.systemComponents],['Data Model / Schema Changes',iv.devHandover.dataModel],['API Changes / New Endpoints',iv.devHandover.apiChanges],['Integration Points',iv.devHandover.integrations],['Environment Requirements',iv.devHandover.envReqs],['Deployment Notes',iv.devHandover.deployNotes],['Rollback Plan',iv.devHandover.rollback]].map(function(x,i){return'<tr>'+hc(x[0],i%2===0?'#54585A':'#009CDE')+dc(val(x[1]),'#F9FBFC')+dc('&#x2610; Dev Confirmed &nbsp;&nbsp; &#x2610; In Progress &nbsp;&nbsp; &#x2610; TBD')+'</tr>'}).join('');
-  return'<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><meta name="ProgId" content="Word.Document"><style>body{font-family:Calibri,sans-serif;font-size:14pt;color:#3A3A3A;margin:1in;line-height:1.4}h2{font-family:Calibri;font-size:16pt;color:#009CDE;font-weight:bold;margin:12pt 0 4pt}table{width:100%;border-collapse:collapse;margin:6pt 0 14pt;font-size:11pt}td{border:1pt solid #D0D7DE;padding:5pt 8pt;vertical-align:top}p{margin:4pt 0 8pt}@page{margin:1in}</style></head><body><div style="background:#54585A;padding:40pt 36pt;margin:-1in -1in 24pt;display:block"><div style="color:#F1C400;font-size:32pt;font-weight:bold;letter-spacing:4px;font-family:Calibri">OPPORTUNITY CANVAS</div><div style="color:#F1C400;font-size:18pt;font-weight:bold;font-family:Calibri;margin-top:4pt">Requirements Document</div><div style="color:#CCCCCC;font-size:12pt;margin-top:8pt;font-family:Calibri">Portico Benefit Services &nbsp;|&nbsp; A Ministry of the ELCA</div></div><table><tr>'+hc('Opportunity Title')+dc(val(cv.title),'#F9FBFC')+hc('Sponsor(s)')+dc(val(cv.sponsor),'#F9FBFC')+'</tr><tr>'+hc('Target Date')+dc(val(cv.targetDate))+hc('MoSCoW Score')+dc(val(cv.moscow))+'</tr><tr>'+hc('Business Unit')+dc(val(cv.businessUnit),'#F9FBFC')+hc('Document Owner')+dc(val(cv.docOwner),'#F9FBFC')+'</tr><tr>'+hc('Version')+dc(cv.version||'1.0 DRAFT')+hc('Prepared')+dc(now)+'</tr></table><div style="background:#FFFDE6;border-left:4pt solid #F1C400;padding:10pt 14pt;margin:12pt 0;font-size:12pt"><strong>Canvas-sourced fields</strong> (Sections 1&ndash;5) were auto-populated from the Smartsheet intake. <strong>BA-developed fields</strong> (Sections 6&ndash;14) were captured during stakeholder interviews.</div>'+sb('1','Problem Statement','#54585A',false)+h2('1.1 &nbsp;What problem are we solving?')+src('What problem are we trying to solve?')+'<p>'+val(cv.problem)+'</p>'+h2('1.2 &nbsp;Severity &mdash; Impact if not solved')+src('Severity &ndash; Impact if not solved')+'<p>'+val(cv.severity)+'</p>'+h2('1.3 &nbsp;Who are we solving this for?')+src('Who are we solving this problem for?')+'<table><tr>'+hc('Audience / Segment','#54585A')+dc(val(cv.audience),'#F9FBFC')+hc('Users Affected','#54585A')+dc(val(cv.userCount),'#F9FBFC')+'</tr></table>'+h2('1.4 &nbsp;When must this be addressed?')+'<table><tr>'+hc('Required By','#54585A')+dc(val(cv.targetDate),'#F9FBFC')+hc('Urgency Rationale','#54585A')+dc(val(cv.severity),'#F9FBFC')+'</tr></table>'+sb('2','Strategic Alignment','#009CDE',true)+h2('2.1 &nbsp;Business objective alignment')+src('What business objective does this problem align to?')+'<p>'+val(cv.objective)+'</p>'+h2('2.2 &nbsp;Existing strategy connection')+src('Is this part of an existing strategy?')+'<table><tr>'+hc('Strategy / Initiative','#009CDE')+hc('Alignment','#009CDE')+hc('Notes','#009CDE')+'</tr>'+stratRows+'</table>'+sb('3','Future State & Dependencies','#D86018',true)+h2('3.1 &nbsp;Future state vision')+src('What is the future state vision?')+'<p>'+val(cv.vision)+'</p>'+h2('3.2 &nbsp;In-scope / Out-of-scope')+'<table><tr>'+hc('IN SCOPE','#A2AD00')+hc('OUT OF SCOPE','#C5003E')+'</tr><tr><td>'+inSc+'</td><td>'+outSc+'</td></tr></table>'+h2('3.3 &nbsp;Dependencies')+src('Dependencies')+'<table><tr>'+hc('Dependency','#54585A')+hc('Type','#54585A')+hc('Owner / Status','#54585A')+'</tr>'+depRows+'</table>'+sb('4','Scoring & Priority','#54585A',true)+h2('4.1 &nbsp;Canvas scores')+'<table><tr>'+hc('MoSCoW','#009CDE')+hc('Severity','#C5003E')+hc('Impact Score','#D86018')+hc('Confidence','#A2AD00')+'</tr><tr>'+dc('<strong>'+val(cv.moscow)+'</strong>','#F9FBFC')+dc('<strong>'+val(cv.impactSeverity)+'</strong>','#F9FBFC')+dc('<strong>'+val(cv.impactScore)+'</strong>','#F9FBFC')+dc('<strong>'+val(cv.confidence)+'</strong>','#F9FBFC')+'</tr></table>'+h2('4.2 &nbsp;Impact score criteria')+'<table><tr>'+hc('Dimension','#54585A')+hc('Threshold','#54585A')+hc('Applies?','#54585A')+'</tr>'+[['Operational','2+ FTE impact'],['Financial','5+% risk to future revenue'],['Compliance','Risk of loss of confidential information'],['Security / Strategic','Severely limits strategic growth']].map(function(x){return'<tr>'+dc(x[0])+dc(x[1],'#F9FBFC')+dc('&#x2610; Yes &nbsp;&nbsp; &#x2610; No')+'</tr>'}).join('')+'</table>'+sb('5','Value & Success Metrics','#A2AD00',true)+h2('5.1 &nbsp;Targeted value / ROI')+src('Targeted Value (ROI / Cost Savings)')+'<p>'+val(cv.roiValue)+'</p>'+h2('5.2 &nbsp;Success metrics')+src('How will impact / success be measured?')+'<table><tr>'+hc('KPI / Metric','#A2AD00')+hc('Baseline','#A2AD00')+hc('Target','#A2AD00')+hc('Measurement Method','#A2AD00')+'</tr>'+metRows+'</table>'+sb('6','Stakeholders & Roles','#009CDE',true)+h2('6.1 &nbsp;Stakeholder map')+src('Who are the sponsors? &middot; Who are we solving for?')+'<table><tr>'+hc('Name / Role','#009CDE')+hc('Type','#009CDE')+hc('Involvement','#009CDE')+hc('Communication Needs','#009CDE')+'</tr>'+stRows+'</table>'+sb('7','Functional Requirements','#54585A',true)+reqBlocks+sb('8','Use Cases','#D86018',true)+h2('8.1 &nbsp;Use case summary')+'<table><tr>'+hc('UC ID','#D86018')+hc('Title','#D86018')+hc('Actor','#D86018')+hc('Req. ID(s)','#D86018')+hc('Priority','#D86018')+'</tr>'+ucRows+'</table>'+h2('8.2 &nbsp;Detailed use cases')+ucBlocks+sb('9','Non-Functional Requirements','#009CDE',true)+'<table><tr>'+hc('NFR ID','#009CDE')+hc('Category','#009CDE')+hc('Requirement','#009CDE')+hc('Priority','#009CDE')+'</tr>'+nfrRows+'</table>'+sb('10','Acceptance Criteria Summary','#009CDE',true)+'<p style="font-size:12pt">UAT sign-off requires 100% pass on Critical and 90% pass on High requirements prior to go-live.</p><table><tr>'+hc('Req. ID','#009CDE')+hc('Title','#009CDE')+hc('Priority','#009CDE')+hc('Key Acceptance Criterion','#009CDE')+'</tr>'+acRows+'</table>'+sb('11','Developer Handover Checklist','#54585A',true)+'<p style="font-size:12pt">All items must be reviewed before sprint planning begins.</p><table><tr>'+hc('Category','#54585A')+hc('Detail','#54585A')+hc('Status','#54585A')+'</tr>'+dhRows+'</table><table style="margin-top:12pt"><tr>'+hc('Architecture Review Required?','#54585A')+dc('&#x2610; Yes &nbsp;&nbsp; &#x2610; No')+hc('Security Review Required?','#54585A')+dc('&#x2610; Yes &nbsp;&nbsp; &#x2610; No')+'</tr><tr>'+hc('New BAA / Legal Review?','#009CDE')+dc('&#x2610; Yes &nbsp;&nbsp; &#x2610; No')+hc('Estimated Dev Effort','#009CDE')+dc('[ story points or days ]')+'</tr></table>'+sb('12','Test Cases','#D86018',true)+'<p style="font-size:12pt">The following test cases are provided as a starting point for the QA/Testing team.</p>'+tcBlocks+'<table style="margin-top:16pt"><tr>'+hc('Summary','#D86018')+hc('Count','#D86018')+hc('Result','#D86018')+'</tr><tr>'+dc('Total Test Cases')+dc(String(S.testCases.length),'#F9FBFC')+dc('&mdash;')+'</tr><tr>'+dc('Passed')+dc('[ fill in ]','#F9FBFC')+dc('&mdash;')+'</tr><tr>'+dc('Failed')+dc('[ fill in ]','#F9FBFC')+dc('&mdash;')+'</tr></table>'+sb('13','User Acceptance Testing (UAT)','#A2AD00',true)+'<p style="font-size:12pt">UAT cases are written from the business user\'s perspective.</p>'+uatBlocks+'<div style="background:#F4F4F4;border:1pt solid #D0D7DE;padding:10pt;margin-top:16pt"><strong>UAT Sign-Off:</strong> All cases must be Accepted or Conditionally Accepted before production deployment.<table style="margin-top:8pt"><tr>'+hc('Business Owner','#A2AD00')+hc('Signature','#A2AD00')+hc('Date','#A2AD00')+hc('Decision','#A2AD00')+'</tr><tr>'+dc(val(cv.sponsor))+dc('___________________________')+dc('___________')+dc('&#x2610; Accept &nbsp;&nbsp; &#x2610; Reject')+'</tr></table></div>'+sb('14','Approvals & Revision History','#54585A',true)+h2('14.1 &nbsp;Sign-off')+'<table><tr>'+hc('Stakeholder / Role','#54585A')+hc('Signature','#54585A')+hc('Date','#54585A')+'</tr><tr>'+dc('Sponsor &mdash; '+val(cv.sponsor))+dc('___________________________')+dc('___________')+'</tr><tr>'+dc('BA/PM &mdash; '+val(cv.docOwner),'#F9FBFC')+dc('___________________________','#F9FBFC')+dc('___________','#F9FBFC')+'</tr><tr>'+dc('IT Lead &mdash; [ name ]')+dc('___________________________')+dc('___________')+'</tr><tr>'+dc('Testing Lead &mdash; [ name ]','#F9FBFC')+dc('___________________________','#F9FBFC')+dc('___________','#F9FBFC')+'</tr></table>'+h2('14.2 &nbsp;Revision history')+'<table><tr>'+hc('Version','#54585A')+hc('Date','#54585A')+hc('Author','#54585A')+hc('Changes','#54585A')+'</tr><tr>'+dc('1.0','#F9FBFC')+dc(now,'#F9FBFC')+dc(val(cv.docOwner)+' &mdash; BA/PM, Portico','#F9FBFC')+dc('Initial draft from Canvas','#F9FBFC')+'</tr></table><div style="border-top:3pt solid #F1C400;margin-top:24pt;padding-top:8pt;text-align:center;font-size:10pt;color:#888">PORTICO BENEFIT SERVICES &nbsp;|&nbsp; Opportunity Canvas Requirements Document &nbsp;|&nbsp; A Ministry of the ELCA &nbsp;|&nbsp; CONFIDENTIAL &mdash; Internal Use Only</div></body></html>';
-}
-function downloadDoc(){
-  var html=buildDoc();
-  var fname=((S.canvas.title||'Requirements_Document').replace(/[^a-zA-Z0-9]+/g,'_'))+'_BRD.doc';
-  var blob=new Blob([html],{type:'application/msword'});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement('a');a.href=url;a.download=fname;a.click();
-  URL.revokeObjectURL(url);
+// ─── Document generator (docx.js → real .docx) ─────────────────────────
+
+// Plain-text fallback for empty fields
+function pval(v){ return (v && v.trim()) ? v.trim() : '[ to be completed ]'; }
+
+// Portico colors
+var PC = {
+  GOLD:'F1C400', GRAY:'54585A', BLUE:'009CDE', ORANGE:'D86018',
+  GREEN:'A2AD00', RED:'C5003E', LGRAY:'F4F4F4', MGRAY:'D0D7DE',
+  DGRAY:'3A3A3A', WHITE:'FFFFFF'
+};
+
+// Half-points: Calibri 14pt = 28 half-points, 12pt=24, 10pt=20, 18pt=36, 24pt=48
+var SZ = { body:28, small:22, label:20, h2:32, h1:40, cover:56, coverSub:28 };
+
+// DXA widths (9360 = full text width at 1" margins on Letter)
+var TW = 9360;
+
+async function buildDocBlob() {
+  if (!window.docx) throw new Error('docx library not loaded yet. Please wait a moment and try again.');
+  var D = window.docx;
+
+  var cv = S.canvas, iv = S;
+  var now = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+
+  // ── helpers ────────────────────────────────────────────────────────
+  function run(text, opts) {
+    opts = opts || {};
+    return new D.TextRun(Object.assign({
+      text: text, font:'Calibri', size: SZ.body, color: PC.DGRAY
+    }, opts));
+  }
+  function boldRun(text, opts) {
+    return run(text, Object.assign({ bold:true }, opts));
+  }
+  function para(children, opts) {
+    if (typeof children === 'string') children = [run(children)];
+    return new D.Paragraph(Object.assign({ children: children, spacing:{after:120} }, opts));
+  }
+  function sp(pts) {
+    return new D.Paragraph({ children:[], spacing:{before: pts||120, after:0} });
+  }
+  function pb() {
+    return new D.Paragraph({ children:[ new D.TextRun({ break:1 }) ], spacing:{before:0,after:0} });
+  }
+  function h1(text, color) {
+    return new D.Paragraph({
+      heading: D.HeadingLevel.HEADING_1,
+      spacing: {before:240, after:120},
+      children: [ boldRun(text, { size:SZ.h1, color: color||PC.GRAY }) ]
+    });
+  }
+  function h2(text) {
+    return new D.Paragraph({
+      heading: D.HeadingLevel.HEADING_2,
+      spacing: {before:200, after:80},
+      children: [ boldRun(text, { size:SZ.h2, color: PC.BLUE }) ]
+    });
+  }
+  function srcTag(label) {
+    return new D.Paragraph({
+      spacing:{before:0,after:60},
+      children:[ run('\u25b6 Canvas: '+label, {size:SZ.small, color:PC.BLUE, italics:true}) ]
+    });
+  }
+  function placeholder(text) {
+    return run(text||'[ to be completed ]', {color:'AAAAAA', italics:true, size:SZ.body});
+  }
+  function fieldText(v) {
+    return v && v.trim() ? run(v.trim()) : placeholder();
+  }
+
+  var nb = function(c){ return {style:D.BorderStyle.NONE}; };
+  var sb = function(c,s){ return {style:D.BorderStyle.SINGLE, size:s||4, color:c||PC.MGRAY}; };
+
+  function allBorders(c,s){ return {top:sb(c,s),bottom:sb(c,s),left:sb(c,s),right:sb(c,s)}; }
+  function noBorders(){ return {top:nb(),bottom:nb(),left:nb(),right:nb()}; }
+
+  // Header cell (colored background)
+  function hCell(text, w, bgColor, textColor) {
+    return new D.TableCell({
+      width:{ size:w, type:D.WidthType.DXA },
+      shading:{ fill:bgColor||PC.GRAY, type:D.ShadingType.CLEAR },
+      borders: allBorders(PC.MGRAY, 4),
+      margins:{top:80,bottom:80,left:100,right:100},
+      verticalAlign: D.VerticalAlign.CENTER,
+      children:[ new D.Paragraph({
+        spacing:{after:0},
+        children:[boldRun(text,{size:SZ.label,color:textColor||PC.WHITE})]
+      })]
+    });
+  }
+
+  // Data cell (white/light background)
+  function dCell(value, w, bgColor, isPlaceholder) {
+    var bg = bgColor || PC.WHITE;
+    var child = isPlaceholder
+      ? [placeholder(value)]
+      : (value && value.trim() ? [run(value.trim(),{size:SZ.body})] : [placeholder()]);
+    return new D.TableCell({
+      width:{ size:w, type:D.WidthType.DXA },
+      shading:{ fill:bg, type:D.ShadingType.CLEAR },
+      borders: allBorders(PC.MGRAY, 4),
+      margins:{top:80,bottom:80,left:100,right:100},
+      children:[ new D.Paragraph({ spacing:{after:0}, children:child }) ]
+    });
+  }
+
+  // Two-column label|value table row
+  function lvRow(label, value, labelColor, rowBg) {
+    var lw = 3120, dw = 6240;
+    return new D.TableRow({ children:[
+      hCell(label, lw, labelColor||PC.GRAY),
+      dCell(value, dw, rowBg||PC.WHITE)
+    ]});
+  }
+
+  // Full-width labeled table
+  function lvTable(rows) {
+    return new D.Table({
+      width:{size:TW,type:D.WidthType.DXA},
+      columnWidths:[3120,6240],
+      rows: rows
+    });
+  }
+
+  // Section banner — colored strip as a table row spanning full width
+  function sectionBanner(num, title, color, addPageBreak) {
+    var numW = 560, titleW = TW - numW;
+    var tbl = new D.Table({
+      width:{size:TW,type:D.WidthType.DXA},
+      columnWidths:[numW, titleW],
+      rows:[new D.TableRow({ children:[
+        new D.TableCell({
+          width:{size:numW,type:D.WidthType.DXA},
+          shading:{fill:color,type:D.ShadingType.CLEAR},
+          borders:noBorders(),
+          margins:{top:120,bottom:120,left:100,right:80},
+          verticalAlign:D.VerticalAlign.CENTER,
+          children:[new D.Paragraph({
+            alignment:D.AlignmentType.CENTER,
+            spacing:{after:0},
+            children:[boldRun(String(num),{size:SZ.h2,color:PC.WHITE})]
+          })]
+        }),
+        new D.TableCell({
+          width:{size:titleW,type:D.WidthType.DXA},
+          shading:{fill:PC.LGRAY,type:D.ShadingType.CLEAR},
+          borders:noBorders(),
+          margins:{top:120,bottom:120,left:160,right:100},
+          verticalAlign:D.VerticalAlign.CENTER,
+          children:[new D.Paragraph({
+            spacing:{after:0},
+            children:[boldRun(title.toUpperCase(),{size:SZ.h2,color:color,characterSpacing:20})]
+          })]
+        })
+      ]})]
+    });
+    if (addPageBreak) {
+      return [pb(), sp(80), tbl, sp(80)];
+    }
+    return [tbl, sp(80)];
+  }
+
+  // Requirement block
+  function reqBlock(r) {
+    var hw=2800, dw=TW-hw;
+    var priColor = r.priority==='Critical'?PC.RED : r.priority==='High'?PC.ORANGE : PC.GREEN;
+    return new D.Table({
+      width:{size:TW,type:D.WidthType.DXA},
+      columnWidths:[hw,dw],
+      rows:[
+        new D.TableRow({ children:[
+          new D.TableCell({
+            columnSpan:2, width:{size:TW,type:D.WidthType.DXA},
+            shading:{fill:PC.GRAY,type:D.ShadingType.CLEAR},
+            borders:allBorders(PC.MGRAY),
+            margins:{top:80,bottom:80,left:120,right:120},
+            children:[new D.Paragraph({spacing:{after:0},children:[boldRun('Requirement '+r.id,{size:SZ.label,color:PC.WHITE})]})]
+          })
+        ]}),
+        new D.TableRow({ children:[ hCell('Title',hw,PC.GRAY), dCell(r.title,dw,PC.WHITE) ] }),
+        new D.TableRow({ children:[ hCell('Priority',hw,PC.BLUE), new D.TableCell({
+          width:{size:dw,type:D.WidthType.DXA},
+          shading:{fill:PC.LGRAY,type:D.ShadingType.CLEAR},
+          borders:allBorders(PC.MGRAY),
+          margins:{top:80,bottom:80,left:100,right:100},
+          children:[new D.Paragraph({spacing:{after:0},children:[boldRun(r.priority||'Critical',{size:SZ.body,color:priColor})]})]
+        })] }),
+        new D.TableRow({ children:[ hCell('Type',hw,PC.GRAY), dCell(r.type,dw,PC.WHITE) ] }),
+        new D.TableRow({ children:[ hCell('Description',hw,PC.BLUE), dCell(r.description,dw,PC.LGRAY) ] }),
+        new D.TableRow({ children:[ hCell('Primary Actors',hw,PC.GRAY), dCell(r.actors,dw,PC.WHITE) ] }),
+        new D.TableRow({ children:[ hCell('Preconditions',hw,PC.BLUE), dCell(r.preconditions,dw,PC.LGRAY) ] }),
+        new D.TableRow({ children:[ hCell('Postconditions',hw,PC.GRAY), dCell(r.postconditions,dw,PC.WHITE) ] }),
+        new D.TableRow({ children:[ hCell('Acceptance Criteria',hw,PC.BLUE), dCell(r.ac,dw,PC.LGRAY) ] }),
+      ]
+    });
+  }
+
+  // Use case block
+  function ucBlock(u) {
+    var hw=2340, dw=TW-hw;
+    var fields = [
+      ['Goal',u.title,'GRAY'],['Actor',u.actor,'BLUE'],
+      ['Trigger',u.trigger,'GRAY'],['Main Flow',u.mainFlow,'BLUE'],
+      ['Alternate Flows',u.altFlows,'GRAY'],['Postconditions',u.post,'BLUE'],
+      ['Linked Requirements',u.linkedReqs,'GRAY']
+    ];
+    return new D.Table({
+      width:{size:TW,type:D.WidthType.DXA},
+      columnWidths:[hw,dw],
+      rows:[
+        new D.TableRow({ children:[
+          new D.TableCell({
+            columnSpan:2, width:{size:TW,type:D.WidthType.DXA},
+            shading:{fill:PC.ORANGE,type:D.ShadingType.CLEAR},
+            borders:allBorders(PC.MGRAY),
+            margins:{top:80,bottom:80,left:120,right:120},
+            children:[new D.Paragraph({spacing:{after:0},children:[boldRun(u.id+': '+(u.title||'[ Use Case Title ]'),{size:SZ.label,color:PC.WHITE})]})]
+          })
+        ]})
+      ].concat(fields.map(function(f){
+        return new D.TableRow({children:[hCell(f[0],hw,PC[f[2]]), dCell(f[1],dw,f[2]==='BLUE'?PC.LGRAY:PC.WHITE)]});
+      }))
+    });
+  }
+
+  // Test case block
+  function tcBlock(t) {
+    var priColor = t.priority==='High'?PC.ORANGE:PC.GREEN;
+    var hw=2340, dw=TW-hw;
+    return new D.Table({
+      width:{size:TW,type:D.WidthType.DXA},
+      columnWidths:[hw,dw],
+      rows:[
+        new D.TableRow({children:[hCell('Test ID',hw/2,PC.GRAY), dCell(t.id,hw/2,PC.WHITE), hCell('Priority',hw/2,PC.BLUE), new D.TableCell({
+          width:{size:dw,type:D.WidthType.DXA},shading:{fill:PC.LGRAY,type:D.ShadingType.CLEAR},borders:allBorders(PC.MGRAY),margins:{top:80,bottom:80,left:100,right:100},
+          children:[new D.Paragraph({spacing:{after:0},children:[boldRun(t.priority||'High',{size:SZ.body,color:priColor})]})]
+        })]}),
+        new D.TableRow({children:[hCell('Scenario',hw,PC.BLUE), dCell(t.scenario,dw,PC.LGRAY)]}),
+        new D.TableRow({children:[hCell('Steps',hw,PC.GRAY), dCell(t.steps,dw,PC.WHITE)]}),
+        new D.TableRow({children:[hCell('Expected Result',hw,PC.BLUE), dCell(t.expected,dw,PC.LGRAY)]}),
+        new D.TableRow({children:[hCell('Actual Result',hw,PC.GRAY), dCell('[ to be completed during testing ]',dw,PC.WHITE,true)]}),
+        new D.TableRow({children:[hCell('Pass / Fail',hw,PC.BLUE), dCell('\u2610 Pass     \u2610 Fail     \u2610 Blocked',dw,PC.LGRAY)]}),
+      ]
+    });
+  }
+
+  // UAT block
+  function uatBlock(u) {
+    var hw=2340, dw=TW-hw;
+    var fields=[['User Story',u.userStory,'GRAY'],['Given',u.given,'BLUE'],['When',u.when,'GRAY'],['Then',u.then,'BLUE'],['Acceptance Criteria',u.acceptance,'GRAY']];
+    return new D.Table({
+      width:{size:TW,type:D.WidthType.DXA},
+      columnWidths:[hw,dw],
+      rows:[
+        new D.TableRow({children:[new D.TableCell({
+          columnSpan:2,width:{size:TW,type:D.WidthType.DXA},
+          shading:{fill:PC.GREEN,type:D.ShadingType.CLEAR},borders:allBorders(PC.MGRAY),
+          margins:{top:80,bottom:80,left:120,right:120},
+          children:[new D.Paragraph({spacing:{after:0},children:[boldRun(u.id+': '+(u.scenario||'[ Business Scenario ]'),{size:SZ.label,color:PC.WHITE})]})]
+        })]}),
+      ].concat(fields.map(function(f){
+        return new D.TableRow({children:[hCell(f[0],hw,PC[f[2]]), dCell(f[1],dw,f[2]==='BLUE'?PC.LGRAY:PC.WHITE)]});
+      })).concat([
+        new D.TableRow({children:[hCell('Acceptance Decision',hw,PC.GRAY), dCell('\u2610 Accepted     \u2610 Conditionally Accepted     \u2610 Rejected',dw,PC.WHITE)]}),
+        new D.TableRow({children:[hCell('Business Owner Sign-Off',hw,PC.BLUE), dCell('Signature: ___________________________     Date: ___________',dw,PC.LGRAY)]}),
+      ])
+    });
+  }
+
+  // ── BUILD DOCUMENT ────────────────────────────────────────────────────
+  var children = [];
+
+  // ── COVER ─────────────────────────────────────────────────────────────
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[TW],
+    rows:[new D.TableRow({children:[new D.TableCell({
+      width:{size:TW,type:D.WidthType.DXA},
+      shading:{fill:PC.GRAY,type:D.ShadingType.CLEAR},borders:noBorders(),
+      margins:{top:400,bottom:400,left:320,right:320},
+      children:[
+        new D.Paragraph({spacing:{after:80},children:[boldRun('OPPORTUNITY CANVAS',{size:64,color:PC.GOLD,characterSpacing:30})]}),
+        new D.Paragraph({spacing:{after:60},children:[run('Requirements Document',{size:40,color:'D0D8E0'})]}),
+        new D.Paragraph({spacing:{after:0},children:[run('Portico Benefit Services  |  A Ministry of the ELCA',{size:SZ.body,color:'AAAAAA'})]}),
+      ]
+    })})]
+  }));
+  children.push(sp(160));
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[4680,4680],
+    rows:[
+      lvRow('Opportunity Title', cv.title, PC.GRAY, PC.LGRAY),
+      lvRow('Sponsor(s)',         cv.sponsor, PC.GRAY, PC.WHITE),
+      lvRow('Target Date',        cv.targetDate, PC.GRAY, PC.LGRAY),
+      lvRow('MoSCoW Score',       cv.moscow, PC.GRAY, PC.WHITE),
+      lvRow('Business Unit',      cv.businessUnit, PC.GRAY, PC.LGRAY),
+      lvRow('Document Owner',     cv.docOwner, PC.GRAY, PC.WHITE),
+      lvRow('Version',            cv.version||'1.0 DRAFT', PC.GRAY, PC.LGRAY),
+      lvRow('Prepared',           now, PC.GRAY, PC.WHITE),
+    ]
+  }));
+  children.push(sp(120));
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[TW],
+    rows:[new D.TableRow({children:[new D.TableCell({
+      width:{size:TW,type:D.WidthType.DXA},
+      shading:{fill:'FFFDE6',type:D.ShadingType.CLEAR},
+      borders:{top:sb(PC.GOLD,8),bottom:sb(PC.GOLD,8),left:sb(PC.GOLD,16),right:sb(PC.GOLD,8)},
+      margins:{top:80,bottom:80,left:160,right:120},
+      children:[new D.Paragraph({spacing:{after:0},children:[
+        boldRun('Canvas-sourced fields ',{size:SZ.body,color:PC.DGRAY}),
+        run('(Sections 1\u20135) were auto-populated from the Smartsheet intake. ',{size:SZ.body}),
+        boldRun('BA-developed fields ',{size:SZ.body}),
+        run('(Sections 6\u201314) were captured during stakeholder interviews.',{size:SZ.body}),
+      ]})]
+    })})]
+  }));
+
+  // ── TABLE OF CONTENTS ──────────────────────────────────────────────────
+  children.push(pb());
+  children.push(new D.Paragraph({
+    heading: D.HeadingLevel.HEADING_1,
+    spacing:{before:0,after:200},
+    children:[boldRun('Table of Contents',{size:SZ.h1,color:PC.GRAY})]
+  }));
+  children.push(new D.TableOfContents('Table of Contents',{
+    hyperlink:true, headingStyleRange:'1-2', stylesWithLevels:[
+      {styleName:'Heading 1',level:1},
+      {styleName:'Heading 2',level:2},
+    ]
+  }));
+
+  // ── SECTION 1: PROBLEM STATEMENT ──────────────────────────────────────
+  children = children.concat(sectionBanner('1','Problem Statement',PC.GRAY,true));
+  children.push(h1('1.  Problem Statement', PC.GRAY));
+  children.push(h2('1.1  What problem are we solving?'));
+  children.push(srcTag('What problem are we trying to solve?'));
+  children.push(para([fieldText(cv.problem)],{spacing:{after:120}}));
+  children.push(h2('1.2  Severity \u2014 Impact if not solved'));
+  children.push(srcTag('Severity \u2013 Impact if not solved'));
+  children.push(para([fieldText(cv.severity)],{spacing:{after:120}}));
+  children.push(h2('1.3  Who are we solving this for?'));
+  children.push(srcTag('Who are we solving this problem for?  \u00b7  How many people/users?'));
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[4680,4680],
+    rows:[new D.TableRow({children:[hCell('Audience / Segment',4680,PC.GRAY), dCell(cv.audience,4680,PC.LGRAY)]}),
+          new D.TableRow({children:[hCell('Users / Groups Affected',4680,PC.GRAY), dCell(cv.userCount,4680,PC.WHITE)]})]
+  }));
+  children.push(h2('1.4  When must this be addressed?'));
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[4680,4680],
+    rows:[new D.TableRow({children:[hCell('Required By',4680,PC.GRAY), dCell(cv.targetDate,4680,PC.LGRAY)]}),
+          new D.TableRow({children:[hCell('Urgency Rationale',4680,PC.GRAY), dCell(cv.severity,4680,PC.WHITE)]})]
+  }));
+
+  // ── SECTION 2: STRATEGIC ALIGNMENT ────────────────────────────────────
+  children = children.concat(sectionBanner('2','Strategic Alignment',PC.BLUE,true));
+  children.push(h1('2.  Strategic Alignment',PC.BLUE));
+  children.push(h2('2.1  Business objective alignment'));
+  children.push(srcTag('What business objective does this problem align to?'));
+  children.push(para([fieldText(cv.objective)],{spacing:{after:120}}));
+  children.push(h2('2.2  Existing strategy connection'));
+  children.push(srcTag('Is this part of an existing strategy?'));
+  var stratItems = (cv.strategy||'').split(',').filter(Boolean);
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[3120,3120,3120],
+    rows:[
+      new D.TableRow({children:[hCell('Strategy / Initiative',3120,PC.BLUE),hCell('Alignment Strength',3120,PC.BLUE),hCell('Notes',3120,PC.BLUE)]}),
+    ].concat(stratItems.length
+      ? stratItems.map(function(s,i){return new D.TableRow({children:[dCell(s.trim(),3120,i%2?PC.LGRAY:PC.WHITE),dCell('Direct',3120,i%2?PC.LGRAY:PC.WHITE),dCell('[ add notes ]',3120,i%2?PC.LGRAY:PC.WHITE,true)]})})
+      : [new D.TableRow({children:[dCell(cv.strategy,3120,PC.WHITE),dCell('[ strength ]',3120,PC.LGRAY,true),dCell('[ notes ]',3120,PC.WHITE,true)]})]
+    )
+  }));
+
+  // ── SECTION 3: FUTURE STATE & DEPENDENCIES ────────────────────────────
+  children = children.concat(sectionBanner('3','Future State & Dependencies',PC.ORANGE,true));
+  children.push(h1('3.  Future State & Dependencies',PC.ORANGE));
+  children.push(h2('3.1  Future state vision'));
+  children.push(srcTag('What is the future state vision?'));
+  children.push(para([fieldText(cv.vision)],{spacing:{after:120}}));
+  children.push(h2('3.2  In-scope / Out-of-scope'));
+  var inSc = iv.inScope.filter(Boolean);
+  var outSc = iv.outScope.filter(Boolean);
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[4680,4680],
+    rows:[
+      new D.TableRow({children:[hCell('IN SCOPE',4680,PC.GREEN),hCell('OUT OF SCOPE',4680,PC.RED)]}),
+      new D.TableRow({children:[
+        new D.TableCell({width:{size:4680,type:D.WidthType.DXA},shading:{fill:PC.WHITE,type:D.ShadingType.CLEAR},borders:allBorders(PC.MGRAY),margins:{top:80,bottom:80,left:100,right:100},
+          children: inSc.length ? inSc.map(function(s){return new D.Paragraph({spacing:{after:60},numbering:{reference:'bullets',level:0},children:[run(s,{size:SZ.body})]})}) : [new D.Paragraph({spacing:{after:0},children:[placeholder('[ BA to define ]')]})]
+        }),
+        new D.TableCell({width:{size:4680,type:D.WidthType.DXA},shading:{fill:PC.LGRAY,type:D.ShadingType.CLEAR},borders:allBorders(PC.MGRAY),margins:{top:80,bottom:80,left:100,right:100},
+          children: outSc.length ? outSc.map(function(s){return new D.Paragraph({spacing:{after:60},numbering:{reference:'bullets',level:0},children:[run(s,{size:SZ.body})]})}) : [new D.Paragraph({spacing:{after:0},children:[placeholder('[ BA to define ]')]})]
+        })
+      ]})
+    ]
+  }));
+  children.push(sp(120));
+  children.push(h2('3.3  Dependencies'));
+  children.push(srcTag('Dependencies'));
+  var depItems = (cv.dependencies||'').split(',').filter(Boolean);
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[3120,3120,3120],
+    rows:[
+      new D.TableRow({children:[hCell('Dependency',3120,PC.GRAY),hCell('Type',3120,PC.GRAY),hCell('Owner / Status',3120,PC.GRAY)]}),
+    ].concat(depItems.length
+      ? depItems.map(function(d,i){return new D.TableRow({children:[dCell(d.trim(),3120,i%2?PC.LGRAY:PC.WHITE),dCell('System / Process / Team',3120,i%2?PC.LGRAY:PC.WHITE),dCell('[ owner / TBD ]',3120,i%2?PC.LGRAY:PC.WHITE,true)]})})
+      : [new D.TableRow({children:[dCell('',3120,PC.WHITE),dCell('[ type ]',3120,PC.LGRAY,true),dCell('[ owner ]',3120,PC.WHITE,true)]})]
+    )
+  }));
+
+  // ── SECTION 4: SCORING & PRIORITY ─────────────────────────────────────
+  children = children.concat(sectionBanner('4','Scoring & Priority',PC.GRAY,true));
+  children.push(h1('4.  Scoring & Priority',PC.GRAY));
+  children.push(h2('4.1  Canvas scores'));
+  children.push(srcTag('MoSCoW Score  \u00b7  Severity  \u00b7  Impact Score  \u00b7  Confidence'));
+  var scoreW = Math.floor(TW/4);
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[scoreW,scoreW,scoreW,scoreW],
+    rows:[
+      new D.TableRow({children:[hCell('MoSCoW Score',scoreW,PC.BLUE),hCell('Severity',scoreW,PC.RED),hCell('Impact Score',scoreW,PC.ORANGE),hCell('Confidence',scoreW,PC.GREEN)]}),
+      new D.TableRow({children:[dCell(cv.moscow,scoreW,PC.LGRAY),dCell(cv.impactSeverity,scoreW,PC.WHITE),dCell(cv.impactScore,scoreW,PC.LGRAY),dCell(cv.confidence,scoreW,PC.WHITE)]})
+    ]
+  }));
+  children.push(sp(120));
+  children.push(h2('4.2  Impact score criteria'));
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[2340,5220,1800],
+    rows:[
+      new D.TableRow({children:[hCell('Dimension',2340,PC.GRAY),hCell('Threshold',5220,PC.GRAY),hCell('Applies?',1800,PC.GRAY)]}),
+      new D.TableRow({children:[dCell('Operational',2340,PC.LGRAY),dCell('2+ FTE impact',5220,PC.LGRAY),dCell('\u2610 Yes   \u2610 No',1800,PC.LGRAY)]}),
+      new D.TableRow({children:[dCell('Financial',2340,PC.WHITE),dCell('5+% risk to future revenue',5220,PC.WHITE),dCell('\u2610 Yes   \u2610 No',1800,PC.WHITE)]}),
+      new D.TableRow({children:[dCell('Compliance',2340,PC.LGRAY),dCell('Risk of loss of confidential information',5220,PC.LGRAY),dCell('\u2610 Yes   \u2610 No',1800,PC.LGRAY)]}),
+      new D.TableRow({children:[dCell('Security / Strategic',2340,PC.WHITE),dCell('Severely limits strategic growth',5220,PC.WHITE),dCell('\u2610 Yes   \u2610 No',1800,PC.WHITE)]}),
+    ]
+  }));
+
+  // ── SECTION 5: VALUE & METRICS ─────────────────────────────────────────
+  children = children.concat(sectionBanner('5','Value & Success Metrics',PC.GREEN,true));
+  children.push(h1('5.  Value & Success Metrics',PC.GREEN));
+  children.push(h2('5.1  Targeted value / ROI'));
+  children.push(srcTag('Targeted Value (ROI / Cost Savings)'));
+  children.push(para([fieldText(cv.roiValue)],{spacing:{after:120}}));
+  var metItems = (cv.successMetrics||'').split(/[,\n]/).filter(Boolean);
+  children.push(h2('5.2  Success metrics'));
+  children.push(srcTag('How will impact / success be measured?'));
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[3240,2040,2040,2040],
+    rows:[
+      new D.TableRow({children:[hCell('KPI / Metric',3240,PC.GREEN),hCell('Baseline',2040,PC.GREEN),hCell('Target',2040,PC.GREEN),hCell('Measurement Method',2040,PC.GREEN)]}),
+    ].concat(metItems.length
+      ? metItems.map(function(m,i){return new D.TableRow({children:[dCell(m.trim(),3240,i%2?PC.LGRAY:PC.WHITE),dCell('[ current ]',2040,i%2?PC.LGRAY:PC.WHITE,true),dCell('[ goal ]',2040,i%2?PC.LGRAY:PC.WHITE,true),dCell('[ how tracked ]',2040,i%2?PC.LGRAY:PC.WHITE,true)]})})
+      : [new D.TableRow({children:[dCell('',3240,PC.WHITE),dCell('[ current ]',2040,PC.LGRAY,true),dCell('[ goal ]',2040,PC.WHITE,true),dCell('[ how tracked ]',2040,PC.LGRAY,true)]})]
+    )
+  }));
+
+  // ── SECTION 6: STAKEHOLDERS ────────────────────────────────────────────
+  children = children.concat(sectionBanner('6','Stakeholders & Roles',PC.BLUE,true));
+  children.push(h1('6.  Stakeholders & Roles',PC.BLUE));
+  children.push(h2('6.1  Stakeholder map'));
+  children.push(srcTag('Who are the sponsors?  \u00b7  Who are we solving this problem for?'));
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[2340,1800,2340,2880],
+    rows:[
+      new D.TableRow({children:[hCell('Name / Role',2340,PC.BLUE),hCell('Type',1800,PC.BLUE),hCell('Involvement',2340,PC.BLUE),hCell('Communication Needs',2880,PC.BLUE)]}),
+    ].concat(iv.stakeholders.map(function(sh,i){
+      var bg = i%2 ? PC.LGRAY : PC.WHITE;
+      return new D.TableRow({children:[dCell(sh.name,2340,bg),dCell(sh.type,1800,bg),dCell(sh.involvement,2340,bg),dCell(sh.commsNeeds,2880,bg)]});
+    }))
+  }));
+
+  // ── SECTION 7: FUNCTIONAL REQUIREMENTS ────────────────────────────────
+  children = children.concat(sectionBanner('7','Functional Requirements',PC.GRAY,true));
+  children.push(h1('7.  Functional Requirements',PC.GRAY));
+  children.push(para([run('Each requirement maps to a use case and acceptance criterion. ID format: REQ-[DOMAIN]-[###].',{size:SZ.body,italics:true,color:PC.GRAY})],{spacing:{after:120}}));
+  iv.requirements.forEach(function(r,i){
+    if(i>0) children.push(sp(120));
+    children.push(reqBlock(r));
+  });
+
+  // ── SECTION 8: USE CASES ───────────────────────────────────────────────
+  children = children.concat(sectionBanner('8','Use Cases',PC.ORANGE,true));
+  children.push(h1('8.  Use Cases',PC.ORANGE));
+  children.push(h2('8.1  Use case summary'));
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[1200,3000,2160,1500,1500],
+    rows:[
+      new D.TableRow({children:[hCell('UC ID',1200,PC.ORANGE),hCell('Title',3000,PC.ORANGE),hCell('Actor',2160,PC.ORANGE),hCell('Req. ID(s)',1500,PC.ORANGE),hCell('Priority',1500,PC.ORANGE)]}),
+    ].concat(iv.useCases.map(function(u,i){
+      var bg = i%2?PC.LGRAY:PC.WHITE;
+      return new D.TableRow({children:[dCell(u.id,1200,bg),dCell(u.title,3000,bg),dCell(u.actor,2160,bg),dCell(u.linkedReqs,1500,bg),dCell('High',1500,bg)]});
+    }))
+  }));
+  children.push(sp(120));
+  children.push(h2('8.2  Detailed use cases'));
+  iv.useCases.forEach(function(u,i){
+    if(i>0) children.push(sp(120));
+    children.push(ucBlock(u));
+  });
+
+  // ── SECTION 9: NON-FUNCTIONAL REQUIREMENTS ────────────────────────────
+  children = children.concat(sectionBanner('9','Non-Functional Requirements',PC.BLUE,true));
+  children.push(h1('9.  Non-Functional Requirements',PC.BLUE));
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[1440,2700,3420,1800],
+    rows:[
+      new D.TableRow({children:[hCell('NFR ID',1440,PC.BLUE),hCell('Category',2700,PC.BLUE),hCell('Requirement',3420,PC.BLUE),hCell('Priority',1800,PC.BLUE)]}),
+    ].concat(iv.nfrs.map(function(n,i){
+      var bg=i%2?PC.LGRAY:PC.WHITE;
+      return new D.TableRow({children:[dCell(n.id,1440,bg),dCell(n.category,2700,bg),dCell(n.requirement,3420,bg),dCell(n.priority,1800,bg)]});
+    }))
+  }));
+
+  // ── SECTION 10: ACCEPTANCE CRITERIA SUMMARY ───────────────────────────
+  children = children.concat(sectionBanner('10','Acceptance Criteria Summary',PC.BLUE,true));
+  children.push(h1('10.  Acceptance Criteria Summary',PC.BLUE));
+  children.push(para([run('UAT sign-off requires 100% pass on Critical requirements and 90% pass on High requirements prior to go-live authorization.',{size:SZ.body,italics:true})],{spacing:{after:120}}));
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[1440,2600,1440,3880],
+    rows:[
+      new D.TableRow({children:[hCell('Req. ID',1440,PC.BLUE),hCell('Title',2600,PC.BLUE),hCell('Priority',1440,PC.BLUE),hCell('Key Acceptance Criterion',3880,PC.BLUE)]}),
+    ].concat(iv.requirements.map(function(r,i){
+      var bg=i%2?PC.LGRAY:PC.WHITE;
+      var priColor=r.priority==='Critical'?PC.RED:PC.ORANGE;
+      return new D.TableRow({children:[
+        dCell(r.id,1440,bg),dCell(r.title,2600,bg),
+        new D.TableCell({width:{size:1440,type:D.WidthType.DXA},shading:{fill:bg,type:D.ShadingType.CLEAR},borders:allBorders(PC.MGRAY),margins:{top:80,bottom:80,left:100,right:100},
+          children:[new D.Paragraph({spacing:{after:0},children:[boldRun(r.priority||'High',{size:SZ.body,color:priColor})]})]
+        }),
+        dCell(r.ac&&r.ac.split('\n')[0],3880,bg)
+      ]});
+    }))
+  }));
+
+  // ── SECTION 11: DEVELOPER HANDOVER ────────────────────────────────────
+  children = children.concat(sectionBanner('11','Developer Handover Checklist',PC.GRAY,true));
+  children.push(h1('11.  Developer Handover Checklist',PC.GRAY));
+  children.push(para([run('All items must be reviewed before sprint planning begins.',{size:SZ.body,italics:true})],{spacing:{after:120}}));
+  var dhFields=[['System Components Affected',iv.devHandover.systemComponents,PC.GRAY],['Data Model / Schema Changes',iv.devHandover.dataModel,PC.BLUE],['API Changes / New Endpoints',iv.devHandover.apiChanges,PC.GRAY],['Integration Points',iv.devHandover.integrations,PC.BLUE],['Environment Requirements',iv.devHandover.envReqs,PC.GRAY],['Deployment Notes',iv.devHandover.deployNotes,PC.BLUE],['Rollback Plan',iv.devHandover.rollback,PC.GRAY]];
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[2800,4160,2400],
+    rows:[
+      new D.TableRow({children:[hCell('Category',2800,PC.GRAY),hCell('Detail',4160,PC.GRAY),hCell('Status',2400,PC.GRAY)]}),
+    ].concat(dhFields.map(function(f,i){
+      var bg=i%2?PC.LGRAY:PC.WHITE;
+      return new D.TableRow({children:[hCell(f[0],2800,f[2]),dCell(f[1],4160,bg),dCell('\u2610 Confirmed   \u2610 In Progress   \u2610 TBD',2400,bg)]});
+    }))
+  }));
+  children.push(sp(120));
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[4680,4680],
+    rows:[
+      new D.TableRow({children:[hCell('Architecture Review Required?',4680,PC.GRAY),dCell('\u2610 Yes     \u2610 No',4680,PC.LGRAY)]}),
+      new D.TableRow({children:[hCell('Security Review Required?',4680,PC.BLUE),dCell('\u2610 Yes     \u2610 No',4680,PC.WHITE)]}),
+      new D.TableRow({children:[hCell('New BAA / Legal Review?',4680,PC.GRAY),dCell('\u2610 Yes     \u2610 No',4680,PC.LGRAY)]}),
+      new D.TableRow({children:[hCell('Estimated Dev Effort',4680,PC.BLUE),dCell('[ story points or days ]',4680,PC.WHITE,true)]}),
+    ]
+  }));
+
+  // ── SECTION 12: TEST CASES ─────────────────────────────────────────────
+  children = children.concat(sectionBanner('12','Test Cases',PC.ORANGE,true));
+  children.push(h1('12.  Test Cases',PC.ORANGE));
+  children.push(para([run('Provided as a starting point for the QA/Testing team. Each maps to a functional requirement.',{size:SZ.body,italics:true})],{spacing:{after:120}}));
+  iv.testCases.forEach(function(t,i){
+    if(i>0) children.push(sp(120));
+    children.push(tcBlock(t));
+  });
+  children.push(sp(120));
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[4680,2340,2340],
+    rows:[
+      new D.TableRow({children:[hCell('Test Summary',4680,PC.ORANGE),hCell('Count',2340,PC.ORANGE),hCell('Result',2340,PC.ORANGE)]}),
+      new D.TableRow({children:[dCell('Total Test Cases',4680,PC.LGRAY),dCell(String(iv.testCases.length),2340,PC.LGRAY),dCell('\u2014',2340,PC.LGRAY)]}),
+      new D.TableRow({children:[dCell('Passed',4680,PC.WHITE),dCell('[ fill in ]',2340,PC.WHITE,true),dCell('\u2014',2340,PC.WHITE)]}),
+      new D.TableRow({children:[dCell('Failed',4680,PC.LGRAY),dCell('[ fill in ]',2340,PC.LGRAY,true),dCell('\u2014',2340,PC.LGRAY)]}),
+      new D.TableRow({children:[dCell('Blocked',4680,PC.WHITE),dCell('[ fill in ]',2340,PC.WHITE,true),dCell('\u2014',2340,PC.WHITE)]}),
+    ]
+  }));
+
+  // ── SECTION 13: UAT CASES ─────────────────────────────────────────────
+  children = children.concat(sectionBanner('13','User Acceptance Testing (UAT)',PC.GREEN,true));
+  children.push(h1('13.  User Acceptance Testing (UAT)',PC.GREEN));
+  children.push(para([run('UAT cases are written from the business user\u2019s perspective using Given/When/Then format.',{size:SZ.body,italics:true})],{spacing:{after:120}}));
+  iv.uatCases.forEach(function(u,i){
+    if(i>0) children.push(sp(120));
+    children.push(uatBlock(u));
+  });
+  children.push(sp(120));
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[TW],
+    rows:[new D.TableRow({children:[new D.TableCell({
+      width:{size:TW,type:D.WidthType.DXA},shading:{fill:PC.LGRAY,type:D.ShadingType.CLEAR},
+      borders:allBorders(PC.MGRAY),margins:{top:100,bottom:100,left:140,right:140},
+      children:[
+        new D.Paragraph({spacing:{after:60},children:[boldRun('UAT Sign-Off:',{size:SZ.body,color:PC.GRAY})]}),
+        new D.Paragraph({spacing:{after:0},children:[run('All UAT cases must be Accepted or Conditionally Accepted before production deployment.',{size:SZ.body})]})
+      ]
+    })})]
+  }));
+  children.push(sp(80));
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[2800,3160,2340,1060],
+    rows:[
+      new D.TableRow({children:[hCell('Business Owner',2800,PC.GREEN),hCell('Signature',3160,PC.GREEN),hCell('Date',2340,PC.GREEN),hCell('Decision',1060,PC.GREEN)]}),
+      new D.TableRow({children:[dCell(cv.sponsor,2800,PC.LGRAY),dCell('___________________________',3160,PC.LGRAY),dCell('___________',2340,PC.LGRAY),dCell('\u2610 Accept   \u2610 Reject',1060,PC.LGRAY)]}),
+    ]
+  }));
+
+  // ── SECTION 14: APPROVALS & REVISION HISTORY ──────────────────────────
+  children = children.concat(sectionBanner('14','Approvals & Revision History',PC.GRAY,true));
+  children.push(h1('14.  Approvals & Revision History',PC.GRAY));
+  children.push(h2('14.1  Sign-off'));
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[2800,4160,2400],
+    rows:[
+      new D.TableRow({children:[hCell('Stakeholder / Role',2800,PC.GRAY),hCell('Signature',4160,PC.GRAY),hCell('Date',2400,PC.GRAY)]}),
+      new D.TableRow({children:[dCell('Sponsor \u2014 '+(cv.sponsor||'[ name ]'),2800,PC.LGRAY),dCell('___________________________',4160,PC.LGRAY),dCell('___________',2400,PC.LGRAY)]}),
+      new D.TableRow({children:[dCell('BA/PM \u2014 '+(cv.docOwner||'[ name ]'),2800,PC.WHITE),dCell('___________________________',4160,PC.WHITE),dCell('___________',2400,PC.WHITE)]}),
+      new D.TableRow({children:[dCell('IT Lead \u2014 [ name ]',2800,PC.LGRAY),dCell('___________________________',4160,PC.LGRAY),dCell('___________',2400,PC.LGRAY)]}),
+      new D.TableRow({children:[dCell('Testing Lead \u2014 [ name ]',2800,PC.WHITE),dCell('___________________________',4160,PC.WHITE),dCell('___________',2400,PC.WHITE)]}),
+    ]
+  }));
+  children.push(sp(120));
+  children.push(h2('14.2  Revision history'));
+  children.push(new D.Table({
+    width:{size:TW,type:D.WidthType.DXA},columnWidths:[1200,2000,3000,3160],
+    rows:[
+      new D.TableRow({children:[hCell('Version',1200,PC.GRAY),hCell('Date',2000,PC.GRAY),hCell('Author / Role',3000,PC.GRAY),hCell('Summary of Changes',3160,PC.GRAY)]}),
+      new D.TableRow({children:[dCell('1.0',1200,PC.LGRAY),dCell(now,2000,PC.LGRAY),dCell((cv.docOwner||'[ name ]')+' \u2014 BA/PM, Portico',3000,PC.LGRAY),dCell('Initial draft from Canvas intake',3160,PC.LGRAY)]}),
+    ]
+  }));
+  children.push(sp(200));
+  children.push(new D.Paragraph({
+    border:{bottom:{style:D.BorderStyle.SINGLE,size:6,color:PC.GOLD}},
+    spacing:{before:80,after:80},children:[]
+  }));
+  children.push(new D.Paragraph({
+    alignment:D.AlignmentType.CENTER,
+    spacing:{before:80,after:0},
+    children:[run('PORTICO BENEFIT SERVICES  |  Opportunity Canvas Requirements Document  |  A Ministry of the ELCA  |  CONFIDENTIAL \u2014 Internal Use Only',{size:SZ.small,color:'888888',italics:true})]
+  }));
+
+  // ── ASSEMBLE DOCUMENT ─────────────────────────────────────────────────
+  var doc = new D.Document({
+    numbering:{config:[
+      {reference:'bullets',levels:[{level:0,format:D.LevelFormat.BULLET,text:'\u2022',alignment:D.AlignmentType.LEFT,style:{paragraph:{indent:{left:720,hanging:360}}}}]},
+    ]},
+    styles:{
+      default:{document:{run:{font:'Calibri',size:SZ.body,color:PC.DGRAY}}},
+      paragraphStyles:[
+        {id:'Heading1',name:'Heading 1',basedOn:'Normal',next:'Normal',quickFormat:true,
+         run:{size:SZ.h1,bold:true,color:PC.GRAY,font:'Calibri'},
+         paragraph:{spacing:{before:240,after:120},outlineLevel:0}},
+        {id:'Heading2',name:'Heading 2',basedOn:'Normal',next:'Normal',quickFormat:true,
+         run:{size:SZ.h2,bold:true,color:PC.BLUE,font:'Calibri'},
+         paragraph:{spacing:{before:180,after:80},outlineLevel:1}},
+      ]
+    },
+    sections:[{
+      properties:{
+        page:{
+          size:{width:12240,height:15840},
+          margin:{top:1080,right:1080,bottom:1080,left:1080}
+        }
+      },
+      headers:{default:new D.Header({children:[
+        new D.Table({
+          width:{size:10080,type:D.WidthType.DXA},columnWidths:[5400,4680],
+          rows:[new D.TableRow({children:[
+            new D.TableCell({borders:noBorders(),width:{size:5400,type:D.WidthType.DXA},
+              children:[new D.Paragraph({spacing:{after:0},children:[boldRun('Portico Benefit Services  |  Opportunity Canvas Requirements Document',{size:SZ.small,color:PC.GRAY})]})]}),
+            new D.TableCell({borders:noBorders(),width:{size:4680,type:D.WidthType.DXA},
+              children:[new D.Paragraph({alignment:D.AlignmentType.RIGHT,spacing:{after:0},children:[run('v1.0 DRAFT  |  Internal Use Only',{size:SZ.small,color:'888888'})]})]})
+          ]})]
+        }),
+        new D.Paragraph({border:{bottom:{style:D.BorderStyle.SINGLE,size:6,color:PC.GOLD}},spacing:{after:60},children:[]})
+      ]})},
+      footers:{default:new D.Footer({children:[
+        new D.Paragraph({border:{top:{style:D.BorderStyle.SINGLE,size:6,color:PC.GOLD}},spacing:{before:60,after:60},children:[]}),
+        new D.Paragraph({
+          tabStops:[{type:D.TabStopType.RIGHT,position:D.TabStopPosition.MAX}],
+          spacing:{after:0},
+          children:[
+            run('CONFIDENTIAL \u2014 Internal Use Only',{size:SZ.small,color:'888888'}),
+            run('\t',{size:SZ.small}),
+            run('Page ',{size:SZ.small,color:'888888'}),
+            new D.TextRun({children:[D.PageNumber.CURRENT],size:SZ.small,color:'888888'}),
+          ]
+        })
+      ]})},
+      children: children
+    }]
+  });
+
+  return D.Packer.toBlob(doc);
 }
 
-// ─── SharePoint upload ────────────────────────────────────────────────
+async function downloadDoc() {
+  var btn = document.getElementById('dl-btn');
+  if(btn){btn.disabled=true;btn.textContent='Building document\u2026'}
+  try {
+    var blob = await buildDocBlob();
+    var fname = ((S.canvas.title||'Requirements_Document').replace(/[^a-zA-Z0-9]+/g,'_'))+'_BRD.docx';
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href=url; a.download=fname; a.click();
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    alert('Error building document: '+e.message);
+  }
+  if(btn){btn.disabled=false;btn.textContent='\u2B07 Download Requirements Document (.docx)'}
+}
+
 function spUpload(){
   var token=(document.getElementById('sp-token')||{}).value.trim();
   var siteUrl=(document.getElementById('sp-url')||{}).value.trim();
@@ -930,10 +1608,9 @@ function spUpload(){
   fetch('https://graph.microsoft.com/v1.0/sites/'+host.replace('https://','')+':'+sitePath,{headers:{Authorization:'Bearer '+token}})
   .then(function(r){if(!r.ok)throw new Error('Cannot find SharePoint site ('+r.status+'). Check the URL and token.');return r.json()})
   .then(function(site){return fetch('https://graph.microsoft.com/v1.0/sites/'+site.id+'/drives',{headers:{Authorization:'Bearer '+token}}).then(function(r){return r.json()}).then(function(d){var drive=d.value&&d.value[0];if(!drive)throw new Error('No document library found.');return drive.id})})
-  .then(function(driveId){
-    var html=buildDoc();
-    var fname=((S.canvas.title||'Requirements_Document').replace(/[^a-zA-Z0-9]+/g,'_'))+'_BRD.doc';
-    var blob=new Blob([html],{type:'application/msword'});
+  .then(async function(driveId){
+    var blob = await buildDocBlob();
+    var fname=((S.canvas.title||'Requirements_Document').replace(/[^a-zA-Z0-9]+/g,'_'))+'_BRD.docx';
     return fetch('https://graph.microsoft.com/v1.0/drives/'+driveId+'/root:/'+folderPath+'/'+fname+':/content',{method:'PUT',headers:{Authorization:'Bearer '+token,'Content-Type':'application/msword'},body:blob});
   })
   .then(function(r){if(!r.ok)throw new Error('Upload failed ('+r.status+'). Check folder permissions.');return r.json()})
@@ -1044,5 +1721,6 @@ if(step===4){renderUCs();renderTCs();renderUATs()}
 if(step===5)fillStats();
 })();
 </script>
+<script src="https://unpkg.com/docx@9.6.1/build/index.js"></script>
 </body>
 </html>
