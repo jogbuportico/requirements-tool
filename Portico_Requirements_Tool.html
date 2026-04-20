@@ -414,6 +414,7 @@ input[type=text]:focus,input[type=password]:focus,textarea:focus,select:focus{bo
 </div>
 
 </div><!-- /main -->
+<script src="https://unpkg.com/docx@9.6.1/build/index.js"></script>
 <script>
 (function(){
 'use strict';
@@ -896,7 +897,7 @@ var PC = {
 var SZ = { body:28, small:22, label:20, h2:32, h1:40, cover:56, coverSub:28 };
 
 // DXA widths (9360 = full text width at 1" margins on Letter)
-var TW = 9360;
+var TW = 9720;
 
 async function buildDocBlob() {
   if (!window.docx) throw new Error('docx library not loaded yet. Please wait a moment and try again.');
@@ -959,14 +960,15 @@ async function buildDocBlob() {
   function noBorders(){ return {top:nb(),bottom:nb(),left:nb(),right:nb()}; }
 
   // Header cell (colored background)
-  function hCell(text, w, bgColor, textColor) {
+  function hCell(text, w, bgColor, textColor, align) {
     return new D.TableCell({
       width:{ size:w, type:D.WidthType.DXA },
       shading:{ fill:bgColor||PC.GRAY, type:D.ShadingType.CLEAR },
       borders: allBorders(PC.MGRAY, 4),
-      margins:{top:80,bottom:80,left:100,right:100},
+      margins:{top:100,bottom:100,left:120,right:120},
       verticalAlign: D.VerticalAlign.CENTER,
       children:[ new D.Paragraph({
+        alignment: align||D.AlignmentType.LEFT,
         spacing:{after:0},
         children:[boldRun(text,{size:SZ.label,color:textColor||PC.WHITE})]
       })]
@@ -974,7 +976,7 @@ async function buildDocBlob() {
   }
 
   // Data cell (white/light background)
-  function dCell(value, w, bgColor, isPlaceholder) {
+  function dCell(value, w, bgColor, isPlaceholder, align) {
     var bg = bgColor || PC.WHITE;
     var child = isPlaceholder
       ? [placeholder(value)]
@@ -983,8 +985,9 @@ async function buildDocBlob() {
       width:{ size:w, type:D.WidthType.DXA },
       shading:{ fill:bg, type:D.ShadingType.CLEAR },
       borders: allBorders(PC.MGRAY, 4),
-      margins:{top:80,bottom:80,left:100,right:100},
-      children:[ new D.Paragraph({ spacing:{after:0}, children:child }) ]
+      margins:{top:100,bottom:100,left:120,right:120},
+      verticalAlign: D.VerticalAlign.CENTER,
+      children:[ new D.Paragraph({ alignment:align||D.AlignmentType.LEFT, spacing:{after:0}, children:child }) ]
     });
   }
 
@@ -1066,8 +1069,9 @@ async function buildDocBlob() {
           width:{size:dw,type:D.WidthType.DXA},
           shading:{fill:PC.LGRAY,type:D.ShadingType.CLEAR},
           borders:allBorders(PC.MGRAY),
-          margins:{top:80,bottom:80,left:100,right:100},
-          children:[new D.Paragraph({spacing:{after:0},children:[boldRun(r.priority||'Critical',{size:SZ.body,color:priColor})]})]
+          margins:{top:100,bottom:100,left:120,right:120},
+          verticalAlign:D.VerticalAlign.CENTER,
+          children:[new D.Paragraph({alignment:D.AlignmentType.LEFT,spacing:{after:0},children:[boldRun(r.priority||'Critical',{size:SZ.body,color:priColor})]})]
         })] }),
         new D.TableRow({ children:[ hCell('Type',hw,PC.GRAY), dCell(r.type,dw,PC.WHITE) ] }),
         new D.TableRow({ children:[ hCell('Description',hw,PC.BLUE), dCell(r.description,dw,PC.LGRAY) ] }),
@@ -1123,7 +1127,7 @@ async function buildDocBlob() {
         new D.TableRow({children:[hCell('Steps',hw,PC.GRAY), dCell(t.steps,dw,PC.WHITE)]}),
         new D.TableRow({children:[hCell('Expected Result',hw,PC.BLUE), dCell(t.expected,dw,PC.LGRAY)]}),
         new D.TableRow({children:[hCell('Actual Result',hw,PC.GRAY), dCell('[ to be completed during testing ]',dw,PC.WHITE,true)]}),
-        new D.TableRow({children:[hCell('Pass / Fail',hw,PC.BLUE), dCell('\u2610 Pass     \u2610 Fail     \u2610 Blocked',dw,PC.LGRAY)]}),
+        new D.TableRow({children:[hCell('Pass / Fail',hw,PC.BLUE), dCell('\u2610 Pass     \u2610 Fail     \u2610 Blocked',dw,PC.LGRAY,false,D.AlignmentType.CENTER)]}),
       ]
     });
   }
@@ -1145,7 +1149,7 @@ async function buildDocBlob() {
       ].concat(fields.map(function(f){
         return new D.TableRow({children:[hCell(f[0],hw,PC[f[2]]), dCell(f[1],dw,f[2]==='BLUE'?PC.LGRAY:PC.WHITE)]});
       })).concat([
-        new D.TableRow({children:[hCell('Acceptance Decision',hw,PC.GRAY), dCell('\u2610 Accepted     \u2610 Conditionally Accepted     \u2610 Rejected',dw,PC.WHITE)]}),
+        new D.TableRow({children:[hCell('Acceptance Decision',hw,PC.GRAY), dCell('\u2610 Accepted     \u2610 Conditionally Accepted     \u2610 Rejected',dw,PC.WHITE,false,D.AlignmentType.CENTER)]}),
         new D.TableRow({children:[hCell('Business Owner Sign-Off',hw,PC.BLUE), dCell('Signature: ___________________________     Date: ___________',dw,PC.LGRAY)]}),
       ])
     });
@@ -1162,11 +1166,11 @@ async function buildDocBlob() {
       shading:{fill:PC.GRAY,type:D.ShadingType.CLEAR},borders:noBorders(),
       margins:{top:400,bottom:400,left:320,right:320},
       children:[
-        new D.Paragraph({spacing:{after:80},children:[boldRun('OPPORTUNITY CANVAS',{size:64,color:PC.GOLD,characterSpacing:30})]}),
-        new D.Paragraph({spacing:{after:60},children:[run('Requirements Document',{size:40,color:'D0D8E0'})]}),
-        new D.Paragraph({spacing:{after:0},children:[run('Portico Benefit Services  |  A Ministry of the ELCA',{size:SZ.body,color:'AAAAAA'})]}),
+        new D.Paragraph({alignment:D.AlignmentType.CENTER,spacing:{after:80},children:[boldRun('OPPORTUNITY CANVAS',{size:64,color:PC.GOLD,characterSpacing:30})]}),
+        new D.Paragraph({alignment:D.AlignmentType.CENTER,spacing:{after:60},children:[run('Requirements Document',{size:40,color:'D0D8E0'})]}),
+        new D.Paragraph({alignment:D.AlignmentType.CENTER,spacing:{after:0},children:[run('Portico Benefit Services  |  A Ministry of the ELCA',{size:SZ.body,color:'AAAAAA'})]}),
       ]
-    })})]
+    })]})]
   }));
   children.push(sp(160));
   children.push(new D.Table({
@@ -1196,7 +1200,7 @@ async function buildDocBlob() {
         boldRun('BA-developed fields ',{size:SZ.body}),
         run('(Sections 6\u201314) were captured during stakeholder interviews.',{size:SZ.body}),
       ]})]
-    })})]
+    })]})]
   }));
 
   // ── TABLE OF CONTENTS ──────────────────────────────────────────────────
@@ -1301,8 +1305,8 @@ async function buildDocBlob() {
   children.push(new D.Table({
     width:{size:TW,type:D.WidthType.DXA},columnWidths:[scoreW,scoreW,scoreW,scoreW],
     rows:[
-      new D.TableRow({children:[hCell('MoSCoW Score',scoreW,PC.BLUE),hCell('Severity',scoreW,PC.RED),hCell('Impact Score',scoreW,PC.ORANGE),hCell('Confidence',scoreW,PC.GREEN)]}),
-      new D.TableRow({children:[dCell(cv.moscow,scoreW,PC.LGRAY),dCell(cv.impactSeverity,scoreW,PC.WHITE),dCell(cv.impactScore,scoreW,PC.LGRAY),dCell(cv.confidence,scoreW,PC.WHITE)]})
+      new D.TableRow({children:[hCell('MoSCoW Score',scoreW,PC.BLUE,PC.WHITE,D.AlignmentType.CENTER),hCell('Severity',scoreW,PC.RED,PC.WHITE,D.AlignmentType.CENTER),hCell('Impact Score',scoreW,PC.ORANGE,PC.WHITE,D.AlignmentType.CENTER),hCell('Confidence',scoreW,PC.GREEN,PC.WHITE,D.AlignmentType.CENTER)]}),
+      new D.TableRow({children:[dCell(cv.moscow,scoreW,PC.LGRAY,false,D.AlignmentType.CENTER),dCell(cv.impactSeverity,scoreW,PC.WHITE,false,D.AlignmentType.CENTER),dCell(cv.impactScore,scoreW,PC.LGRAY,false,D.AlignmentType.CENTER),dCell(cv.confidence,scoreW,PC.WHITE,false,D.AlignmentType.CENTER)]})
     ]
   }));
   children.push(sp(120));
@@ -1311,10 +1315,10 @@ async function buildDocBlob() {
     width:{size:TW,type:D.WidthType.DXA},columnWidths:[2340,5220,1800],
     rows:[
       new D.TableRow({children:[hCell('Dimension',2340,PC.GRAY),hCell('Threshold',5220,PC.GRAY),hCell('Applies?',1800,PC.GRAY)]}),
-      new D.TableRow({children:[dCell('Operational',2340,PC.LGRAY),dCell('2+ FTE impact',5220,PC.LGRAY),dCell('\u2610 Yes   \u2610 No',1800,PC.LGRAY)]}),
-      new D.TableRow({children:[dCell('Financial',2340,PC.WHITE),dCell('5+% risk to future revenue',5220,PC.WHITE),dCell('\u2610 Yes   \u2610 No',1800,PC.WHITE)]}),
-      new D.TableRow({children:[dCell('Compliance',2340,PC.LGRAY),dCell('Risk of loss of confidential information',5220,PC.LGRAY),dCell('\u2610 Yes   \u2610 No',1800,PC.LGRAY)]}),
-      new D.TableRow({children:[dCell('Security / Strategic',2340,PC.WHITE),dCell('Severely limits strategic growth',5220,PC.WHITE),dCell('\u2610 Yes   \u2610 No',1800,PC.WHITE)]}),
+      new D.TableRow({children:[dCell('Operational',2340,PC.LGRAY),dCell('2+ FTE impact',5220,PC.LGRAY),dCell('\u2610 Yes   \u2610 No',1800,PC.LGRAY,false,D.AlignmentType.CENTER)]}),
+      new D.TableRow({children:[dCell('Financial',2340,PC.WHITE),dCell('5+% risk to future revenue',5220,PC.WHITE),dCell('\u2610 Yes   \u2610 No',1800,PC.WHITE,false,D.AlignmentType.CENTER)]}),
+      new D.TableRow({children:[dCell('Compliance',2340,PC.LGRAY),dCell('Risk of loss of confidential information',5220,PC.LGRAY),dCell('\u2610 Yes   \u2610 No',1800,PC.LGRAY,false,D.AlignmentType.CENTER)]}),
+      new D.TableRow({children:[dCell('Security / Strategic',2340,PC.WHITE),dCell('Severely limits strategic growth',5220,PC.WHITE),dCell('\u2610 Yes   \u2610 No',1800,PC.WHITE,false,D.AlignmentType.CENTER)]}),
     ]
   }));
 
@@ -1426,16 +1430,16 @@ async function buildDocBlob() {
       new D.TableRow({children:[hCell('Category',2800,PC.GRAY),hCell('Detail',4160,PC.GRAY),hCell('Status',2400,PC.GRAY)]}),
     ].concat(dhFields.map(function(f,i){
       var bg=i%2?PC.LGRAY:PC.WHITE;
-      return new D.TableRow({children:[hCell(f[0],2800,f[2]),dCell(f[1],4160,bg),dCell('\u2610 Confirmed   \u2610 In Progress   \u2610 TBD',2400,bg)]});
+      return new D.TableRow({children:[hCell(f[0],2800,f[2]),dCell(f[1],4160,bg),dCell('\u2610 Confirmed   \u2610 In Progress   \u2610 TBD',2400,bg,false,D.AlignmentType.CENTER)]});
     }))
   }));
   children.push(sp(120));
   children.push(new D.Table({
     width:{size:TW,type:D.WidthType.DXA},columnWidths:[4680,4680],
     rows:[
-      new D.TableRow({children:[hCell('Architecture Review Required?',4680,PC.GRAY),dCell('\u2610 Yes     \u2610 No',4680,PC.LGRAY)]}),
-      new D.TableRow({children:[hCell('Security Review Required?',4680,PC.BLUE),dCell('\u2610 Yes     \u2610 No',4680,PC.WHITE)]}),
-      new D.TableRow({children:[hCell('New BAA / Legal Review?',4680,PC.GRAY),dCell('\u2610 Yes     \u2610 No',4680,PC.LGRAY)]}),
+      new D.TableRow({children:[hCell('Architecture Review Required?',4680,PC.GRAY),dCell('\u2610 Yes     \u2610 No',4680,PC.LGRAY,false,D.AlignmentType.CENTER)]}),
+      new D.TableRow({children:[hCell('Security Review Required?',4680,PC.BLUE),dCell('\u2610 Yes     \u2610 No',4680,PC.WHITE,false,D.AlignmentType.CENTER)]}),
+      new D.TableRow({children:[hCell('New BAA / Legal Review?',4680,PC.GRAY),dCell('\u2610 Yes     \u2610 No',4680,PC.LGRAY,false,D.AlignmentType.CENTER)]}),
       new D.TableRow({children:[hCell('Estimated Dev Effort',4680,PC.BLUE),dCell('[ story points or days ]',4680,PC.WHITE,true)]}),
     ]
   }));
@@ -1478,14 +1482,14 @@ async function buildDocBlob() {
         new D.Paragraph({spacing:{after:60},children:[boldRun('UAT Sign-Off:',{size:SZ.body,color:PC.GRAY})]}),
         new D.Paragraph({spacing:{after:0},children:[run('All UAT cases must be Accepted or Conditionally Accepted before production deployment.',{size:SZ.body})]})
       ]
-    })})]
+    })]})]
   }));
   children.push(sp(80));
   children.push(new D.Table({
     width:{size:TW,type:D.WidthType.DXA},columnWidths:[2800,3160,2340,1060],
     rows:[
       new D.TableRow({children:[hCell('Business Owner',2800,PC.GREEN),hCell('Signature',3160,PC.GREEN),hCell('Date',2340,PC.GREEN),hCell('Decision',1060,PC.GREEN)]}),
-      new D.TableRow({children:[dCell(cv.sponsor,2800,PC.LGRAY),dCell('___________________________',3160,PC.LGRAY),dCell('___________',2340,PC.LGRAY),dCell('\u2610 Accept   \u2610 Reject',1060,PC.LGRAY)]}),
+      new D.TableRow({children:[dCell(cv.sponsor,2800,PC.LGRAY),dCell('___________________________',3160,PC.LGRAY),dCell('___________',2340,PC.LGRAY),dCell('\u2610 Accept   \u2610 Reject',1060,PC.LGRAY,false,D.AlignmentType.CENTER)]}),
     ]
   }));
 
@@ -1543,7 +1547,7 @@ async function buildDocBlob() {
       properties:{
         page:{
           size:{width:12240,height:15840},
-          margin:{top:1080,right:1080,bottom:1080,left:1080}
+          margin:{top:1080,right:1260,bottom:1080,left:1260}
         }
       },
       headers:{default:new D.Header({children:[
@@ -1721,6 +1725,5 @@ if(step===4){renderUCs();renderTCs();renderUATs()}
 if(step===5)fillStats();
 })();
 </script>
-<script src="https://unpkg.com/docx@9.6.1/build/index.js"></script>
 </body>
 </html>
