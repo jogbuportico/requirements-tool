@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portico | Requirements Document Builder</title>
+<title>Portico | Requirements Document Builder v1.3</title>
 <style>
 :root{--gold:#F1C400;--gray:#54585A;--blue:#009CDE;--orange:#D86018;--green:#A2AD00;--red:#C5003E;--lgray:#F4F4F4;--mgray:#D0D7DE;--dgray:#3A3A3A}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -40,11 +40,12 @@ body{font-family:Calibri,'Segoe UI',sans-serif;font-size:14px;color:var(--dgray)
 .alert-blue{background:#E8F4FD;border-color:var(--blue);color:#004d7a}
 .alert-green{background:#F0FFF4;border-color:var(--green);color:#3a4200}
 .alert-red{background:#FFF0F3;border-color:var(--red);color:#7a0025}
+.alert-orange{background:#FFF3E0;border-color:var(--orange);color:#7a3600}
 .fl{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
 label.lbl{display:block;font-size:11px;font-weight:700;color:var(--gray);letter-spacing:.4px;margin-bottom:4px}
 .src{display:block;font-size:11px;color:var(--blue);font-style:italic;margin-bottom:4px}
-input[type=text],input[type=password],textarea,select{width:100%;border:1.5px solid var(--mgray);border-radius:6px;padding:7px 10px;font-family:Calibri,'Segoe UI',sans-serif;font-size:13px;color:var(--dgray);background:#fff;outline:none;resize:vertical;transition:border-color .15s}
-input[type=text]:focus,input[type=password]:focus,textarea:focus,select:focus{border-color:var(--blue)}
+input[type=text],input[type=password],input[type=url],textarea,select{width:100%;border:1.5px solid var(--mgray);border-radius:6px;padding:7px 10px;font-family:Calibri,'Segoe UI',sans-serif;font-size:13px;color:var(--dgray);background:#fff;outline:none;resize:vertical;transition:border-color .15s}
+input[type=text]:focus,input[type=password]:focus,input[type=url]:focus,textarea:focus,select:focus{border-color:var(--blue)}
 .fg{margin-bottom:12px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .g3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
@@ -65,11 +66,19 @@ input[type=text]:focus,input[type=password]:focus,textarea:focus,select:focus{bo
 .tab-btn{padding:5px 14px;border-radius:20px;border:none;cursor:pointer;font-family:Calibri,'Segoe UI',sans-serif;font-size:12px;font-weight:500;background:#eee;color:var(--gray);transition:all .15s}
 .tab-btn.active{background:var(--blue);color:#fff;font-weight:700}
 .tab-pane{display:none}.tab-pane.active{display:block}
-#header-preview{background:#F4F4F4;border:1px solid var(--mgray);border-radius:6px;padding:12px;margin:10px 0;font-size:12px}
-#header-preview.has-data{background:#E8F4FD;border-color:var(--blue)}
-.preview-item{padding:4px 0;color:var(--dgray)}
-.preview-label{font-weight:700;color:var(--gray);display:inline;margin-right:8px}
-@media(max-width:680px){.g2{grid-template-columns:1fr}}
+.resource-item{border:1px solid var(--mgray);border-radius:8px;padding:12px;margin-bottom:10px;background:var(--lgray)}
+.resource-item.mapped{background:#E8F4FD;border-color:var(--blue)}
+.resource-title{font-weight:700;color:var(--gray);margin-bottom:8px}
+.resource-preview{font-size:12px;color:#666;background:#fff;padding:8px;border-radius:4px;margin-bottom:8px;max-height:100px;overflow-y:auto}
+.section-map{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.section-option{padding:8px 12px;border:1px solid var(--mgray);border-radius:6px;cursor:pointer;transition:all .15s}
+.section-option:hover{border-color:var(--blue);background:#E8F4FD}
+.section-option.selected{background:var(--blue);color:#fff;border-color:var(--blue)}
+.file-input-wrapper{position:relative;overflow:hidden;display:inline-block}
+.file-input-wrapper input[type=file]{position:absolute;left:-9999px}
+.file-input-label{display:inline-flex;align-items:center;gap:7px;padding:9px 22px;background:var(--green);color:#fff;border-radius:6px;font-weight:700;cursor:pointer;transition:all .15s}
+.file-input-label:hover{background:#8a9200}
+@media(max-width:680px){.g2,.section-map{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -78,31 +87,33 @@ input[type=text]:focus,input[type=password]:focus,textarea:focus,select:focus{bo
 <div class="topbar">
   <div class="tb-brand">
     <div class="tb-logo">PORTICO</div>
-    <div class="tb-title">Opportunity Canvas &rarr; Requirements Document</div>
+    <div class="tb-title">Requirements Document Builder v1.3</div>
   </div>
-  <div class="tb-save" id="save-ind">&#x2713; Progress saved</div>
+  <div class="tb-save" id="save-ind">✓ Progress saved</div>
 </div>
 
 <!-- STEPPER -->
 <div class="stepper" id="stepper-bar">
   <div class="stp active" id="si0" data-action="goto" data-step="0"><div class="stp-num">1</div><div class="stp-lbl">Import Canvas</div></div>
   <div class="stp-sep" id="sep0"></div>
-  <div class="stp" id="si1" data-action="goto" data-step="1"><div class="stp-num">2</div><div class="stp-lbl">Canvas Fields</div></div>
+  <div class="stp" id="si1" data-action="goto" data-step="1"><div class="stp-num">2</div><div class="stp-lbl">Resources</div></div>
   <div class="stp-sep" id="sep1"></div>
-  <div class="stp" id="si2" data-action="goto" data-step="2"><div class="stp-num">3</div><div class="stp-lbl">Table Headers</div></div>
+  <div class="stp" id="si2" data-action="goto" data-step="2"><div class="stp-num">3</div><div class="stp-lbl">Canvas Fields</div></div>
   <div class="stp-sep" id="sep2"></div>
-  <div class="stp" id="si3" data-action="goto" data-step="3"><div class="stp-num">4</div><div class="stp-lbl">BA Interview</div></div>
+  <div class="stp" id="si3" data-action="goto" data-step="3"><div class="stp-num">4</div><div class="stp-lbl">Headers</div></div>
   <div class="stp-sep" id="sep3"></div>
-  <div class="stp" id="si4" data-action="goto" data-step="4"><div class="stp-num">5</div><div class="stp-lbl">Generate &amp; Export</div></div>
+  <div class="stp" id="si4" data-action="goto" data-step="4"><div class="stp-num">5</div><div class="stp-lbl">BA Interview</div></div>
+  <div class="stp-sep" id="sep4"></div>
+  <div class="stp" id="si5" data-action="goto" data-step="5"><div class="stp-num">6</div><div class="stp-lbl">Generate</div></div>
 </div>
 
 <div class="main">
 
-<!-- ════════════════════════ PANEL 0: IMPORT ════════════════════════ -->
+<!-- ════════════════════════ PANEL 0: IMPORT CANVAS ════════════════════════ -->
 <div id="panel-0" class="panel active">
 <div class="card">
-  <div class="cover"><h1>OPPORTUNITY CANVAS</h1><p>Requirements Document Builder &nbsp;|&nbsp; Portico Benefit Services &nbsp;|&nbsp; A Ministry of the ELCA</p></div>
-  <div class="alert alert-gold"><strong>Welcome!</strong> This enhanced tool walks you through building a complete requirements document with dynamic naming, table headers, and content.</div>
+  <div class="cover"><h1>OPPORTUNITY CANVAS</h1><p>Requirements Document Builder v1.3 | Portico Benefit Services</p></div>
+  <div class="alert alert-gold"><strong>Welcome!</strong> Build requirements documents from Smartsheet canvas data, enrich with existing resources, and collaborate with your business during the interview.</div>
   
   <div class="stag"><div class="stag-pill" style="background:var(--blue)">Step 1 — Import Canvas Data</div><div class="stag-line"></div></div>
   
@@ -117,80 +128,142 @@ input[type=text]:focus,input[type=password]:focus,textarea:focus,select:focus{bo
 
   <div class="fg">
     <label class="lbl">Paste your copied Smartsheet row (tab-separated)</label>
-    <textarea id="paste-area" rows="4" placeholder="Paste row from Smartsheet (Ctrl+V)...&#10;&#10;It will appear as tab-separated values."></textarea>
+    <textarea id="paste-area" rows="4" placeholder="Paste row from Smartsheet (Ctrl+V)..."></textarea>
   </div>
-
-  <div id="paste-preview"></div>
 
   <div class="fl">
-    <button class="btn btn-primary" data-action="paste-import">&#x2B07; Import Canvas Row</button>
-    <button class="btn btn-outline" onclick="goStep(1)">Skip to Manual Entry</button>
+    <button class="btn btn-primary" data-action="paste-import">⬇ Import Canvas Row</button>
+    <button class="btn btn-outline" onclick="goStep(1)">Skip to Resources</button>
   </div>
 </div>
 </div>
 
-<!-- ════════════════════════ PANEL 1: CANVAS FIELDS ════════════════════════ -->
+<!-- ════════════════════════ PANEL 1: RESOURCES ════════════════════════ -->
 <div id="panel-1" class="panel">
 <div class="card">
-  <div class="stag"><div class="stag-pill" style="background:var(--blue)">Step 2 — Review Canvas Fields</div><div class="stag-line"></div></div>
+  <div class="stag"><div class="stag-pill" style="background:var(--green)">Step 2 — Import Resources (NEW in v1.3)</div><div class="stag-line"></div></div>
 
-  <div class="alert alert-gold"><strong>✓ Auto-populated from Smartsheet.</strong> Edit as needed. The <strong>Opportunity Title</strong> will be used as your document name.</div>
+  <div class="alert alert-green"><strong>✓ Don't start from scratch!</strong> Upload or paste existing documents (Word, Excel), URLs, or text. The tool will help you map information to the appropriate sections, creating dynamic headers if needed. Then validate and update during the BA interview.</div>
 
-  <div class="g2" id="canvas-fields-container"></div>
+  <div class="tabs" style="margin-bottom:16px">
+    <button class="tab-btn active" data-res-tab="text">📋 Paste Text</button>
+    <button class="tab-btn" data-res-tab="url">🌐 URL/Link</button>
+    <button class="tab-btn" data-res-tab="file">📁 Upload File</button>
+  </div>
+
+  <!-- TEXT TAB -->
+  <div id="res-pane-text" class="tab-pane active">
+    <div class="fg">
+      <label class="lbl">Paste existing requirements, features, or business details</label>
+      <textarea id="resource-text" rows="6" placeholder="Paste existing document content here...&#10;&#10;Example:&#10;- Authentication must support OAuth2&#10;- System must handle 1000 concurrent users&#10;- API response time < 200ms"></textarea>
+    </div>
+    <div class="fg">
+      <label class="lbl">What section should this map to?</label>
+      <div class="section-map" id="section-select-text">
+        <div class="section-option" data-section="problem">Problem Statement</div>
+        <div class="section-option" data-section="requirements">Requirements</div>
+        <div class="section-option" data-section="strategic">Strategic Alignment</div>
+        <div class="section-option" data-section="future">Future State</div>
+        <div class="section-option" data-section="value">Value & Metrics</div>
+        <div class="section-option" data-section="custom">Custom Header</div>
+      </div>
+    </div>
+    <button class="btn btn-green" onclick="importTextResource()">✓ Add Resource</button>
+  </div>
+
+  <!-- URL TAB -->
+  <div id="res-pane-url" class="tab-pane">
+    <div class="fg">
+      <label class="lbl">URL or Link to existing document</label>
+      <input type="url" id="resource-url" placeholder="https://example.com/requirements.html or https://docs.google.com/document/d/...">
+    </div>
+    <div class="alert alert-blue">💡 <strong>Supported:</strong> Google Docs, Confluence, SharePoint links, HTML pages, PDF URLs</div>
+    <button class="btn btn-green" onclick="importUrlResource()">🔗 Fetch & Import</button>
+  </div>
+
+  <!-- FILE TAB -->
+  <div id="res-pane-file" class="tab-pane">
+    <div class="alert alert-orange">📁 <strong>Supported formats:</strong> .txt, .docx (as text), .xlsx (as text), .pdf (text extraction)</div>
+    <div class="file-input-wrapper">
+      <label class="file-input-label">
+        ✓ Choose File
+        <input type="file" id="resource-file" accept=".txt,.docx,.xlsx,.pdf" onchange="importFileResource()">
+      </label>
+    </div>
+    <div id="file-status" style="margin-top:10px;font-size:12px;color:#888"></div>
+  </div>
+
+  <!-- RESOURCES LIST -->
+  <div style="margin-top:20px;border-top:1px solid var(--mgray);padding-top:20px">
+    <strong style="color:var(--gray);font-size:13px">Imported Resources (<span id="resource-count">0</span>):</strong>
+    <div id="resources-list" style="margin-top:10px"></div>
+  </div>
 
   <div class="fl" style="margin-top:20px">
-    <button class="btn btn-gold" data-action="next">Continue to Table Headers &rarr;</button>
+    <button class="btn btn-gold" onclick="goStep(2)">Continue to Canvas Fields →</button>
+    <button class="btn btn-outline" onclick="goStep(0)">← Back</button>
   </div>
 </div>
 </div>
 
-<!-- ════════════════════════ PANEL 2: TABLE HEADERS ════════════════════════ -->
+<!-- ════════════════════════ PANEL 2: CANVAS FIELDS ════════════════════════ -->
 <div id="panel-2" class="panel">
 <div class="card">
-  <div class="stag"><div class="stag-pill" style="background:var(--orange)">Step 3 — Define Table Headers</div><div class="stag-line"></div></div>
+  <div class="stag"><div class="stag-pill" style="background:var(--blue)">Step 3 — Review Canvas Fields</div><div class="stag-line"></div></div>
+  <div class="alert alert-gold"><strong>✓ Auto-populated from Smartsheet.</strong> The <strong>Opportunity Title</strong> will be your document name.</div>
 
-  <div class="alert alert-orange"><strong>📋 Key step!</strong> Copy the header row from your Smartsheet data table. These headers become the table in your document.<br>The generated document will use dynamic content based on what you define here.</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" id="canvas-fields-container"></div>
+
+  <div class="fl" style="margin-top:20px">
+    <button class="btn btn-gold" onclick="goStep(3)">Continue to Headers →</button>
+    <button class="btn btn-outline" onclick="goStep(1)">← Back</button>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════ PANEL 3: HEADERS ════════════════════════ -->
+<div id="panel-3" class="panel">
+<div class="card">
+  <div class="stag"><div class="stag-pill" style="background:var(--orange)">Step 4 — Define Table Headers</div><div class="stag-line"></div></div>
+
+  <div class="alert alert-orange"><strong>📋 Dynamic Headers!</strong> Copy Smartsheet table headers, paste them below. New headers from your resources will appear automatically and can be reviewed here.</div>
 
   <div class="fg">
     <label class="lbl">Paste Table Header Row (from Smartsheet)</label>
-    <textarea id="header-area" rows="3" placeholder="Paste header row from your Smartsheet table...&#10;Example: ID | Name | Priority | Status | Owner"></textarea>
+    <textarea id="header-area" rows="3" placeholder="Paste header row from your Smartsheet table..."></textarea>
   </div>
 
-  <button class="btn btn-primary" onclick="importHeaders()">&#x2B07; Parse Headers</button>
+  <button class="btn btn-primary" onclick="importHeaders()">⬇ Parse Headers</button>
 
-  <div id="header-preview" style="display:none;">
-    <strong>Detected Headers:</strong>
-    <div id="preview-headers"></div>
-  </div>
-
-  <div id="headers-table" style="margin-top:14px;display:none;">
-    <label class="lbl">Parsed Table Headers (edit as needed):</label>
-    <textarea id="headers-data" rows="4" placeholder="Headers will appear here..."></textarea>
+  <div id="headers-display" style="margin-top:14px;display:none">
+    <label class="lbl">Headers to include in document:</label>
+    <div id="headers-list" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px"></div>
   </div>
 
   <div class="fl" style="margin-top:20px">
-    <button class="btn btn-gold" data-action="next">Continue to BA Interview &rarr;</button>
-    <button class="btn btn-outline" onclick="goStep(1)">← Back to Canvas Fields</button>
+    <button class="btn btn-gold" onclick="goStep(4)">Continue to BA Interview →</button>
+    <button class="btn btn-outline" onclick="goStep(2)">← Back</button>
   </div>
 </div>
 </div>
 
-<!-- ════════════════════════ PANEL 3: BA INTERVIEW ════════════════════════ -->
-<div id="panel-3" class="panel">
+<!-- ════════════════════════ PANEL 4: BA INTERVIEW ════════════════════════ -->
+<div id="panel-4" class="panel">
 <div class="card">
-  <div class="stag"><div class="stag-pill" style="background:var(--gray)">Step 4 — BA Interview</div><div class="stag-line"></div></div>
-  <p style="font-size:13px;color:#666;margin-bottom:16px">Complete these sections. Your progress auto-saves.</p>
+  <div class="stag"><div class="stag-pill" style="background:var(--gray)">Step 5 — BA Interview & Validation</div><div class="stag-line"></div></div>
+  <div class="alert alert-blue"><strong>🔄 Collaborate with Business!</strong> Review, validate, and update information from resources. Not starting from scratch anymore.</div>
 
   <div class="tabs">
-    <button class="tab-btn active" data-tab="stakeholders">&#x1F465; Stakeholders</button>
-    <button class="tab-btn" data-tab="requirements">&#x1F4CB; Requirements</button>
-    <button class="tab-btn" data-tab="testcases">&#x1F9AA; Test Cases</button>
+    <button class="tab-btn active" data-tab="resources-review">📊 Resources Review</button>
+    <button class="tab-btn" data-tab="requirements">📋 Requirements</button>
+    <button class="tab-btn" data-tab="testcases">🧪 Test Cases</button>
+    <button class="tab-btn" data-tab="stakeholders">👥 Stakeholders</button>
   </div>
 
-  <!-- STAKEHOLDERS TAB -->
-  <div id="tab-stakeholders" class="tab-pane active">
-    <div id="stakeholders-list"></div>
-    <button class="btn btn-add" onclick="addStakeholder()" style="margin-top:10px">+ Add Stakeholder</button>
+  <!-- RESOURCES REVIEW TAB -->
+  <div id="tab-resources-review" class="tab-pane active">
+    <div class="alert alert-green"><strong>Pre-populated from your resources:</strong> Review each item, confirm it's correct, update if needed, or delete if not applicable.</div>
+    <div id="resources-review-list" style="display:grid;gap:10px;margin-top:10px"></div>
   </div>
 
   <!-- REQUIREMENTS TAB -->
@@ -205,17 +278,23 @@ input[type=text]:focus,input[type=password]:focus,textarea:focus,select:focus{bo
     <button class="btn btn-add" onclick="addTestCase()" style="margin-top:10px">+ Add Test Case</button>
   </div>
 
+  <!-- STAKEHOLDERS TAB -->
+  <div id="tab-stakeholders" class="tab-pane">
+    <div id="stakeholders-list"></div>
+    <button class="btn btn-add" onclick="addStakeholder()" style="margin-top:10px">+ Add Stakeholder</button>
+  </div>
+
   <div class="fl" style="margin-top:20px">
-    <button class="btn btn-gold" data-action="next">Generate Document &rarr;</button>
-    <button class="btn btn-outline" onclick="goStep(2)">← Back to Headers</button>
+    <button class="btn btn-gold" onclick="goStep(5)">Generate Document →</button>
+    <button class="btn btn-outline" onclick="goStep(3)">← Back</button>
   </div>
 </div>
 </div>
 
-<!-- ════════════════════════ PANEL 4: GENERATE ════════════════════════ -->
-<div id="panel-4" class="panel">
+<!-- ════════════════════════ PANEL 5: GENERATE ════════════════════════ -->
+<div id="panel-5" class="panel">
 <div class="card">
-  <div class="stag"><div class="stag-pill" style="background:var(--gold)">Step 5 — Generate &amp; Export</div><div class="stag-line"></div></div>
+  <div class="stag"><div class="stag-pill" style="background:var(--gold)">Step 6 — Generate & Export</div><div class="stag-line"></div></div>
 
   <div class="alert alert-gold">
     <strong>Ready!</strong> Your document will be named:<br>
@@ -223,15 +302,15 @@ input[type=text]:focus,input[type=password]:focus,textarea:focus,select:focus{bo
   </div>
 
   <div style="background:var(--lgray);border-radius:8px;padding:14px;margin:14px 0">
-    <div style="font-weight:700;color:var(--gray);margin-bottom:8px">Document Preview:</div>
-    <div id="toc-preview" style="font-size:12px;color:#666;line-height:1.6"></div>
+    <div style="font-weight:700;color:var(--gray);margin-bottom:8px">Document Summary:</div>
+    <div id="doc-summary" style="font-size:12px;color:#666;line-height:1.6"></div>
   </div>
 
-  <button class="btn btn-gray" id="gen-btn" onclick="generateDoc()">⬇ Download Word Document</button>
+  <button class="btn btn-gray" onclick="generateDoc()">⬇ Download Word Document</button>
 
   <div class="fl" style="margin-top:14px">
-    <button class="btn btn-outline" onclick="goStep(3)">← Back</button>
-    <button class="btn btn-danger" onclick="resetAll()">&#x2715; Start Over</button>
+    <button class="btn btn-outline" onclick="goStep(4)">← Back</button>
+    <button class="btn btn-danger" onclick="resetAll()">✕ Start Over</button>
   </div>
 </div>
 </div>
@@ -246,47 +325,43 @@ input[type=text]:focus,input[type=password]:focus,textarea:focus,select:focus{bo
 const S = {
   canvas: { title: '', sponsor: '', targetDate: '', moscow: '', problem: '', severity: '', audience: '', userCount: '', objective: '', strategy: '', vision: '', dependencies: '', roiValue: '', successMetrics: '', confidence: '', impactScore: '', businessUnit: '', docOwner: '', version: '1.0 DRAFT' },
   tableHeaders: [],
-  stakeholders: [{ name: '', role: '', type: 'Sponsor', involvement: 'Approver', commsNeeds: 'Executive summary' }],
-  requirements: [{ id: 'REQ-001', title: '', priority: 'Critical', type: 'Functional', description: '', actors: '', preconditions: '', postconditions: '', ac: '' }],
-  testCases: [{ id: 'TC-001', scenario: '', steps: '', expected: '', priority: 'High' }]
+  resources: [],
+  customHeaders: [],
+  requirements: [{ id: 'REQ-001', title: '', priority: 'Critical', type: 'Functional', description: '', source: 'BA Input' }],
+  testCases: [{ id: 'TC-001', scenario: '', steps: '', expected: '', priority: 'High' }],
+  stakeholders: [{ name: '', role: '', type: 'Sponsor' }]
 };
 
 const CANVAS_FIELDS = [
   { id: 'title', label: 'Opportunity Title', section: 'header', multi: false },
   { id: 'sponsor', label: 'Sponsor(s)', section: 'header', multi: false },
-  { id: 'targetDate', label: 'Target Date / Deadline', section: 'header', multi: false },
+  { id: 'targetDate', label: 'Target Date', section: 'header', multi: false },
   { id: 'moscow', label: 'MoSCoW Score', section: 'scoring', multi: false },
   { id: 'problem', label: 'Problem Statement', section: 'problem', multi: true },
   { id: 'severity', label: 'Severity', section: 'problem', multi: true },
-  { id: 'audience', label: 'Who Are We Solving For?', section: 'problem', multi: false },
-  { id: 'userCount', label: 'Number of Users', section: 'problem', multi: false },
-  { id: 'objective', label: 'Business Objective', section: 'strategic', multi: true },
+  { id: 'audience', label: 'Audience', section: 'problem', multi: false },
+  { id: 'userCount', label: 'User Count', section: 'problem', multi: false },
+  { id: 'objective', label: 'Objective', section: 'strategic', multi: true },
   { id: 'strategy', label: 'Strategy', section: 'strategic', multi: false },
-  { id: 'vision', label: 'Future State Vision', section: 'future', multi: true },
+  { id: 'vision', label: 'Vision', section: 'future', multi: true },
   { id: 'dependencies', label: 'Dependencies', section: 'future', multi: false },
-  { id: 'roiValue', label: 'Targeted Value / ROI', section: 'value', multi: false },
+  { id: 'roiValue', label: 'ROI Value', section: 'value', multi: false },
   { id: 'successMetrics', label: 'Success Metrics', section: 'value', multi: true },
   { id: 'confidence', label: 'Confidence %', section: 'scoring', multi: false },
   { id: 'impactScore', label: 'Impact Score', section: 'scoring', multi: false }
 ];
 
-let colMap = {};
-let ssData = null;
-
-// Load from localStorage
-function loadState() {
-  try {
-    const saved = localStorage.getItem('portico-tool-state');
-    if (saved) Object.assign(S, JSON.parse(saved));
-  } catch(e) { console.log('Load error:', e); }
+function saveState() {
+  localStorage.setItem('portico-tool-v13', JSON.stringify(S));
+  document.getElementById('save-ind').classList.add('show');
+  setTimeout(() => document.getElementById('save-ind').classList.remove('show'), 1500);
 }
 
-function saveState() {
+function loadState() {
   try {
-    localStorage.setItem('portico-tool-state', JSON.stringify(S));
-    document.getElementById('save-ind').classList.add('show');
-    setTimeout(() => document.getElementById('save-ind').classList.remove('show'), 1500);
-  } catch(e) { console.log('Save error:', e); }
+    const saved = localStorage.getItem('portico-tool-v13');
+    if (saved) Object.assign(S, JSON.parse(saved));
+  } catch(e) { console.log('Load error:', e); }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -307,45 +382,141 @@ function goStep(n) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// PASTE IMPORT
+// RESOURCE IMPORT FUNCTIONS
 // ═══════════════════════════════════════════════════════════════════
 
-document.addEventListener('click', function(e) {
-  if (e.target.getAttribute('data-action') === 'paste-import') pasteImport();
-  if (e.target.getAttribute('data-action') === 'next') goStep(parseInt(e.target.closest('.card').parentElement.id.split('-')[1]) + 1);
-});
-
-function pasteImport() {
-  const text = document.getElementById('paste-area').value.trim();
-  if (!text) { alert('Paste a Smartsheet row first'); return; }
+function importTextResource() {
+  const text = document.getElementById('resource-text').value.trim();
+  const section = document.querySelector('#section-select-text .section-option.selected')?.getAttribute('data-section') || 'custom';
   
-  const cells = text.split('\t');
-  if (cells.length < 2) { alert('Invalid format. Copy entire row from Smartsheet.'); return; }
+  if (!text) { alert('Paste some content first'); return; }
   
-  // Map cells to fields based on fuzzy matching
-  colMap = {};
-  CANVAS_FIELDS.forEach(f => {
-    for (let i = 0; i < cells.length; i++) {
-      if (cells[i].toLowerCase().includes(f.label.toLowerCase().slice(0, 6))) {
-        colMap[f.id] = i;
-        break;
+  // Auto-detect requirements/features if they look like bullets/lines
+  const lines = text.split('\n').filter(l => l.trim());
+  
+  S.resources.push({
+    id: Date.now(),
+    type: 'text',
+    content: text,
+    section: section,
+    mapTo: section === 'custom' ? prompt('Create custom header for:', 'Additional Info') || 'Additional Info' : section,
+    imported: new Date().toLocaleString()
+  });
+  
+  // Auto-map to requirements if section is 'requirements'
+  if (section === 'requirements') {
+    lines.forEach((line, i) => {
+      if (line.trim().length > 3) {
+        S.requirements.push({
+          id: 'REQ-' + String(S.requirements.length + 1).padStart(3, '0'),
+          title: line.trim().substring(0, 50),
+          priority: 'High',
+          type: 'Functional',
+          description: line.trim(),
+          source: 'Imported Resource'
+        });
       }
-    }
-  });
+    });
+  }
   
-  CANVAS_FIELDS.forEach(f => {
-    if (colMap[f.id] !== undefined) {
-      S.canvas[f.id] = cells[colMap[f.id]].trim();
-    }
-  });
+  document.getElementById('resource-text').value = '';
+  document.querySelectorAll('#section-select-text .section-option').forEach(o => o.classList.remove('selected'));
   
   saveState();
-  renderCanvasFields();
-  goStep(1);
+  renderResources();
+  alert(`✓ Imported ${lines.length} items from resource`);
+}
+
+function importUrlResource() {
+  const url = document.getElementById('resource-url').value.trim();
+  if (!url) { alert('Enter a URL'); return; }
+  
+  // Add to resources list for later processing
+  S.resources.push({
+    id: Date.now(),
+    type: 'url',
+    url: url,
+    content: 'Pending fetch...',
+    section: 'custom',
+    imported: new Date().toLocaleString()
+  });
+  
+  alert('✓ URL resource added. Content will be fetched during document generation.');
+  document.getElementById('resource-url').value = '';
+  saveState();
+  renderResources();
+}
+
+function importFileResource() {
+  const file = document.getElementById('resource-file').files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const content = e.target.result;
+    
+    S.resources.push({
+      id: Date.now(),
+      type: 'file',
+      filename: file.name,
+      content: content,
+      section: 'custom',
+      imported: new Date().toLocaleString()
+    });
+    
+    document.getElementById('file-status').textContent = `✓ Imported: ${file.name}`;
+    setTimeout(() => {
+      document.getElementById('file-status').textContent = '';
+      document.getElementById('resource-file').value = '';
+    }, 3000);
+    
+    saveState();
+    renderResources();
+  };
+  
+  reader.readAsText(file);
+}
+
+function renderResources() {
+  const list = document.getElementById('resources-list');
+  const count = document.getElementById('resource-count');
+  
+  count.textContent = S.resources.length;
+  
+  list.innerHTML = S.resources.map((r, i) => `
+    <div class="resource-item">
+      <div class="resource-title">
+        ${r.type.toUpperCase()} · ${r.section} 
+        <button onclick="S.resources.splice(${i},1); renderResources(); saveState()" style="float:right;background:none;border:1px solid var(--red);color:var(--red);border-radius:4px;padding:2px 8px;cursor:pointer;font-size:11px">✕</button>
+      </div>
+      <div class="resource-preview">${(r.filename || r.url || r.content).substring(0, 150)}...</div>
+      <div style="font-size:11px;color:#888">${r.imported}</div>
+    </div>
+  `).join('');
+  
+  // Show resources review in interview tab
+  renderResourcesReview();
+}
+
+function renderResourcesReview() {
+  const list = document.getElementById('resources-review-list');
+  if (!list) return;
+  
+  list.innerHTML = S.resources.map((r, i) => `
+    <div class="resource-item mapped">
+      <div class="resource-title">${r.type} - Maps to: <strong>${r.mapTo || r.section}</strong></div>
+      <div class="resource-preview">${r.content.substring(0, 200)}...</div>
+      <div style="margin-top:8px">
+        <label style="font-size:11px;color:#666">Update mapping:</label>
+        <input type="text" value="${r.mapTo || r.section}" onchange="S.resources[${i}].mapTo = this.value; saveState()" style="width:100%;font-size:12px">
+      </div>
+      <button onclick="S.resources.splice(${i},1); renderResourcesReview(); saveState()" style="margin-top:8px;background:none;border:1px solid var(--red);color:var(--red);border-radius:4px;padding:4px 12px;cursor:pointer;font-size:11px">Delete</button>
+    </div>
+  `).join('');
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// CANVAS FIELDS RENDERING
+// CANVAS FIELDS, HEADERS, REQUIREMENTS
 // ═══════════════════════════════════════════════════════════════════
 
 function renderCanvasFields() {
@@ -354,22 +525,12 @@ function renderCanvasFields() {
     <div style="border:1px solid var(--mgray);border-radius:8px;padding:12px;border-top:3px solid var(--blue)">
       <label class="lbl">${f.label}</label>
       <input type="text" value="${S.canvas[f.id] || ''}" 
-        onchange="S.canvas['${f.id}'] = this.value; saveState();"
+        onchange="S.canvas['${f.id}'] = this.value; updateDocName(); saveState();"
         placeholder="[ to be confirmed ]">
     </div>
   `).join('');
   updateDocName();
 }
-
-function updateDocName() {
-  const title = (S.canvas.title || 'Opportunity Canvas').replace(/[^a-zA-Z0-9]+/g, '_');
-  const fname = title + '_BRD.doc';
-  document.getElementById('doc-name-preview').textContent = fname;
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// TABLE HEADERS
-// ═══════════════════════════════════════════════════════════════════
 
 function importHeaders() {
   const text = document.getElementById('header-area').value.trim();
@@ -377,47 +538,37 @@ function importHeaders() {
   
   S.tableHeaders = text.split('\t').map(h => h.trim()).filter(h => h);
   
-  const preview = document.getElementById('preview-headers');
-  preview.innerHTML = S.tableHeaders.map((h, i) => `<div class="preview-item"><span class="preview-label">${i+1}.</span> ${h}</div>`).join('');
+  // Add custom headers from resources
+  S.resources.forEach(r => {
+    if (r.mapTo && !S.tableHeaders.includes(r.mapTo)) {
+      S.customHeaders.push(r.mapTo);
+    }
+  });
   
-  document.getElementById('header-preview').style.display = 'block';
-  document.getElementById('header-preview').classList.add('has-data');
+  const display = document.getElementById('headers-display');
+  const list = document.getElementById('headers-list');
   
-  document.getElementById('headers-table').style.display = 'block';
-  document.getElementById('headers-data').value = S.tableHeaders.join('\n');
+  const allHeaders = [...new Set([...S.tableHeaders, ...S.customHeaders])];
   
-  saveState();
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// BA INTERVIEW SECTIONS
-// ═══════════════════════════════════════════════════════════════════
-
-function addStakeholder() {
-  S.stakeholders.push({ name: '', role: '', type: 'Sponsor', involvement: 'Approver', commsNeeds: '' });
-  renderStakeholders();
-  saveState();
-}
-
-function renderStakeholders() {
-  const list = document.getElementById('stakeholders-list');
-  list.innerHTML = S.stakeholders.map((s, i) => `
-    <div style="border:1px solid var(--mgray);border-radius:8px;padding:12px;margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:10px">
-        <strong style="color:var(--gray)">Stakeholder ${i+1}</strong>
-        ${i > 0 ? `<button onclick="S.stakeholders.splice(${i},1); renderStakeholders(); saveState()" style="background:none;border:1px solid var(--red);color:var(--red);border-radius:4px;padding:2px 8px;cursor:pointer;font-size:11px">✕ Remove</button>` : ''}
-      </div>
-      <div class="g2">
-        <div><label class="lbl">Name</label><input type="text" value="${s.name}" onchange="S.stakeholders[${i}].name = this.value; saveState()"></div>
-        <div><label class="lbl">Role</label><input type="text" value="${s.role}" onchange="S.stakeholders[${i}].role = this.value; saveState()"></div>
-      </div>
+  list.innerHTML = allHeaders.map((h, i) => `
+    <div style="padding:8px;background:#fff;border:1px solid var(--mgray);border-radius:6px;display:flex;justify-content:space-between;align-items:center">
+      <span>${h}</span>
+      <input type="checkbox" checked onchange="S.tableHeaders = S.tableHeaders.filter(x => x !== '${h}' || !this.checked); saveState()" style="width:auto">
     </div>
   `).join('');
+  
+  display.style.display = 'block';
+  saveState();
+}
+
+function updateDocName() {
+  const title = (S.canvas.title || 'Opportunity Canvas').replace(/[^a-zA-Z0-9]+/g, '_');
+  document.getElementById('doc-name-preview').textContent = title + '_BRD.doc';
 }
 
 function addRequirement() {
   const id = 'REQ-' + String(S.requirements.length + 1).padStart(3, '0');
-  S.requirements.push({ id, title: '', priority: 'Critical', type: 'Functional', description: '', actors: '', preconditions: '', postconditions: '', ac: '' });
+  S.requirements.push({ id, title: '', priority: 'Critical', type: 'Functional', description: '', source: 'BA Input' });
   renderRequirements();
   saveState();
 }
@@ -427,15 +578,15 @@ function renderRequirements() {
   list.innerHTML = S.requirements.map((r, i) => `
     <div style="border:1px solid var(--mgray);border-radius:8px;padding:12px;margin-bottom:10px;background:var(--lgray)">
       <div style="display:flex;justify-content:space-between;margin-bottom:10px">
-        <strong style="color:var(--gray)">${r.id}: ${r.title || '[ to be confirmed ]'}</strong>
-        ${i > 0 ? `<button onclick="S.requirements.splice(${i},1); renderRequirements(); saveState()" style="background:none;border:1px solid var(--red);color:var(--red);border-radius:4px;padding:2px 8px;cursor:pointer;font-size:11px">✕</button>` : ''}
+        <strong style="color:var(--gray)">${r.id}</strong>
+        <span style="font-size:11px;color:#888">${r.source}</span>
       </div>
-      <div class="g3">
+      <div class="g2">
         <div><label class="lbl">Title</label><input type="text" value="${r.title}" onchange="S.requirements[${i}].title = this.value; saveState()"></div>
         <div><label class="lbl">Priority</label><select onchange="S.requirements[${i}].priority = this.value; saveState()"><option ${r.priority === 'Critical' ? 'selected' : ''}>Critical</option><option ${r.priority === 'High' ? 'selected' : ''}>High</option></select></div>
-        <div><label class="lbl">Type</label><select onchange="S.requirements[${i}].type = this.value; saveState()"><option ${r.type === 'Functional' ? 'selected' : ''}>Functional</option></select></div>
       </div>
       <div><label class="lbl">Description</label><textarea rows="2" onchange="S.requirements[${i}].description = this.value; saveState()" placeholder="[ to be confirmed ]">${r.description}</textarea></div>
+      ${i > 0 ? `<button onclick="S.requirements.splice(${i},1); renderRequirements(); saveState()" style="margin-top:8px;background:none;border:1px solid var(--red);color:var(--red);border-radius:4px;padding:4px 12px;cursor:pointer;font-size:11px">Delete</button>` : ''}
     </div>
   `).join('');
 }
@@ -451,9 +602,29 @@ function renderTestCases() {
   const list = document.getElementById('testcases-list');
   list.innerHTML = S.testCases.map((t, i) => `
     <div style="border:1px solid var(--mgray);border-radius:8px;padding:12px;margin-bottom:10px">
-      <strong>${t.id}: ${t.scenario || '[ to be confirmed ]'}</strong>
+      <strong>${t.id}</strong>
       <div><label class="lbl">Scenario</label><input type="text" value="${t.scenario}" onchange="S.testCases[${i}].scenario = this.value; saveState()"></div>
-      <div><label class="lbl">Expected Result</label><input type="text" value="${t.expected}" onchange="S.testCases[${i}].expected = this.value; saveState()"></div>
+      <div><label class="lbl">Expected</label><input type="text" value="${t.expected}" onchange="S.testCases[${i}].expected = this.value; saveState()"></div>
+      ${i > 0 ? `<button onclick="S.testCases.splice(${i},1); renderTestCases(); saveState()" style="margin-top:8px;background:none;border:1px solid var(--red);color:var(--red);border-radius:4px;padding:4px 12px;cursor:pointer;font-size:11px">Delete</button>` : ''}
+    </div>
+  `).join('');
+}
+
+function addStakeholder() {
+  S.stakeholders.push({ name: '', role: '', type: 'Sponsor' });
+  renderStakeholders();
+  saveState();
+}
+
+function renderStakeholders() {
+  const list = document.getElementById('stakeholders-list');
+  list.innerHTML = S.stakeholders.map((s, i) => `
+    <div style="border:1px solid var(--mgray);border-radius:8px;padding:12px;margin-bottom:10px">
+      <div class="g2">
+        <div><label class="lbl">Name</label><input type="text" value="${s.name}" onchange="S.stakeholders[${i}].name = this.value; saveState()"></div>
+        <div><label class="lbl">Role</label><input type="text" value="${s.role}" onchange="S.stakeholders[${i}].role = this.value; saveState()"></div>
+      </div>
+      ${i > 0 ? `<button onclick="S.stakeholders.splice(${i},1); renderStakeholders(); saveState()" style="margin-top:8px;background:none;border:1px solid var(--red);color:var(--red);border-radius:4px;padding:4px 12px;cursor:pointer;font-size:11px">Delete</button>` : ''}
     </div>
   `).join('');
 }
@@ -465,59 +636,47 @@ function renderTestCases() {
 function generateDoc() {
   const title = S.canvas.title || 'Requirements Document';
   const fname = title.replace(/[^a-zA-Z0-9]+/g, '_') + '_BRD.doc';
-  
   const now = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   
-  let tableHtml = '';
-  if (S.tableHeaders.length > 0) {
-    tableHtml = '<h2 style="margin:12pt 0 4pt;color:#009CDE;font-size:16pt">Custom Data Table</h2>';
-    tableHtml += '<table style="width:100%;border-collapse:collapse;margin:8pt 0">';
-    tableHtml += '<tr>';
-    S.tableHeaders.forEach(h => {
-      tableHtml += `<td style="background:#54585A;color:#fff;font-weight:bold;padding:8pt;border:1pt solid #D0D7DE">${h || '[ to be confirmed ]'}</td>`;
+  let resourcesHtml = '';
+  if (S.resources.length > 0) {
+    resourcesHtml = '<h2 style="color:#009CDE;margin:12pt 0 4pt">Referenced Resources</h2>';
+    S.resources.forEach(r => {
+      resourcesHtml += `<p><strong>${r.mapTo || r.section}:</strong> ${r.filename || r.url || r.content.substring(0, 100)}</p>`;
     });
-    tableHtml += '</tr></table>';
   }
   
   const html = `<!DOCTYPE html>
-<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
-<head><meta charset="utf-8"><meta name="ProgId" content="Word.Document">
-<style>body{font-family:Calibri,sans-serif;font-size:14pt;color:#3A3A3A;margin:1in;line-height:1.4}h2{font-family:Calibri;font-size:16pt;color:#009CDE;font-weight:bold;margin:12pt 0 4pt}table{width:100%;border-collapse:collapse;margin:6pt 0 14pt;font-size:11pt}td{border:1pt solid #D0D7DE;padding:5pt 8pt;vertical-align:top}@page{margin:1in}</style></head>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
+<head><meta charset="utf-8"><style>body{font-family:Calibri;font-size:14pt;color:#3A3A3A;margin:1in;line-height:1.4}h2{color:#009CDE;font-size:16pt;font-weight:bold;margin:12pt 0 4pt}table{width:100%;border-collapse:collapse;margin:6pt 0 14pt}td{border:1pt solid #D0D7DE;padding:5pt 8pt}@page{margin:1in}</style></head>
 <body>
 <div style="background:#54585A;padding:40pt 36pt;margin:-1in -1in 24pt">
-  <div style="color:#F1C400;font-size:32pt;font-weight:bold;letter-spacing:4px">${title}</div>
-  <div style="color:#F1C400;font-size:18pt;font-weight:bold;margin-top:4pt">Requirements Document</div>
-  <div style="color:#CCCCCC;font-size:12pt;margin-top:8pt">Portico Benefit Services | A Ministry of the ELCA | ${now}</div>
+  <div style="color:#F1C400;font-size:32pt;font-weight:bold">${title}</div>
+  <div style="color:#F1C400;font-size:18pt;margin-top:4pt">Requirements Document</div>
+  <div style="color:#CCCCCC;font-size:12pt;margin-top:8pt">Portico | ${now}</div>
 </div>
 
-<h2>1. Overview</h2>
-<p><strong>Opportunity Title:</strong> ${S.canvas.title || '[ to be confirmed ]'}</p>
+<h2>Overview</h2>
+<p><strong>Title:</strong> ${S.canvas.title || '[ to be confirmed ]'}</p>
 <p><strong>Sponsor:</strong> ${S.canvas.sponsor || '[ to be confirmed ]'}</p>
-<p><strong>Target Date:</strong> ${S.canvas.targetDate || '[ to be confirmed ]'}</p>
 
-<h2>2. Problem Statement</h2>
-<p>${S.canvas.problem || '[ to be confirmed ]'}</p>
-
-<h2>3. Severity</h2>
-<p>${S.canvas.severity || '[ to be confirmed ]'}</p>
-
-<h2>4. Requirements (${S.requirements.length})</h2>
+<h2>Requirements (${S.requirements.length})</h2>
 ${S.requirements.map(r => `
-<h3>${r.id}: ${r.title || '[ to be confirmed ]'}</h3>
-<p><strong>Priority:</strong> <span style="color:${r.priority === 'Critical' ? '#C5003E' : '#D86018'};font-weight:bold">${r.priority}</span></p>
-<p><strong>Description:</strong> ${r.description || '[ to be confirmed ]'}</p>
+<p><strong>${r.id}: ${r.title || '[ to be confirmed ]'}</strong><br>
+Priority: <span style="color:${r.priority === 'Critical' ? '#C5003E' : '#D86018'};font-weight:bold">${r.priority}</span><br>
+${r.description || '[ to be confirmed ]'}</p>
 `).join('')}
 
-<h2>5. Test Cases (${S.testCases.length})</h2>
+<h2>Test Cases (${S.testCases.length})</h2>
 ${S.testCases.map(t => `
-<h3>${t.id}: ${t.scenario || '[ to be confirmed ]'}</h3>
-<p><strong>Expected:</strong> ${t.expected || '[ to be confirmed ]'}</p>
+<p><strong>${t.id}:</strong> ${t.scenario || '[ to be confirmed ]'}<br>
+Expected: ${t.expected || '[ to be confirmed ]'}</p>
 `).join('')}
 
-${tableHtml}
+${resourcesHtml}
 
 <div style="border-top:3pt solid #F1C400;margin-top:24pt;padding-top:8pt;text-align:center;font-size:10pt;color:#888">
-PORTICO BENEFIT SERVICES | Requirements Document | A Ministry of the ELCA | CONFIDENTIAL
+PORTICO | Requirements Document | CONFIDENTIAL
 </div>
 </body></html>`;
 
@@ -531,8 +690,8 @@ PORTICO BENEFIT SERVICES | Requirements Document | A Ministry of the ELCA | CONF
 }
 
 function resetAll() {
-  if (confirm('Clear all data and start over?')) {
-    localStorage.removeItem('portico-tool-state');
+  if (confirm('Clear all data?')) {
+    localStorage.removeItem('portico-tool-v13');
     location.reload();
   }
 }
@@ -541,22 +700,55 @@ function resetAll() {
 // INITIALIZE
 // ═══════════════════════════════════════════════════════════════════
 
-loadState();
-renderCanvasFields();
-renderStakeholders();
-renderRequirements();
-renderTestCases();
+document.addEventListener('click', function(e) {
+  if (e.target.getAttribute('data-action') === 'paste-import') {
+    const text = document.getElementById('paste-area').value.trim();
+    if (!text) { alert('Paste a Smartsheet row'); return; }
+    const cells = text.split('\t');
+    CANVAS_FIELDS.forEach(f => {
+      for (let i = 0; i < cells.length; i++) {
+        if (cells[i].toLowerCase().includes(f.label.toLowerCase().slice(0, 6))) {
+          S.canvas[f.id] = cells[i].trim();
+          break;
+        }
+      }
+    });
+    saveState();
+    renderCanvasFields();
+    goStep(1);
+  }
+  if (e.target.classList.contains('section-option')) {
+    e.target.parentElement.querySelectorAll('.section-option').forEach(o => o.classList.remove('selected'));
+    e.target.classList.add('selected');
+  }
+});
 
-// Tab switching
-document.querySelectorAll('.tab-btn').forEach(btn => {
+document.querySelectorAll('[data-res-tab]').forEach(btn => {
   btn.addEventListener('click', function() {
-    const tab = this.getAttribute('data-tab');
-    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-    document.getElementById('tab-' + tab).classList.add('active');
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    const tab = this.getAttribute('data-res-tab');
+    document.querySelectorAll('[id^="res-pane-"]').forEach(p => p.classList.remove('active'));
+    document.getElementById('res-pane-' + tab).classList.add('active');
+    document.querySelectorAll('[data-res-tab]').forEach(b => b.classList.remove('active'));
     this.classList.add('active');
   });
 });
+
+document.querySelectorAll('[data-tab]').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const tab = this.getAttribute('data-tab');
+    document.querySelectorAll('[id^="tab-"]').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    document.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+loadState();
+renderCanvasFields();
+renderRequirements();
+renderTestCases();
+renderStakeholders();
+renderResources();
 
 </script>
 </body>
