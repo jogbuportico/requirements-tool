@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portico | Requirements Document Builder</title>
+<style>
+:root{--gold:#F1C400;--gray:#54585A;--blue:#009CDE;--orange:#D86018;--green:#A2AD00;--red:#C5003E;--lgray:#F4F4F4;--mgray:#D0D7DE;--dgray:#3A3A3A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Calibri,'Segoe UI',sans-serif;font-size:14px;color:var(--dgray);background:#EEF1F4;min-height:100vh}
+.topbar{background:var(--gray);padding:0 28px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.tb-brand{display:flex;align-items:center;gap:12px}
+.tb-logo{color:var(--gold);font-size:20px;font-weight:800;letter-spacing:3px}
+.tb-title{color:#ccc;font-size:13px}
+.tb-save{color:var(--gold);font-size:12px;opacity:0;transition:opacity .4s}
+.tb-save.show{opacity:1}
+.stepper{background:#fff;border-bottom:1px solid var(--mgray);padding:0 24px;display:flex;overflow-x:auto}
+.stp{display:flex;align-items:center;gap:8px;padding:14px 16px;cursor:default;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s}
+.stp.done{cursor:pointer}.stp.done:hover{background:var(--lgray)}
+.stp.active{border-bottom-color:var(--gold)}
+.stp-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:#ddd;color:var(--gray);flex-shrink:0;transition:all .2s}
+.stp.active .stp-num{background:var(--gold);color:#fff}
+.stp.done .stp-num{background:var(--green);color:#fff}
+.stp-lbl{font-size:12px;color:#888;font-weight:500}
+.stp.active .stp-lbl{color:var(--gray);font-weight:700}
+.stp.done .stp-lbl{color:var(--green)}
+.stp-sep{width:20px;height:2px;background:#ddd;flex-shrink:0;align-self:center}
+.stp-sep.done{background:var(--green)}
+.main{max-width:980px;margin:0 auto;padding:24px 16px 60px}
+.panel{display:none}.panel.active{display:block}
+.card{background:#fff;border-radius:10px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,.08);margin-bottom:16px}
+.cover{background:var(--gray);border-radius:10px 10px 0 0;padding:28px 32px;margin:-28px -28px 22px}
+.cover h1{color:var(--gold);font-size:26px;letter-spacing:3px;font-weight:800}
+.cover p{color:#ccc;font-size:12px;margin-top:5px}
+.stag{display:flex;align-items:center;gap:10px;margin:20px 0 14px}
+.stag-pill{color:#fff;font-weight:700;font-size:10px;padding:3px 12px;border-radius:3px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.stag-line{flex:1;height:1px;background:var(--mgray)}
+.alert{border-radius:6px;padding:10px 14px;font-size:13px;margin-bottom:14px;border-left:4px solid}
+.alert-gold{background:#FFFDE6;border-color:var(--gold);color:#5a4a00}
+.alert-blue{background:#E8F4FD;border-color:var(--blue);color:#004d7a}
+.alert-green{background:#F0FFF4;border-color:var(--green);color:#3a4200}
+.alert-red{background:#FFF0F3;border-color:var(--red);color:#7a0025}
+.fl{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+label.lbl{display:block;font-size:11px;font-weight:700;color:var(--gray);letter-spacing:.4px;margin-bottom:4px}
+.src{display:block;font-size:11px;color:var(--blue);font-style:italic;margin-bottom:4px}
+input[type=text],input[type=password],textarea,select{width:100%;border:1.5px solid var(--mgray);border-radius:6px;padding:7px 10px;font-family:Calibri,'Segoe UI',sans-serif;font-size:13px;color:var(--dgray);background:#fff;outline:none;resize:vertical;transition:border-color .15s}
+input[type=text]:focus,input[type=password]:focus,textarea:focus,select:focus{border-color:var(--blue)}
+.fg{margin-bottom:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 22px;border:none;border-radius:6px;font-family:Calibri,'Segoe UI',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;text-decoration:none}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover:not(:disabled){background:#007db8}
+.btn-gold{background:var(--gold);color:var(--gray)}.btn-gold:hover:not(:disabled){background:#d9b000}
+.btn-gray{background:var(--gray);color:#fff}.btn-gray:hover:not(:disabled){background:#3d4042}
+.btn-outline{background:none;border:1.5px solid var(--gray);color:var(--gray)}.btn-outline:hover:not(:disabled){background:var(--lgray)}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover:not(:disabled){background:#8a9200}
+.btn-danger{background:none;border:1.5px solid var(--red);color:var(--red)}.btn-danger:hover:not(:disabled){background:#fff0f3}
+.btn-add{background:none;border:1.5px dashed var(--blue);border-radius:6px;padding:6px 16px;font-family:Calibri,'Segoe UI',sans-serif;font-size:12px;font-weight:600;color:var(--blue);cursor:pointer;transition:all .15s}
+.btn-add:hover{background:#e8f6fd}
+.block{border:1px solid var(--mgray);border-radius:8px;margin-bottom:14px;overflow:hidden}
+.bh{padding:9px 14px;display:flex;justify-content:space-between;align-items:center;color:#fff;font-weight:700;font-size:13px}
+.bb{padding:14px;background:#FAFAFA}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.tab-btn{padding:5px 14px;border-radius:20px;border:none;cursor:pointer;font-family:Calibri,'Segoe UI',sans-serif;font-size:12px;font-weight:500;background:#eee;color:var(--gray);transition:all .15s}
+.tab-btn.active{background:var(--blue);color:#fff;font-weight:700}
+.tab-pane{display:none}.tab-pane.active{display:block}
+#header-preview{background:#F4F4F4;border:1px solid var(--mgray);border-radius:6px;padding:12px;margin:10px 0;font-size:12px}
+#header-preview.has-data{background:#E8F4FD;border-color:var(--blue)}
+.preview-item{padding:4px 0;color:var(--dgray)}
+.preview-label{font-weight:700;color:var(--gray);display:inline;margin-right:8px}
+@media(max-width:680px){.g2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="tb-brand">
+    <div class="tb-logo">PORTICO</div>
+    <div class="tb-title">Opportunity Canvas &rarr; Requirements Document</div>
+  </div>
+  <div class="tb-save" id="save-ind">&#x2713; Progress saved</div>
+</div>
+
+<!-- STEPPER -->
+<div class="stepper" id="stepper-bar">
+  <div class="stp active" id="si0" data-action="goto" data-step="0"><div class="stp-num">1</div><div class="stp-lbl">Import Canvas</div></div>
+  <div class="stp-sep" id="sep0"></div>
+  <div class="stp" id="si1" data-action="goto" data-step="1"><div class="stp-num">2</div><div class="stp-lbl">Canvas Fields</div></div>
+  <div class="stp-sep" id="sep1"></div>
+  <div class="stp" id="si2" data-action="goto" data-step="2"><div class="stp-num">3</div><div class="stp-lbl">Table Headers</div></div>
+  <div class="stp-sep" id="sep2"></div>
+  <div class="stp" id="si3" data-action="goto" data-step="3"><div class="stp-num">4</div><div class="stp-lbl">BA Interview</div></div>
+  <div class="stp-sep" id="sep3"></div>
+  <div class="stp" id="si4" data-action="goto" data-step="4"><div class="stp-num">5</div><div class="stp-lbl">Generate &amp; Export</div></div>
+</div>
+
+<div class="main">
+
+<!-- ════════════════════════ PANEL 0: IMPORT ════════════════════════ -->
+<div id="panel-0" class="panel active">
+<div class="card">
+  <div class="cover"><h1>OPPORTUNITY CANVAS</h1><p>Requirements Document Builder &nbsp;|&nbsp; Portico Benefit Services &nbsp;|&nbsp; A Ministry of the ELCA</p></div>
+  <div class="alert alert-gold"><strong>Welcome!</strong> This enhanced tool walks you through building a complete requirements document with dynamic naming, table headers, and content.</div>
+  
+  <div class="stag"><div class="stag-pill" style="background:var(--blue)">Step 1 — Import Canvas Data</div><div class="stag-line"></div></div>
+  
+  <div class="alert alert-blue">
+    <strong>How to import:</strong><br>
+    1. Open your Smartsheet Opportunity Canvas<br>
+    2. Click row number (far left) — entire row highlights<br>
+    3. Press <strong>Ctrl+C</strong> to copy the whole row<br>
+    4. Paste below using <strong>Ctrl+V</strong><br>
+    5. Click "Import Canvas Row"
+  </div>
+
+  <div class="fg">
+    <label class="lbl">Paste your copied Smartsheet row (tab-separated)</label>
+    <textarea id="paste-area" rows="4" placeholder="Paste row from Smartsheet (Ctrl+V)...&#10;&#10;It will appear as tab-separated values."></textarea>
+  </div>
+
+  <div id="paste-preview"></div>
+
+  <div class="fl">
+    <button class="btn btn-primary" data-action="paste-import">&#x2B07; Import Canvas Row</button>
+    <button class="btn btn-outline" onclick="goStep(1)">Skip to Manual Entry</button>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════ PANEL 1: CANVAS FIELDS ════════════════════════ -->
+<div id="panel-1" class="panel">
+<div class="card">
+  <div class="stag"><div class="stag-pill" style="background:var(--blue)">Step 2 — Review Canvas Fields</div><div class="stag-line"></div></div>
+
+  <div class="alert alert-gold"><strong>✓ Auto-populated from Smartsheet.</strong> Edit as needed. The <strong>Opportunity Title</strong> will be used as your document name.</div>
+
+  <div class="g2" id="canvas-fields-container"></div>
+
+  <div class="fl" style="margin-top:20px">
+    <button class="btn btn-gold" data-action="next">Continue to Table Headers &rarr;</button>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════ PANEL 2: TABLE HEADERS ════════════════════════ -->
+<div id="panel-2" class="panel">
+<div class="card">
+  <div class="stag"><div class="stag-pill" style="background:var(--orange)">Step 3 — Define Table Headers</div><div class="stag-line"></div></div>
+
+  <div class="alert alert-orange"><strong>📋 Key step!</strong> Copy the header row from your Smartsheet data table. These headers become the table in your document.<br>The generated document will use dynamic content based on what you define here.</div>
+
+  <div class="fg">
+    <label class="lbl">Paste Table Header Row (from Smartsheet)</label>
+    <textarea id="header-area" rows="3" placeholder="Paste header row from your Smartsheet table...&#10;Example: ID | Name | Priority | Status | Owner"></textarea>
+  </div>
+
+  <button class="btn btn-primary" onclick="importHeaders()">&#x2B07; Parse Headers</button>
+
+  <div id="header-preview" style="display:none;">
+    <strong>Detected Headers:</strong>
+    <div id="preview-headers"></div>
+  </div>
+
+  <div id="headers-table" style="margin-top:14px;display:none;">
+    <label class="lbl">Parsed Table Headers (edit as needed):</label>
+    <textarea id="headers-data" rows="4" placeholder="Headers will appear here..."></textarea>
+  </div>
+
+  <div class="fl" style="margin-top:20px">
+    <button class="btn btn-gold" data-action="next">Continue to BA Interview &rarr;</button>
+    <button class="btn btn-outline" onclick="goStep(1)">← Back to Canvas Fields</button>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════ PANEL 3: BA INTERVIEW ════════════════════════ -->
+<div id="panel-3" class="panel">
+<div class="card">
+  <div class="stag"><div class="stag-pill" style="background:var(--gray)">Step 4 — BA Interview</div><div class="stag-line"></div></div>
+  <p style="font-size:13px;color:#666;margin-bottom:16px">Complete these sections. Your progress auto-saves.</p>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="stakeholders">&#x1F465; Stakeholders</button>
+    <button class="tab-btn" data-tab="requirements">&#x1F4CB; Requirements</button>
+    <button class="tab-btn" data-tab="testcases">&#x1F9AA; Test Cases</button>
+  </div>
+
+  <!-- STAKEHOLDERS TAB -->
+  <div id="tab-stakeholders" class="tab-pane active">
+    <div id="stakeholders-list"></div>
+    <button class="btn btn-add" onclick="addStakeholder()" style="margin-top:10px">+ Add Stakeholder</button>
+  </div>
+
+  <!-- REQUIREMENTS TAB -->
+  <div id="tab-requirements" class="tab-pane">
+    <div id="requirements-list"></div>
+    <button class="btn btn-add" onclick="addRequirement()" style="margin-top:10px">+ Add Requirement</button>
+  </div>
+
+  <!-- TEST CASES TAB -->
+  <div id="tab-testcases" class="tab-pane">
+    <div id="testcases-list"></div>
+    <button class="btn btn-add" onclick="addTestCase()" style="margin-top:10px">+ Add Test Case</button>
+  </div>
+
+  <div class="fl" style="margin-top:20px">
+    <button class="btn btn-gold" data-action="next">Generate Document &rarr;</button>
+    <button class="btn btn-outline" onclick="goStep(2)">← Back to Headers</button>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════ PANEL 4: GENERATE ════════════════════════ -->
+<div id="panel-4" class="panel">
+<div class="card">
+  <div class="stag"><div class="stag-pill" style="background:var(--gold)">Step 5 — Generate &amp; Export</div><div class="stag-line"></div></div>
+
+  <div class="alert alert-gold">
+    <strong>Ready!</strong> Your document will be named:<br>
+    <span id="doc-name-preview" style="font-family:monospace;font-weight:bold;color:var(--blue)">opportunity_title_BRD.doc</span>
+  </div>
+
+  <div style="background:var(--lgray);border-radius:8px;padding:14px;margin:14px 0">
+    <div style="font-weight:700;color:var(--gray);margin-bottom:8px">Document Preview:</div>
+    <div id="toc-preview" style="font-size:12px;color:#666;line-height:1.6"></div>
+  </div>
+
+  <button class="btn btn-gray" id="gen-btn" onclick="generateDoc()">⬇ Download Word Document</button>
+
+  <div class="fl" style="margin-top:14px">
+    <button class="btn btn-outline" onclick="goStep(3)">← Back</button>
+    <button class="btn btn-danger" onclick="resetAll()">&#x2715; Start Over</button>
+  </div>
+</div>
+</div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// STATE MANAGEMENT
+// ═══════════════════════════════════════════════════════════════════
+
+const S = {
+  canvas: { title: '', sponsor: '', targetDate: '', moscow: '', problem: '', severity: '', audience: '', userCount: '', objective: '', strategy: '', vision: '', dependencies: '', roiValue: '', successMetrics: '', confidence: '', impactScore: '', businessUnit: '', docOwner: '', version: '1.0 DRAFT' },
+  tableHeaders: [],
+  stakeholders: [{ name: '', role: '', type: 'Sponsor', involvement: 'Approver', commsNeeds: 'Executive summary' }],
+  requirements: [{ id: 'REQ-001', title: '', priority: 'Critical', type: 'Functional', description: '', actors: '', preconditions: '', postconditions: '', ac: '' }],
+  testCases: [{ id: 'TC-001', scenario: '', steps: '', expected: '', priority: 'High' }]
+};
+
+const CANVAS_FIELDS = [
+  { id: 'title', label: 'Opportunity Title', section: 'header', multi: false },
+  { id: 'sponsor', label: 'Sponsor(s)', section: 'header', multi: false },
+  { id: 'targetDate', label: 'Target Date / Deadline', section: 'header', multi: false },
+  { id: 'moscow', label: 'MoSCoW Score', section: 'scoring', multi: false },
+  { id: 'problem', label: 'Problem Statement', section: 'problem', multi: true },
+  { id: 'severity', label: 'Severity', section: 'problem', multi: true },
+  { id: 'audience', label: 'Who Are We Solving For?', section: 'problem', multi: false },
+  { id: 'userCount', label: 'Number of Users', section: 'problem', multi: false },
+  { id: 'objective', label: 'Business Objective', section: 'strategic', multi: true },
+  { id: 'strategy', label: 'Strategy', section: 'strategic', multi: false },
+  { id: 'vision', label: 'Future State Vision', section: 'future', multi: true },
+  { id: 'dependencies', label: 'Dependencies', section: 'future', multi: false },
+  { id: 'roiValue', label: 'Targeted Value / ROI', section: 'value', multi: false },
+  { id: 'successMetrics', label: 'Success Metrics', section: 'value', multi: true },
+  { id: 'confidence', label: 'Confidence %', section: 'scoring', multi: false },
+  { id: 'impactScore', label: 'Impact Score', section: 'scoring', multi: false }
+];
+
+let colMap = {};
+let ssData = null;
+
+// Load from localStorage
+function loadState() {
+  try {
+    const saved = localStorage.getItem('portico-tool-state');
+    if (saved) Object.assign(S, JSON.parse(saved));
+  } catch(e) { console.log('Load error:', e); }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('portico-tool-state', JSON.stringify(S));
+    document.getElementById('save-ind').classList.add('show');
+    setTimeout(() => document.getElementById('save-ind').classList.remove('show'), 1500);
+  } catch(e) { console.log('Save error:', e); }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════════
+
+function goStep(n) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.stp').forEach((s, i) => {
+    s.classList.remove('active', 'done');
+    const sep = document.getElementById('sep' + i);
+    if (sep) sep.classList.remove('done');
+    if (i < n) { s.classList.add('done'); if (sep) sep.classList.add('done'); }
+    if (i === n) s.classList.add('active');
+  });
+  document.getElementById('panel-' + n).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PASTE IMPORT
+// ═══════════════════════════════════════════════════════════════════
+
+document.addEventListener('click', function(e) {
+  if (e.target.getAttribute('data-action') === 'paste-import') pasteImport();
+  if (e.target.getAttribute('data-action') === 'next') goStep(parseInt(e.target.closest('.card').parentElement.id.split('-')[1]) + 1);
+});
+
+function pasteImport() {
+  const text = document.getElementById('paste-area').value.trim();
+  if (!text) { alert('Paste a Smartsheet row first'); return; }
+  
+  const cells = text.split('\t');
+  if (cells.length < 2) { alert('Invalid format. Copy entire row from Smartsheet.'); return; }
+  
+  // Map cells to fields based on fuzzy matching
+  colMap = {};
+  CANVAS_FIELDS.forEach(f => {
+    for (let i = 0; i < cells.length; i++) {
+      if (cells[i].toLowerCase().includes(f.label.toLowerCase().slice(0, 6))) {
+        colMap[f.id] = i;
+        break;
+      }
+    }
+  });
+  
+  CANVAS_FIELDS.forEach(f => {
+    if (colMap[f.id] !== undefined) {
+      S.canvas[f.id] = cells[colMap[f.id]].trim();
+    }
+  });
+  
+  saveState();
+  renderCanvasFields();
+  goStep(1);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CANVAS FIELDS RENDERING
+// ═══════════════════════════════════════════════════════════════════
+
+function renderCanvasFields() {
+  const container = document.getElementById('canvas-fields-container');
+  container.innerHTML = CANVAS_FIELDS.map(f => `
+    <div style="border:1px solid var(--mgray);border-radius:8px;padding:12px;border-top:3px solid var(--blue)">
+      <label class="lbl">${f.label}</label>
+      <input type="text" value="${S.canvas[f.id] || ''}" 
+        onchange="S.canvas['${f.id}'] = this.value; saveState();"
+        placeholder="[ to be confirmed ]">
+    </div>
+  `).join('');
+  updateDocName();
+}
+
+function updateDocName() {
+  const title = (S.canvas.title || 'Opportunity Canvas').replace(/[^a-zA-Z0-9]+/g, '_');
+  const fname = title + '_BRD.doc';
+  document.getElementById('doc-name-preview').textContent = fname;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TABLE HEADERS
+// ═══════════════════════════════════════════════════════════════════
+
+function importHeaders() {
+  const text = document.getElementById('header-area').value.trim();
+  if (!text) { alert('Paste header row first'); return; }
+  
+  S.tableHeaders = text.split('\t').map(h => h.trim()).filter(h => h);
+  
+  const preview = document.getElementById('preview-headers');
+  preview.innerHTML = S.tableHeaders.map((h, i) => `<div class="preview-item"><span class="preview-label">${i+1}.</span> ${h}</div>`).join('');
+  
+  document.getElementById('header-preview').style.display = 'block';
+  document.getElementById('header-preview').classList.add('has-data');
+  
+  document.getElementById('headers-table').style.display = 'block';
+  document.getElementById('headers-data').value = S.tableHeaders.join('\n');
+  
+  saveState();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// BA INTERVIEW SECTIONS
+// ═══════════════════════════════════════════════════════════════════
+
+function addStakeholder() {
+  S.stakeholders.push({ name: '', role: '', type: 'Sponsor', involvement: 'Approver', commsNeeds: '' });
+  renderStakeholders();
+  saveState();
+}
+
+function renderStakeholders() {
+  const list = document.getElementById('stakeholders-list');
+  list.innerHTML = S.stakeholders.map((s, i) => `
+    <div style="border:1px solid var(--mgray);border-radius:8px;padding:12px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+        <strong style="color:var(--gray)">Stakeholder ${i+1}</strong>
+        ${i > 0 ? `<button onclick="S.stakeholders.splice(${i},1); renderStakeholders(); saveState()" style="background:none;border:1px solid var(--red);color:var(--red);border-radius:4px;padding:2px 8px;cursor:pointer;font-size:11px">✕ Remove</button>` : ''}
+      </div>
+      <div class="g2">
+        <div><label class="lbl">Name</label><input type="text" value="${s.name}" onchange="S.stakeholders[${i}].name = this.value; saveState()"></div>
+        <div><label class="lbl">Role</label><input type="text" value="${s.role}" onchange="S.stakeholders[${i}].role = this.value; saveState()"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addRequirement() {
+  const id = 'REQ-' + String(S.requirements.length + 1).padStart(3, '0');
+  S.requirements.push({ id, title: '', priority: 'Critical', type: 'Functional', description: '', actors: '', preconditions: '', postconditions: '', ac: '' });
+  renderRequirements();
+  saveState();
+}
+
+function renderRequirements() {
+  const list = document.getElementById('requirements-list');
+  list.innerHTML = S.requirements.map((r, i) => `
+    <div style="border:1px solid var(--mgray);border-radius:8px;padding:12px;margin-bottom:10px;background:var(--lgray)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+        <strong style="color:var(--gray)">${r.id}: ${r.title || '[ to be confirmed ]'}</strong>
+        ${i > 0 ? `<button onclick="S.requirements.splice(${i},1); renderRequirements(); saveState()" style="background:none;border:1px solid var(--red);color:var(--red);border-radius:4px;padding:2px 8px;cursor:pointer;font-size:11px">✕</button>` : ''}
+      </div>
+      <div class="g3">
+        <div><label class="lbl">Title</label><input type="text" value="${r.title}" onchange="S.requirements[${i}].title = this.value; saveState()"></div>
+        <div><label class="lbl">Priority</label><select onchange="S.requirements[${i}].priority = this.value; saveState()"><option ${r.priority === 'Critical' ? 'selected' : ''}>Critical</option><option ${r.priority === 'High' ? 'selected' : ''}>High</option></select></div>
+        <div><label class="lbl">Type</label><select onchange="S.requirements[${i}].type = this.value; saveState()"><option ${r.type === 'Functional' ? 'selected' : ''}>Functional</option></select></div>
+      </div>
+      <div><label class="lbl">Description</label><textarea rows="2" onchange="S.requirements[${i}].description = this.value; saveState()" placeholder="[ to be confirmed ]">${r.description}</textarea></div>
+    </div>
+  `).join('');
+}
+
+function addTestCase() {
+  const id = 'TC-' + String(S.testCases.length + 1).padStart(3, '0');
+  S.testCases.push({ id, scenario: '', steps: '', expected: '', priority: 'High' });
+  renderTestCases();
+  saveState();
+}
+
+function renderTestCases() {
+  const list = document.getElementById('testcases-list');
+  list.innerHTML = S.testCases.map((t, i) => `
+    <div style="border:1px solid var(--mgray);border-radius:8px;padding:12px;margin-bottom:10px">
+      <strong>${t.id}: ${t.scenario || '[ to be confirmed ]'}</strong>
+      <div><label class="lbl">Scenario</label><input type="text" value="${t.scenario}" onchange="S.testCases[${i}].scenario = this.value; saveState()"></div>
+      <div><label class="lbl">Expected Result</label><input type="text" value="${t.expected}" onchange="S.testCases[${i}].expected = this.value; saveState()"></div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DOCUMENT GENERATION
+// ═══════════════════════════════════════════════════════════════════
+
+function generateDoc() {
+  const title = S.canvas.title || 'Requirements Document';
+  const fname = title.replace(/[^a-zA-Z0-9]+/g, '_') + '_BRD.doc';
+  
+  const now = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  
+  let tableHtml = '';
+  if (S.tableHeaders.length > 0) {
+    tableHtml = '<h2 style="margin:12pt 0 4pt;color:#009CDE;font-size:16pt">Custom Data Table</h2>';
+    tableHtml += '<table style="width:100%;border-collapse:collapse;margin:8pt 0">';
+    tableHtml += '<tr>';
+    S.tableHeaders.forEach(h => {
+      tableHtml += `<td style="background:#54585A;color:#fff;font-weight:bold;padding:8pt;border:1pt solid #D0D7DE">${h || '[ to be confirmed ]'}</td>`;
+    });
+    tableHtml += '</tr></table>';
+  }
+  
+  const html = `<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><meta name="ProgId" content="Word.Document">
+<style>body{font-family:Calibri,sans-serif;font-size:14pt;color:#3A3A3A;margin:1in;line-height:1.4}h2{font-family:Calibri;font-size:16pt;color:#009CDE;font-weight:bold;margin:12pt 0 4pt}table{width:100%;border-collapse:collapse;margin:6pt 0 14pt;font-size:11pt}td{border:1pt solid #D0D7DE;padding:5pt 8pt;vertical-align:top}@page{margin:1in}</style></head>
+<body>
+<div style="background:#54585A;padding:40pt 36pt;margin:-1in -1in 24pt">
+  <div style="color:#F1C400;font-size:32pt;font-weight:bold;letter-spacing:4px">${title}</div>
+  <div style="color:#F1C400;font-size:18pt;font-weight:bold;margin-top:4pt">Requirements Document</div>
+  <div style="color:#CCCCCC;font-size:12pt;margin-top:8pt">Portico Benefit Services | A Ministry of the ELCA | ${now}</div>
+</div>
+
+<h2>1. Overview</h2>
+<p><strong>Opportunity Title:</strong> ${S.canvas.title || '[ to be confirmed ]'}</p>
+<p><strong>Sponsor:</strong> ${S.canvas.sponsor || '[ to be confirmed ]'}</p>
+<p><strong>Target Date:</strong> ${S.canvas.targetDate || '[ to be confirmed ]'}</p>
+
+<h2>2. Problem Statement</h2>
+<p>${S.canvas.problem || '[ to be confirmed ]'}</p>
+
+<h2>3. Severity</h2>
+<p>${S.canvas.severity || '[ to be confirmed ]'}</p>
+
+<h2>4. Requirements (${S.requirements.length})</h2>
+${S.requirements.map(r => `
+<h3>${r.id}: ${r.title || '[ to be confirmed ]'}</h3>
+<p><strong>Priority:</strong> <span style="color:${r.priority === 'Critical' ? '#C5003E' : '#D86018'};font-weight:bold">${r.priority}</span></p>
+<p><strong>Description:</strong> ${r.description || '[ to be confirmed ]'}</p>
+`).join('')}
+
+<h2>5. Test Cases (${S.testCases.length})</h2>
+${S.testCases.map(t => `
+<h3>${t.id}: ${t.scenario || '[ to be confirmed ]'}</h3>
+<p><strong>Expected:</strong> ${t.expected || '[ to be confirmed ]'}</p>
+`).join('')}
+
+${tableHtml}
+
+<div style="border-top:3pt solid #F1C400;margin-top:24pt;padding-top:8pt;text-align:center;font-size:10pt;color:#888">
+PORTICO BENEFIT SERVICES | Requirements Document | A Ministry of the ELCA | CONFIDENTIAL
+</div>
+</body></html>`;
+
+  const blob = new Blob([html], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fname;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function resetAll() {
+  if (confirm('Clear all data and start over?')) {
+    localStorage.removeItem('portico-tool-state');
+    location.reload();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INITIALIZE
+// ═══════════════════════════════════════════════════════════════════
+
+loadState();
+renderCanvasFields();
+renderStakeholders();
+renderRequirements();
+renderTestCases();
+
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const tab = this.getAttribute('data-tab');
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+</script>
+</body>
+</html>
