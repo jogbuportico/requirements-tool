@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portico | Requirements Tool v1.5</title>
+<title>Portico | Requirements Tool v1.7</title>
 <style>
 :root{--gold:#F1C400;--gray:#54585A;--blue:#009CDE;--orange:#D86018;--green:#A2AD00;--red:#C5003E;--lgray:#F4F4F4;--mgray:#D0D7DE;--dgray:#3A3A3A}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -14,13 +14,14 @@ body{font-family:Calibri,'Segoe UI',sans-serif;font-size:14px;color:var(--dgray)
 .tb-title{color:#ccc;font-size:13px}
 .tb-save{color:var(--gold);font-size:12px;opacity:0;transition:opacity .4s}
 .tb-save.show{opacity:1}
-.main{max-width:1000px;margin:0 auto;padding:24px 16px 60px}
+.main{max-width:1200px;margin:0 auto;padding:24px 16px 60px}
 .panel{display:none}.panel.active{display:block}
 .card{background:#fff;border-radius:10px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,.08);margin-bottom:16px}
 .alert{border-radius:6px;padding:12px 14px;font-size:13px;margin-bottom:14px;border-left:4px solid}
 .alert-gold{background:#FFFDE6;border-color:var(--gold);color:#5a4a00}
 .alert-blue{background:#E8F4FD;border-color:var(--blue);color:#004d7a}
 .alert-green{background:#F0FFF4;border-color:var(--green);color:#3a4200}
+.alert-warn{background:#FFF4E6;border-color:var(--orange);color:#664d00}
 label.lbl{display:block;font-size:11px;font-weight:700;color:var(--gray);letter-spacing:.4px;margin-bottom:4px}
 input,textarea,select{width:100%;border:1.5px solid var(--mgray);border-radius:6px;padding:8px 10px;font-family:Calibri,'Segoe UI',sans-serif;font-size:13px;color:var(--dgray);background:#fff;outline:none;transition:border-color .15s}
 input:focus,textarea:focus,select:focus{border-color:var(--blue)}
@@ -42,12 +43,11 @@ h2{color:var(--blue);font-size:16px;margin:14px 0 8px}
 .tab-pane{display:none}.tab-pane.active{display:block}
 .req-block{border:1px solid var(--mgray);border-radius:8px;padding:14px;margin-bottom:10px;background:var(--lgray)}
 .source-tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:3px;background:var(--blue);color:#fff;margin-top:4px}
-.source-tag.smartsheet{background:var(--blue)}
-.source-tag.resource{background:var(--green)}
-.source-tag.generated{background:var(--orange)}
-.canvas-field{border:1px solid var(--mgray);border-radius:8px;padding:12px;border-top:3px solid var(--blue);background:#fff}
-.canvas-field.populated{border-top-color:var(--green);background:#f0fff4}
-.canvas-field-label{font-size:11px;font-weight:700;color:var(--gray);margin-bottom:4px;display:block}
+.source-tag.extracted{background:var(--green)}
+.source-tag.manual{background:var(--orange)}
+.mapped-item{border-left:3px solid var(--green);padding:8px 12px;margin-bottom:8px;background:#f0fff4;border-radius:4px}
+.unmapped-item{border:1px dashed var(--orange);border-radius:6px;padding:12px;margin-bottom:10px;background:#fffde6}
+.extraction-info{font-size:11px;color:#666;margin-top:6px;padding:6px;background:#f9f9f9;border-radius:4px;border-left:2px solid var(--blue)}
 @media(max-width:680px){.g2{grid-template-columns:1fr}}
 </style>
 </head>
@@ -56,7 +56,7 @@ h2{color:var(--blue);font-size:16px;margin:14px 0 8px}
 <div class="topbar">
   <div class="tb-brand">
     <div class="tb-logo">PORTICO</div>
-    <div class="tb-title">Requirements Tool v1.5 (Smart Header Mapping)</div>
+    <div class="tb-title">Requirements Tool v1.7 (Enhanced Extraction)</div>
   </div>
   <div class="tb-save" id="save-ind">✓ Progress saved</div>
 </div>
@@ -66,8 +66,8 @@ h2{color:var(--blue);font-size:16px;margin:14px 0 8px}
 <!-- PANEL 1: SMARTSHEET IMPORT -->
 <div id="panel-1" class="panel active">
 <div class="card">
-  <h1>Smartsheet Canvas Import (v1.5)</h1>
-  <div class="alert alert-gold"><strong>✓ FIXED:</strong> Now properly parses Smartsheet headers and intelligently maps columns to canvas fields.</div>
+  <h1>Smartsheet Canvas Import (v1.7)</h1>
+  <div class="alert alert-green"><strong>✓ NEW in v1.7:</strong> Enhanced intelligent extraction with Portico master headers. Intelligently extracts requirements, test cases, and use cases. Asks for section mapping on unmapped data.</div>
 
   <div class="stag"><div class="stag-pill" style="background:var(--blue)">Step 1 — Import Smartsheet Row</div><div class="stag-line"></div></div>
   
@@ -84,35 +84,36 @@ h2{color:var(--blue);font-size:16px;margin:14px 0 8px}
     <textarea id="smartsheet-paste" rows="6" placeholder="Paste Smartsheet row here..."></textarea>
   </div>
 
-  <button class="btn btn-primary" onclick="parseSmartsheetWithHeaders(); proceedToRequirements()">⬇ Parse Smartsheet Row</button>
+  <button class="btn btn-primary" onclick="parseSmartsheetWithHeaders()">⬇ Parse Smartsheet Row</button>
 
   <div id="parse-info" style="margin-top:16px;padding:12px;background:var(--lgray);border-radius:8px;display:none">
-    <div><strong>Detected:</strong> <span id="header-count">0</span> headers, <span id="row-count">0</span> data values</div>
-    <div id="parse-details" style="margin-top:8px;font-size:12px;color:#666"></div>
+    <div><strong>Detected:</strong> <span id="header-count">0</span> headers</div>
+    <div style="margin-top:8px;font-size:12px;color:#666">
+      ✓ <span id="mapped-count">0</span> matched to Portico sections | 
+      ? <span id="unmapped-count">0</span> need section assignment
+    </div>
   </div>
 
   <div style="margin-top:20px">
-    <button class="btn btn-gold" onclick="goToPanel(2)">Review Canvas Fields →</button>
+    <button class="btn btn-gold" onclick="goToPanel(2)">Review & Map Data →</button>
   </div>
 </div>
 </div>
 
-<!-- PANEL 2: CANVAS FIELDS REVIEW -->
+<!-- PANEL 2: MAP & REVIEW -->
 <div id="panel-2" class="panel">
 <div class="card">
-  <h1>Canvas Fields (Smart-Mapped from Smartsheet)</h1>
-  <div class="alert alert-green"><strong>✓ Headers intelligently matched to canvas fields.</strong> Verify mapping is correct, edit as needed.</div>
+  <h1>Review & Map Unmapped Data</h1>
+  <div class="alert alert-green"><strong>✓ Mapped data is shown below.</strong> For unmapped items, select which section the information belongs in.</div>
 
-  <div class="stag"><div class="stag-pill" style="background:var(--blue)">Canvas Fields from Smartsheet</div><div class="stag-line"></div></div>
+  <div class="stag"><div class="stag-pill" style="background:var(--green)">Successfully Mapped Data</div><div class="stag-line"></div></div>
+  <div id="mapped-display" style="margin-bottom:20px"></div>
 
-  <div id="canvas-display" class="g2"></div>
-
-  <div class="stag" style="margin-top:24px"><div class="stag-pill" style="background:var(--orange)">Smartsheet Headers Mapping</div><div class="stag-line"></div></div>
-
-  <div id="headers-mapping" style="background:var(--lgray);padding:12px;border-radius:8px;margin-bottom:16px;font-size:12px"></div>
+  <div class="stag"><div class="stag-pill" style="background:var(--orange)">Unmapped Data - Needs Section Assignment</div><div class="stag-line"></div></div>
+  <div id="unmapped-display" style="margin-bottom:20px"></div>
 
   <div style="margin-top:20px">
-    <button class="btn btn-gold" onclick="proceedToRequirements()">Generate Requirements & Test Cases →</button>
+    <button class="btn btn-gold" onclick="extractRequirementsFromData()">Extract Requirements & Test Cases →</button>
     <button class="btn btn-outline" onclick="goToPanel(1)">← Back</button>
   </div>
 </div>
@@ -121,12 +122,13 @@ h2{color:var(--blue);font-size:16px;margin:14px 0 8px}
 <!-- PANEL 3: REQUIREMENTS & TEST CASES -->
 <div id="panel-3" class="panel">
 <div class="card">
-  <h1>Auto-Generated Requirements & Test Cases</h1>
-  <div class="alert alert-blue"><strong>✓ Auto-generated from Smartsheet data.</strong> Review, edit, delete, or add new items. All changes saved automatically.</div>
+  <h1>Auto-Extracted Requirements, Test Cases & Use Cases</h1>
+  <div class="alert alert-blue"><strong>✓ Intelligently extracted from your data.</strong> Review, edit, delete, or add. All changes auto-save.</div>
 
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('requirements')">📋 Requirements</button>
     <button class="tab-btn" onclick="switchTab('testcases')">🧪 Test Cases</button>
+    <button class="tab-btn" onclick="switchTab('usecases')">🔄 Use Cases</button>
   </div>
 
   <!-- REQUIREMENTS TAB -->
@@ -141,6 +143,12 @@ h2{color:var(--blue);font-size:16px;margin:14px 0 8px}
     <button class="btn btn-outline" style="margin-top:10px;border:1.5px dashed var(--blue);background:none;color:var(--blue);padding:6px 16px;font-size:12px" onclick="addTestCase()">+ Add Test Case</button>
   </div>
 
+  <!-- USE CASES TAB -->
+  <div id="tab-usecases" class="tab-pane">
+    <div id="usecases-display"></div>
+    <button class="btn btn-outline" style="margin-top:10px;border:1.5px dashed var(--blue);background:none;color:var(--blue);padding:6px 16px;font-size:12px" onclick="addUseCase()">+ Add Use Case</button>
+  </div>
+
   <div style="margin-top:20px">
     <button class="btn btn-gray" onclick="generateDocument()">⬇ Download Word Document</button>
     <button class="btn btn-outline" onclick="goToPanel(2)">← Back</button>
@@ -152,44 +160,124 @@ h2{color:var(--blue);font-size:16px;margin:14px 0 8px}
 
 <script>
 // ════════════════════════════════════════════════════════════════════
+// PORTICO MASTER HEADERS (from PORTICO_STANDARD_HEADERS_MASTER.md)
+// ════════════════════════════════════════════════════════════════════
+
+const MASTER_HEADERS = {
+  opportunityDetails: {
+    label: 'Opportunity Details',
+    fields: {
+      title: { label: 'Opportunity Title', aliases: ['Opportunity Title', 'Title', 'Initiative', 'Project Name', 'Name'] },
+      executiveSummary: { label: 'Executive Summary', aliases: ['Executive Summary', 'Summary', 'Overview', 'Description'] },
+      sponsor: { label: 'Sponsor(s)', aliases: ['Sponsor', 'Sponsor(s)', 'Owner', 'Lead', 'PM', 'Project Manager'] }
+    }
+  },
+  initiativeInfo: {
+    label: 'Initiative Information',
+    fields: {
+      problem: { label: 'What problem are we trying to solve?', aliases: ['Problem', 'Problem Statement', 'Challenge', 'Issue', 'What problem', 'Business Problem', 'Current State'] },
+      audience: { label: 'Who are we solving this problem for?', aliases: ['Audience', 'Who', 'Target Audience', 'Users', 'Who are we', 'For whom', 'Affected users'] },
+      userCount: { label: 'How many people/users have this problem?', aliases: ['User Count', 'Users', 'Number of users', 'How many', 'User base', 'Impacted count'] },
+      objective: { label: 'What business objective does this problem align to?', aliases: ['Objective', 'Business Objective', 'Goal', 'What business objective', 'Target objective'] },
+      strategy: { label: 'Is this part of an existing strategy?', aliases: ['Strategy', 'Existing strategy', 'Is this part', 'Strategic alignment'] },
+      vision: { label: 'What is the future state vision to support this need?', aliases: ['Vision', 'Future state', 'Future vision', 'Target state', 'End state'] },
+      successMetrics: { label: 'How will impact/success be measured?', aliases: ['Success Metrics', 'Metrics', 'How measure', 'Success criteria', 'KPIs'] }
+    }
+  },
+  impactValue: {
+    label: 'Impact and Value',
+    fields: {
+      impactScore: { label: 'Impact Score justification', aliases: ['Impact Score', 'Impact score justification', 'Justification', 'Why impactful'] },
+      targetedValue: { label: 'Targeted Value (ROI/Cost savings)', aliases: ['Targeted Value', 'ROI', 'Cost savings', 'Business value', 'Value', 'Savings'] },
+      budgetNeeded: { label: 'Budget Needed', aliases: ['Budget', 'Budget Needed', 'Cost', 'Estimated cost'] },
+      severity: { label: 'Severity', aliases: ['Severity', 'Priority', 'Urgency', 'Criticality'] }
+    }
+  },
+  timeline: {
+    label: 'Timeline and Story Points',
+    fields: {
+      startDate: { label: 'Start Date', aliases: ['Start Date', 'Start', 'Begin date', 'Project start'] },
+      dueDate: { label: 'Due Date', aliases: ['Due Date', 'End Date', 'Completion date', 'Target date', 'Deadline'] },
+      devStoryPoints: { label: 'Story Points (Dev)', aliases: ['Story Points (Dev)', 'Dev Story Points', 'Dev effort', 'Dev points'] },
+      qaStoryPoints: { label: 'Story Points (QA)', aliases: ['Story Points (QA)', 'QA Story Points', 'Test effort', 'QA estimate'] }
+    }
+  },
+  teamMembers: {
+    label: 'Team Members',
+    fields: {
+      developer: { label: 'Developer', aliases: ['Developer', 'Dev', 'Developers', 'Development team'] },
+      qaAnalyst: { label: 'QA Analyst', aliases: ['QA Analyst', 'QA', 'QA team', 'Quality assurance', 'Tester'] },
+      uatAnalyst: { label: 'UAT Analyst/Business Sign Off', aliases: ['UAT Analyst', 'UAT Analyst/Business Sign Off', 'Business sign off', 'UAT'] }
+    }
+  },
+  dependencies: {
+    label: 'Dependencies',
+    fields: {
+      dependencies: { label: 'Dependencies', aliases: ['Dependencies', 'Depends on', 'Dependency', 'Prerequisites'] }
+    }
+  },
+  sponsors: {
+    label: 'Sponsors',
+    fields: {
+      sponsors: { label: 'Sponsors', aliases: ['Sponsors', 'Sponsor', 'Executive sponsor'] }
+    }
+  }
+};
+
+// ════════════════════════════════════════════════════════════════════
 // STATE
 // ════════════════════════════════════════════════════════════════════
 
 const S = {
   smartsheetHeaders: [],
-  headerMapping: {},
-  canvas: {},
+  mappedData: {},
+  unmappedData: [],
   requirements: [],
-  testCases: []
-};
-
-const CANVAS_FIELD_NAMES = [
-  'title', 'sponsor', 'targetDate', 'moscow', 'problem', 'severity', 
-  'audience', 'userCount', 'objective', 'strategy', 'vision', 'dependencies', 
-  'roiValue', 'successMetrics', 'confidence', 'impactScore'
-];
-
-const CANVAS_FIELD_LABELS = {
-  title: 'Opportunity Title',
-  sponsor: 'Sponsor(s)',
-  targetDate: 'Target Date',
-  moscow: 'MoSCoW Score',
-  problem: 'Problem Statement',
-  severity: 'Severity',
-  audience: 'Audience',
-  userCount: 'User Count',
-  objective: 'Objective',
-  strategy: 'Strategy',
-  vision: 'Vision',
-  dependencies: 'Dependencies',
-  roiValue: 'ROI Value',
-  successMetrics: 'Success Metrics',
-  confidence: 'Confidence %',
-  impactScore: 'Impact Score'
+  testCases: [],
+  useCases: []
 };
 
 // ════════════════════════════════════════════════════════════════════
-// SMARTSHEET PARSING WITH HEADER MAPPING
+// FUZZY MATCHING
+// ════════════════════════════════════════════════════════════════════
+
+function matchScore(userHeader, standardField) {
+  const u = userHeader.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const s = standardField.toLowerCase().replace(/[^a-z0-9]/g, '');
+  
+  if (u === s) return 100;
+  if (u.includes(s) || s.includes(u)) return 85;
+  
+  const uWords = u.match(/[a-z0-9]+/g) || [];
+  const sWords = s.match(/[a-z0-9]+/g) || [];
+  const matches = uWords.filter(w => sWords.includes(w)).length;
+  if (matches > 0) {
+    return (matches / Math.max(uWords.length, sWords.length)) * 80;
+  }
+  
+  return 0;
+}
+
+function findBestMatch(userHeader) {
+  let best = { score: 0, section: null, field: null, label: null };
+  
+  for (let section in MASTER_HEADERS) {
+    for (let field in MASTER_HEADERS[section].fields) {
+      const aliases = MASTER_HEADERS[section].fields[field].aliases;
+      for (let alias of aliases) {
+        const score = matchScore(userHeader, alias);
+        if (score > best.score) {
+          best = { score, section, field, label: MASTER_HEADERS[section].fields[field].label };
+        }
+      }
+    }
+  }
+  
+  return best.score > 30 ? best : null;
+}
+
+// ════════════════════════════════════════════════════════════════════
+// SMARTSHEET PARSING
 // ════════════════════════════════════════════════════════════════════
 
 function parseSmartsheetWithHeaders() {
@@ -198,127 +286,57 @@ function parseSmartsheetWithHeaders() {
   
   const lines = text.split('\n').map(l => l.trim()).filter(l => l);
   const cells = lines[0].split('\t').map(c => c.trim());
-  
-  // First row contains headers
-  S.smartsheetHeaders = cells;
-  
-  // Data is in subsequent rows if multiple rows pasted
   const dataRow = lines.length > 1 ? lines[1].split('\t').map(c => c.trim()) : cells;
   
-  // Smart mapping: match headers to canvas fields
-  S.headerMapping = {};
-  S.canvas = {};
+  S.smartsheetHeaders = cells;
+  S.mappedData = {};
+  S.unmappedData = [];
   
-  CANVAS_FIELD_NAMES.forEach(fieldName => {
-    const fieldLabel = CANVAS_FIELD_LABELS[fieldName];
+  // Initialize mapped data structure
+  for (let section in MASTER_HEADERS) {
+    S.mappedData[section] = {};
+  }
+  
+  // Process each header
+  cells.forEach((header, index) => {
+    const value = dataRow[index] || '';
+    const match = findBestMatch(header);
     
-    // Try to match header to field
-    const matchedIndex = S.smartsheetHeaders.findIndex(header => {
-      const h = header.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const f = fieldLabel.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const fShort = fieldName.toLowerCase();
-      
-      // Exact match
-      if (h === f) return true;
-      // Partial match
-      if (h.includes(f) || f.includes(h)) return true;
-      // Short name match
-      if (h.includes(fShort)) return true;
-      return false;
-    });
-    
-    if (matchedIndex !== -1) {
-      S.headerMapping[fieldName] = { header: S.smartsheetHeaders[matchedIndex], index: matchedIndex };
-      S.canvas[fieldName] = dataRow[matchedIndex] || '';
-    } else {
-      S.canvas[fieldName] = '';
+    if (match && value.length > 0) {
+      S.mappedData[match.section][match.field] = value;
+    } else if (value.length > 5) {
+      S.unmappedData.push({ header, value, index, section: null });
     }
   });
   
-  // Auto-generate requirements
-  autoGenerateRequirements();
-  autoGenerateTestCases();
-  
-  // Show mapping info
   showParseInfo();
+  displayMappedData();
+  displayUnmappedData();
+  
+  goToPanel(2);
   saveState();
 }
 
 function showParseInfo() {
   const info = document.getElementById('parse-info');
   const headerCount = document.getElementById('header-count');
-  const rowCount = document.getElementById('row-count');
-  const details = document.getElementById('parse-details');
+  const mappedCount = document.getElementById('mapped-count');
+  const unmappedCount = document.getElementById('unmapped-count');
   
   info.style.display = 'block';
   headerCount.textContent = S.smartsheetHeaders.length;
-  rowCount.textContent = Object.keys(S.canvas).filter(k => S.canvas[k]).length;
   
-  let mappedCount = Object.keys(S.headerMapping).length;
-  let matchedHeading = S.smartsheetHeaders.map((h, i) => {
-    const matched = Object.values(S.headerMapping).find(m => m.index === i);
-    return matched ? `✓ "${h}" → ${CANVAS_FIELD_LABELS[Object.keys(S.headerMapping).find(k => S.headerMapping[k].index === i)]}` : `? "${h}"`;
-  }).join('<br>');
-  
-  details.innerHTML = `<strong>${mappedCount} headers matched to canvas fields:</strong><br>${matchedHeading}`;
-}
-
-function autoGenerateRequirements() {
-  S.requirements = [];
-  
-  if (S.canvas.objective && S.canvas.objective.length > 5) {
-    S.requirements.push({
-      id: 'REQ-001',
-      title: 'Achieve Business Objective',
-      priority: 'Critical',
-      description: S.canvas.objective,
-      source: 'smartsheet'
-    });
+  let mappedTotal = 0;
+  for (let section in S.mappedData) {
+    mappedTotal += Object.keys(S.mappedData[section]).length;
   }
   
-  if (S.canvas.vision && S.canvas.vision.length > 5) {
-    S.requirements.push({
-      id: 'REQ-002',
-      title: 'Enable Future State Vision',
-      priority: 'High',
-      description: S.canvas.vision,
-      source: 'smartsheet'
-    });
-  }
-  
-  if (S.canvas.problem && S.canvas.problem.length > 5) {
-    S.requirements.push({
-      id: 'REQ-003',
-      title: 'Solve Business Problem',
-      priority: 'Critical',
-      description: S.canvas.problem,
-      source: 'smartsheet'
-    });
-  }
-  
-  // Re-ID
-  S.requirements.forEach((r, i) => {
-    r.id = 'REQ-' + String(i + 1).padStart(3, '0');
-  });
-}
-
-function autoGenerateTestCases() {
-  S.testCases = [];
-  
-  S.requirements.forEach((req, i) => {
-    S.testCases.push({
-      id: 'TC-' + String(i + 1).padStart(3, '0'),
-      scenario: 'Test: ' + req.title,
-      steps: '1. Verify ' + req.title.toLowerCase() + '\n2. Validate results',
-      expected: 'System should ' + req.title.toLowerCase(),
-      priority: req.priority === 'Critical' ? 'High' : 'Medium',
-      source: 'generated'
-    });
-  });
+  mappedCount.textContent = mappedTotal;
+  unmappedCount.textContent = S.unmappedData.length;
 }
 
 // ════════════════════════════════════════════════════════════════════
-// DISPLAY & EDITING
+// DISPLAY FUNCTIONS
 // ════════════════════════════════════════════════════════════════════
 
 function goToPanel(n) {
@@ -326,44 +344,220 @@ function goToPanel(n) {
   document.getElementById('panel-' + n).classList.add('active');
 }
 
-function proceedToRequirements() {
-  // Display canvas fields
-  const canvasDisplay = document.getElementById('canvas-display');
-  let canvasHtml = '';
-  CANVAS_FIELD_NAMES.forEach(fieldName => {
-    const value = S.canvas[fieldName] || '';
-    const populated = value.length > 0;
-    const displayValue = value.substring(0, 200) + (value.length > 200 ? '...' : '');
-    canvasHtml += `
-      <div class="canvas-field ${populated ? 'populated' : ''}">
-        <label class="canvas-field-label">${CANVAS_FIELD_LABELS[fieldName]}</label>
-        <div style="padding:8px;background:#f9f9f9;border-radius:4px;min-height:50px;font-size:12px;color:#666;word-wrap:break-word">${displayValue || '[ empty ]'}</div>
-        <textarea rows="2" onchange="S.canvas['${fieldName}'] = this.value; saveState()" placeholder="Edit value...">${value}</textarea>
+function displayMappedData() {
+  const container = document.getElementById('mapped-display');
+  let html = '';
+  
+  for (let section in MASTER_HEADERS) {
+    if (Object.keys(S.mappedData[section]).length > 0) {
+      html += `<div style="margin-bottom:16px"><strong>${MASTER_HEADERS[section].label}</strong><br>`;
+      for (let field in S.mappedData[section]) {
+        const value = S.mappedData[section][field];
+        const label = MASTER_HEADERS[section].fields[field].label;
+        const preview = value.substring(0, 80) + (value.length > 80 ? '...' : '');
+        html += `<div class="mapped-item"><strong>${label}:</strong> ${preview}</div>`;
+      }
+      html += `</div>`;
+    }
+  }
+  
+  container.innerHTML = html || '<div style="padding:12px;color:#999">No data mapped yet</div>';
+}
+
+function displayUnmappedData() {
+  const container = document.getElementById('unmapped-display');
+  
+  if (S.unmappedData.length === 0) {
+    container.innerHTML = '<div style="padding:12px;background:#f0fff4;border-radius:6px;color:#3a4200">✓ All data has been mapped!</div>';
+    return;
+  }
+  
+  let html = '';
+  S.unmappedData.forEach((item, i) => {
+    html += `
+      <div class="unmapped-item">
+        <strong>Header:</strong> "${item.header}"<br>
+        <strong>Value:</strong> ${item.value.substring(0, 150)}${item.value.length > 150 ? '...' : ''}<br>
+        <label class="lbl" style="margin-top:8px">Which section should this go in?</label>
+        <select onchange="S.unmappedData[${i}].section = this.value; saveState()">
+          <option value="">-- Select Section --</option>
+          <option value="opportunityDetails">Opportunity Details</option>
+          <option value="initiativeInfo">Initiative Information</option>
+          <option value="impactValue">Impact and Value</option>
+          <option value="timeline">Timeline and Story Points</option>
+          <option value="teamMembers">Team Members</option>
+          <option value="dependencies">Dependencies</option>
+          <option value="sponsors">Sponsors</option>
+          <option value="requirements">Requirements (New Section)</option>
+          <option value="constraints">Constraints/Limitations</option>
+          <option value="assumptions">Assumptions</option>
+          <option value="risks">Risks</option>
+        </select>
       </div>
     `;
   });
-  canvasDisplay.innerHTML = canvasHtml;
   
-  // Display header mapping
-  const mappingDisplay = document.getElementById('headers-mapping');
-  let mappingHtml = '<strong style="display:block;margin-bottom:10px">Smartsheet Headers → Canvas Fields:</strong>';
-  S.smartsheetHeaders.forEach((h, i) => {
-    const matched = Object.entries(S.headerMapping).find(([k, v]) => v.index === i);
-    if (matched) {
-      mappingHtml += `<div style="padding:4px;margin:4px 0;background:#f0fff4;border-left:3px solid #A2AD00">✓ <strong>"${h}"</strong> → <strong>${CANVAS_FIELD_LABELS[matched[0]]}</strong></div>`;
-    } else {
-      mappingHtml += `<div style="padding:4px;margin:4px 0;background:#fff9f0;color:#999;border-left:3px solid #999">? <strong>"${h}"</strong> (not mapped to canvas)</div>`;
+  container.innerHTML = html;
+}
+
+// ════════════════════════════════════════════════════════════════════
+// INTELLIGENT REQUIREMENT EXTRACTION
+// ════════════════════════════════════════════════════════════════════
+
+function extractRequirementsFromData() {
+  S.requirements = [];
+  S.testCases = [];
+  S.useCases = [];
+  
+  // Rule 1: Problem Statement
+  if (S.mappedData.initiativeInfo.problem && S.mappedData.initiativeInfo.problem.length > 10) {
+    S.requirements.push({
+      id: 'REQ-001',
+      title: 'Solve Business Problem',
+      priority: 'Critical',
+      description: S.mappedData.initiativeInfo.problem,
+      source: 'extracted',
+      rule: 'Problem Statement Extraction'
+    });
+  }
+  
+  // Rule 2: Business Objective
+  if (S.mappedData.initiativeInfo.objective && S.mappedData.initiativeInfo.objective.length > 10) {
+    S.requirements.push({
+      id: 'REQ-002',
+      title: 'Achieve Business Objective',
+      priority: 'Critical',
+      description: S.mappedData.initiativeInfo.objective,
+      source: 'extracted',
+      rule: 'Business Objective Extraction'
+    });
+  }
+  
+  // Rule 3: Vision
+  if (S.mappedData.initiativeInfo.vision && S.mappedData.initiativeInfo.vision.length > 10) {
+    S.requirements.push({
+      id: 'REQ-003',
+      title: 'Enable Future State Vision',
+      priority: 'High',
+      description: S.mappedData.initiativeInfo.vision,
+      source: 'extracted',
+      rule: 'Vision/Future State Extraction'
+    });
+  }
+  
+  // Rule 4: Success Metrics
+  if (S.mappedData.initiativeInfo.successMetrics && S.mappedData.initiativeInfo.successMetrics.length > 10) {
+    S.requirements.push({
+      id: 'REQ-004',
+      title: 'Enable Success Measurement',
+      priority: 'High',
+      description: 'Implement success metrics: ' + S.mappedData.initiativeInfo.successMetrics,
+      source: 'extracted',
+      rule: 'Success Metrics Extraction'
+    });
+  }
+  
+  // Rule 5: Targeted Value
+  if (S.mappedData.impactValue.targetedValue && S.mappedData.impactValue.targetedValue.length > 5) {
+    S.requirements.push({
+      id: 'REQ-005',
+      title: 'Deliver Targeted Value/ROI',
+      priority: 'High',
+      description: S.mappedData.impactValue.targetedValue,
+      source: 'extracted',
+      rule: 'Value/ROI Extraction'
+    });
+  }
+  
+  // Rule 6: Severity to Priority
+  if (S.mappedData.impactValue.severity) {
+    const severity = S.mappedData.impactValue.severity.toLowerCase();
+    if (severity.includes('critical') || severity.includes('high')) {
+      S.requirements.forEach(r => { if (r.priority !== 'Critical') r.priority = 'Critical'; });
     }
-  });
-  mappingDisplay.innerHTML = mappingHtml;
+  }
   
-  // Render requirements and test cases
+  // Re-number requirements
+  S.requirements.forEach((r, i) => {
+    r.id = 'REQ-' + String(i + 1).padStart(3, '0');
+  });
+  
+  // Generate test cases
+  autoGenerateTestCases();
+  
+  // Generate use cases
+  autoGenerateUseCases();
+  
   renderRequirements();
   renderTestCases();
+  renderUseCases();
   
-  goToPanel(2);
+  goToPanel(3);
   saveState();
 }
+
+function autoGenerateTestCases() {
+  S.testCases = [];
+  
+  S.requirements.forEach((req, i) => {
+    let steps = '';
+    
+    // Intelligent step generation based on requirement type
+    if (req.title.toLowerCase().includes('problem')) {
+      steps = '1. Verify problem resolution\n2. Confirm business impact';
+    } else if (req.title.toLowerCase().includes('objective')) {
+      steps = '1. Verify objective achievement\n2. Validate metrics';
+    } else if (req.title.toLowerCase().includes('vision')) {
+      steps = '1. Verify future state support\n2. Validate strategy alignment';
+    } else if (req.title.toLowerCase().includes('measurement')) {
+      steps = '1. Verify metric collection\n2. Validate measurement accuracy';
+    } else if (req.title.toLowerCase().includes('value')) {
+      steps = '1. Verify value realization\n2. Validate ROI calculation';
+    } else {
+      steps = '1. Verify requirement implementation\n2. Validate expected outcomes';
+    }
+    
+    S.testCases.push({
+      id: 'TC-' + String(i + 1).padStart(3, '0'),
+      scenario: 'Test: ' + req.title,
+      steps: steps,
+      expected: 'System should ' + req.title.toLowerCase(),
+      priority: req.priority === 'Critical' ? 'High' : 'Medium',
+      source: 'generated'
+    });
+  });
+}
+
+function autoGenerateUseCases() {
+  S.useCases = [];
+  
+  const title = S.mappedData.opportunityDetails.title || 'Solution Implementation';
+  const actor = inferActor();
+  
+  S.useCases.push({
+    id: 'UC-001',
+    title: 'Implement ' + title,
+    actor: actor,
+    trigger: S.mappedData.initiativeInfo.problem ? 'Address: ' + S.mappedData.initiativeInfo.problem.substring(0, 100) : 'Implement initiative',
+    mainFlow: S.mappedData.initiativeInfo.objective || 'Execute business process',
+    source: 'generated'
+  });
+}
+
+function inferActor() {
+  if (S.mappedData.initiativeInfo.audience) {
+    const audience = S.mappedData.initiativeInfo.audience.toLowerCase();
+    if (audience.includes('admin')) return 'Administrator';
+    if (audience.includes('user')) return 'End User';
+    if (audience.includes('employee')) return 'Employee';
+    if (audience.includes('manager')) return 'Manager';
+  }
+  return 'Business User';
+}
+
+// ════════════════════════════════════════════════════════════════════
+// RENDERING
+// ════════════════════════════════════════════════════════════════════
 
 function renderRequirements() {
   const display = document.getElementById('requirements-display');
@@ -371,24 +565,20 @@ function renderRequirements() {
     <div class="req-block">
       <div style="display:flex;justify-content:space-between;margin-bottom:8px">
         <strong>${r.id}</strong>
-        <span class="source-tag ${r.source}">${r.source}</span>
+        <span class="source-tag ${r.source}">${r.rule || r.source}</span>
       </div>
       <label class="lbl">Title</label>
       <input type="text" value="${r.title}" onchange="S.requirements[${i}].title = this.value; saveState()" style="margin-bottom:8px">
       
       <label class="lbl">Description</label>
-      <textarea rows="3" onchange="S.requirements[${i}].description = this.value; saveState()" style="margin-bottom:8px">${r.description || ''}</textarea>
+      <textarea rows="3" onchange="S.requirements[${i}].description = this.value; saveState()">${r.description}</textarea>
       
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div>
-          <label class="lbl">Priority</label>
-          <select onchange="S.requirements[${i}].priority = this.value; saveState()">
-            <option ${r.priority === 'Critical' ? 'selected' : ''}>Critical</option>
-            <option ${r.priority === 'High' ? 'selected' : ''}>High</option>
-            <option ${r.priority === 'Medium' ? 'selected' : ''}>Medium</option>
-          </select>
-        </div>
-      </div>
+      <label class="lbl" style="margin-top:8px">Priority</label>
+      <select onchange="S.requirements[${i}].priority = this.value; saveState()">
+        <option ${r.priority === 'Critical' ? 'selected' : ''}>Critical</option>
+        <option ${r.priority === 'High' ? 'selected' : ''}>High</option>
+        <option ${r.priority === 'Medium' ? 'selected' : ''}>Medium</option>
+      </select>
       
       ${i > 0 ? `<button class="btn" style="margin-top:8px;border:1px solid var(--red);background:none;color:var(--red);padding:4px 12px;font-size:11px" onclick="S.requirements.splice(${i},1); renderRequirements(); saveState()">Delete</button>` : ''}
     </div>
@@ -401,12 +591,31 @@ function renderTestCases() {
     <div class="req-block">
       <strong>${t.id}: ${t.scenario}</strong>
       <label class="lbl" style="margin-top:8px">Steps</label>
-      <textarea rows="2" onchange="S.testCases[${i}].steps = this.value; saveState()">${t.steps}</textarea>
+      <textarea rows="3" onchange="S.testCases[${i}].steps = this.value; saveState()">${t.steps}</textarea>
       
-      <label class="lbl" style="margin-top:8px">Expected</label>
+      <label class="lbl" style="margin-top:8px">Expected Result</label>
       <textarea rows="2" onchange="S.testCases[${i}].expected = this.value; saveState()">${t.expected}</textarea>
       
       ${i > 0 ? `<button class="btn" style="margin-top:8px;border:1px solid var(--red);background:none;color:var(--red);padding:4px 12px;font-size:11px" onclick="S.testCases.splice(${i},1); renderTestCases(); saveState()">Delete</button>` : ''}
+    </div>
+  `).join('');
+}
+
+function renderUseCases() {
+  const display = document.getElementById('usecases-display');
+  display.innerHTML = S.useCases.map((u, i) => `
+    <div class="req-block">
+      <strong>${u.id}: ${u.title}</strong>
+      <label class="lbl" style="margin-top:8px">Actor</label>
+      <input type="text" value="${u.actor}" onchange="S.useCases[${i}].actor = this.value; saveState()">
+      
+      <label class="lbl" style="margin-top:8px">Trigger</label>
+      <input type="text" value="${u.trigger}" onchange="S.useCases[${i}].trigger = this.value; saveState()">
+      
+      <label class="lbl" style="margin-top:8px">Main Flow</label>
+      <textarea rows="3" onchange="S.useCases[${i}].mainFlow = this.value; saveState()">${u.mainFlow}</textarea>
+      
+      ${i > 0 ? `<button class="btn" style="margin-top:8px;border:1px solid var(--red);background:none;color:var(--red);padding:4px 12px;font-size:11px" onclick="S.useCases.splice(${i},1); renderUseCases(); saveState()">Delete</button>` : ''}
     </div>
   `).join('');
 }
@@ -436,6 +645,19 @@ function addTestCase() {
   saveState();
 }
 
+function addUseCase() {
+  S.useCases.push({
+    id: 'UC-' + String(S.useCases.length + 1).padStart(3, '0'),
+    title: '',
+    actor: '',
+    trigger: '',
+    mainFlow: '',
+    source: 'manual'
+  });
+  renderUseCases();
+  saveState();
+}
+
 function switchTab(tab) {
   document.querySelectorAll('[id^="tab-"]').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
@@ -448,9 +670,24 @@ function switchTab(tab) {
 // ════════════════════════════════════════════════════════════════════
 
 function generateDocument() {
-  const title = S.canvas.title || 'Requirements Document';
+  const title = S.mappedData.opportunityDetails.title || 'Requirements Document';
   const fname = title.replace(/[^a-zA-Z0-9]+/g, '_') + '_BRD.doc';
   const now = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  
+  let sectionsHtml = '';
+  
+  for (let section in MASTER_HEADERS) {
+    if (Object.keys(S.mappedData[section]).length > 0) {
+      sectionsHtml += `<h2>${MASTER_HEADERS[section].label}</h2>`;
+      for (let field in S.mappedData[section]) {
+        const value = S.mappedData[section][field];
+        if (value) {
+          const label = MASTER_HEADERS[section].fields[field].label;
+          sectionsHtml += `<p><strong>${label}:</strong> ${value}</p>`;
+        }
+      }
+    }
+  }
   
   let html = `<!DOCTYPE html>
 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
@@ -458,52 +695,44 @@ function generateDocument() {
 body{font-family:Calibri;font-size:14pt;color:#3A3A3A;margin:1in;line-height:1.4}
 h1{color:#54585A;font-size:24pt;font-weight:bold;margin:16pt 0 8pt}
 h2{color:#009CDE;font-size:16pt;font-weight:bold;margin:12pt 0 4pt}
-table{width:100%;border-collapse:collapse;margin:6pt 0 14pt;font-size:11pt}
-td{border:1pt solid #D0D7DE;padding:5pt 8pt;vertical-align:top}
-.hdr{background:#54585A;color:#fff;font-weight:bold}
+p{margin:6pt 0}
 @page{margin:1in}
 </style></head>
 <body>
 
 <div style="background:#54585A;padding:40pt 36pt;margin:-1in -1in 24pt">
   <div style="color:#F1C400;font-size:32pt;font-weight:bold">${title}</div>
-  <div style="color:#F1C400;font-size:18pt;margin-top:4pt">Requirements Document (v1.5)</div>
+  <div style="color:#F1C400;font-size:18pt;margin-top:4pt">Requirements Document (v1.7)</div>
   <div style="color:#CCCCCC;font-size:12pt;margin-top:8pt">Portico | ${now}</div>
 </div>
 
-<h1>Overview</h1>
-<table>
-  <tr><td class="hdr">Field</td><td class="hdr">Value</td></tr>
-  ${Object.entries(S.canvas).map(([k, v]) => `
-    <tr><td>${CANVAS_FIELD_LABELS[k]}</td><td>${v || '[ to be confirmed ]'}</td></tr>
-  `).join('')}
-</table>
-
-<h1>Canvas Fields Source</h1>
-<p><strong>Smartsheet Headers Mapped:</strong></p>
-<ul>
-${S.smartsheetHeaders.map((h, i) => {
-  const matched = Object.entries(S.headerMapping).find(([k, v]) => v.index === i);
-  return matched ? `<li>✓ "${h}" → ${CANVAS_FIELD_LABELS[matched[0]]}</li>` : `<li>? "${h}" (not mapped)</li>`;
-}).join('')}
-</ul>
+${sectionsHtml}
 
 <h1>Requirements (${S.requirements.length})</h1>
 ${S.requirements.map(r => `
 <h2>${r.id}: ${r.title}</h2>
-<p><strong>Priority:</strong> <span style="color:${r.priority === 'Critical' ? '#C5003E' : '#D86018'};font-weight:bold">${r.priority}</span></p>
-<p>${r.description || '[ to be confirmed ]'}</p>
+<p><strong>Priority:</strong> ${r.priority}</p>
+<p>${r.description}</p>
 `).join('')}
 
 <h1>Test Cases (${S.testCases.length})</h1>
 ${S.testCases.map(t => `
 <h2>${t.id}: ${t.scenario}</h2>
-<p><strong>Steps:</strong> ${t.steps.replace(/\n/g, '<br>')}</p>
+<p><strong>Steps:</strong></p>
+<p>${t.steps.replace(/\n/g, '<br>')}</p>
 <p><strong>Expected:</strong> ${t.expected}</p>
 `).join('')}
 
+<h1>Use Cases (${S.useCases.length})</h1>
+${S.useCases.map(u => `
+<h2>${u.id}: ${u.title}</h2>
+<p><strong>Actor:</strong> ${u.actor}</p>
+<p><strong>Trigger:</strong> ${u.trigger}</p>
+<p><strong>Main Flow:</strong> ${u.mainFlow}</p>
+`).join('')}
+
 <div style="border-top:3pt solid #F1C400;margin-top:24pt;padding-top:8pt;text-align:center;font-size:10pt;color:#888">
-PORTICO | Requirements Document | CONFIDENTIAL
+PORTICO | Requirements Document v1.7 | CONFIDENTIAL
 </div>
 </body></html>`;
 
@@ -517,22 +746,21 @@ PORTICO | Requirements Document | CONFIDENTIAL
 }
 
 // ════════════════════════════════════════════════════════════════════
-// STATE MANAGEMENT
+// STATE
 // ════════════════════════════════════════════════════════════════════
 
 function saveState() {
-  localStorage.setItem('portico-v15', JSON.stringify(S));
+  localStorage.setItem('portico-v17', JSON.stringify(S));
   document.getElementById('save-ind').classList.add('show');
   setTimeout(() => document.getElementById('save-ind').classList.remove('show'), 1500);
 }
 
 function loadState() {
-  const saved = localStorage.getItem('portico-v15');
+  const saved = localStorage.getItem('portico-v17');
   if (saved) Object.assign(S, JSON.parse(saved));
 }
 
 loadState();
-
 </script>
 </body>
 </html>
