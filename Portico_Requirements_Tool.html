@@ -84,7 +84,7 @@ h2{color:var(--blue);font-size:16px;margin:14px 0 8px}
     <textarea id="smartsheet-paste" rows="6" placeholder="Paste Smartsheet row here..."></textarea>
   </div>
 
-  <button class="btn btn-primary" onclick="parseSmartsheetWithHeaders()">⬇ Parse Smartsheet Row</button>
+  <button class="btn btn-primary" onclick="parseSmartsheetWithHeaders(); proceedToRequirements()">⬇ Parse Smartsheet Row</button>
 
   <div id="parse-info" style="margin-top:16px;padding:12px;background:var(--lgray);border-radius:8px;display:none">
     <div><strong>Detected:</strong> <span id="header-count">0</span> headers, <span id="row-count">0</span> data values</div>
@@ -329,26 +329,30 @@ function goToPanel(n) {
 function proceedToRequirements() {
   // Display canvas fields
   const canvasDisplay = document.getElementById('canvas-display');
-  canvasDisplay.innerHTML = CANVAS_FIELD_NAMES.map(fieldName => {
+  let canvasHtml = '';
+  CANVAS_FIELD_NAMES.forEach(fieldName => {
     const value = S.canvas[fieldName] || '';
     const populated = value.length > 0;
-    return `
+    const displayValue = value.substring(0, 200) + (value.length > 200 ? '...' : '');
+    canvasHtml += `
       <div class="canvas-field ${populated ? 'populated' : ''}">
         <label class="canvas-field-label">${CANVAS_FIELD_LABELS[fieldName]}</label>
-        <textarea rows="3" onchange="S.canvas['${fieldName}'] = this.value; saveState()">${value}</textarea>
+        <div style="padding:8px;background:#f9f9f9;border-radius:4px;min-height:50px;font-size:12px;color:#666;word-wrap:break-word">${displayValue || '[ empty ]'}</div>
+        <textarea rows="2" onchange="S.canvas['${fieldName}'] = this.value; saveState()" placeholder="Edit value...">${value}</textarea>
       </div>
     `;
-  }).join('');
+  });
+  canvasDisplay.innerHTML = canvasHtml;
   
   // Display header mapping
   const mappingDisplay = document.getElementById('headers-mapping');
-  let mappingHtml = '<strong>Smartsheet Headers → Canvas Fields:</strong><br>';
+  let mappingHtml = '<strong style="display:block;margin-bottom:10px">Smartsheet Headers → Canvas Fields:</strong>';
   S.smartsheetHeaders.forEach((h, i) => {
     const matched = Object.entries(S.headerMapping).find(([k, v]) => v.index === i);
     if (matched) {
-      mappingHtml += `<div>✓ "${h}" → ${CANVAS_FIELD_LABELS[matched[0]]}</div>`;
+      mappingHtml += `<div style="padding:4px;margin:4px 0;background:#f0fff4;border-left:3px solid #A2AD00">✓ <strong>"${h}"</strong> → <strong>${CANVAS_FIELD_LABELS[matched[0]]}</strong></div>`;
     } else {
-      mappingHtml += `<div style="color:#999">? "${h}" (not mapped)</div>`;
+      mappingHtml += `<div style="padding:4px;margin:4px 0;background:#fff9f0;color:#999;border-left:3px solid #999">? <strong>"${h}"</strong> (not mapped to canvas)</div>`;
     }
   });
   mappingDisplay.innerHTML = mappingHtml;
@@ -357,7 +361,7 @@ function proceedToRequirements() {
   renderRequirements();
   renderTestCases();
   
-  goToPanel(3);
+  goToPanel(2);
   saveState();
 }
 
