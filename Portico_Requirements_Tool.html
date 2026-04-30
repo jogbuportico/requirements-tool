@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portico | Requirements Tool v1.7</title>
+<title>Portico | Requirements Tool v1.7.3</title>
 <style>
 :root{--gold:#F1C400;--gray:#54585A;--blue:#009CDE;--orange:#D86018;--green:#A2AD00;--red:#C5003E;--lgray:#F4F4F4;--mgray:#D0D7DE;--dgray:#3A3A3A}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -14,41 +14,39 @@ body{font-family:Calibri,'Segoe UI',sans-serif;font-size:14px;color:var(--dgray)
 .tb-title{color:#ccc;font-size:13px}
 .tb-save{color:var(--gold);font-size:12px;opacity:0;transition:opacity .4s}
 .tb-save.show{opacity:1}
-.main{max-width:1200px;margin:0 auto;padding:24px 16px 60px}
+.main{max-width:1400px;margin:0 auto;padding:24px 16px 60px}
 .panel{display:none}.panel.active{display:block}
 .card{background:#fff;border-radius:10px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,.08);margin-bottom:16px}
-.alert{border-radius:6px;padding:12px 14px;font-size:13px;margin-bottom:14px;border-left:4px solid}
+.alert{border-radius:6px;padding:12px 14px;font-size:13px;margin-bottom:14px;border-left:4px solid;line-height:1.5}
 .alert-gold{background:#FFFDE6;border-color:var(--gold);color:#5a4a00}
-.alert-blue{background:#E8F4FD;border-color:var(--blue);color:#004d7a}
 .alert-green{background:#F0FFF4;border-color:var(--green);color:#3a4200}
-.alert-warn{background:#FFF4E6;border-color:var(--orange);color:#664d00}
-label.lbl{display:block;font-size:11px;font-weight:700;color:var(--gray);letter-spacing:.4px;margin-bottom:4px}
-input,textarea,select{width:100%;border:1.5px solid var(--mgray);border-radius:6px;padding:8px 10px;font-family:Calibri,'Segoe UI',sans-serif;font-size:13px;color:var(--dgray);background:#fff;outline:none;transition:border-color .15s}
-input:focus,textarea:focus,select:focus{border-color:var(--blue)}
-.fg{margin-bottom:12px}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 24px;border:none;border-radius:6px;font-family:Calibri,'Segoe UI',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.alert-blue{background:#E8F4FD;border-color:var(--blue);color:#004d7a}
+label.lbl{display:block;font-size:11px;font-weight:700;color:var(--gray);letter-spacing:.4px;margin-bottom:6px;text-transform:uppercase}
+input,textarea,select{width:100%;border:1.5px solid var(--mgray);border-radius:6px;padding:10px 12px;font-family:Calibri,'Segoe UI',sans-serif;font-size:13px;color:var(--dgray);background:#fff;outline:none;transition:border-color .2s}
+input:focus,textarea:focus,select:focus{border-color:var(--blue);background:#f8fcff}
+textarea{resize:vertical;line-height:1.4}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 24px;border:none;border-radius:6px;font-family:Calibri,'Segoe UI',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;margin-right:8px;margin-bottom:8px}
 .btn-primary{background:var(--blue);color:#fff}
 .btn-gold{background:var(--gold);color:var(--gray)}
 .btn-outline{background:none;border:1.5px solid var(--gray);color:var(--gray)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 h1{color:var(--gray);font-size:24px;margin-bottom:12px}
-h2{color:var(--blue);font-size:16px;margin:14px 0 8px}
-.stag{display:flex;align-items:center;gap:10px;margin:20px 0 14px}
-.stag-pill{color:#fff;font-weight:700;font-size:10px;padding:4px 12px;border-radius:3px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
-.stag-line{flex:1;height:1px;background:var(--mgray)}
+h2{color:var(--blue);font-size:16px;margin:20px 0 12px}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
-.tab-btn{padding:6px 16px;border-radius:20px;border:none;cursor:pointer;font-family:Calibri,'Segoe UI',sans-serif;font-size:12px;font-weight:500;background:#eee;color:var(--gray);transition:all .15s}
+.tab-btn{padding:8px 20px;border-radius:20px;border:none;cursor:pointer;font-family:Calibri,'Segoe UI',sans-serif;font-size:12px;font-weight:600;background:#eee;color:var(--gray);transition:all .15s}
 .tab-btn.active{background:var(--blue);color:#fff;font-weight:700}
 .tab-pane{display:none}.tab-pane.active{display:block}
-.req-block{border:1px solid var(--mgray);border-radius:8px;padding:14px;margin-bottom:10px;background:var(--lgray)}
-.source-tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:3px;background:var(--blue);color:#fff;margin-top:4px}
-.source-tag.extracted{background:var(--green)}
-.source-tag.manual{background:var(--orange)}
-.mapped-item{border-left:3px solid var(--green);padding:8px 12px;margin-bottom:8px;background:#f0fff4;border-radius:4px}
-.unmapped-item{border:1px dashed var(--orange);border-radius:6px;padding:12px;margin-bottom:10px;background:#fffde6}
-.extraction-info{font-size:11px;color:#666;margin-top:6px;padding:6px;background:#f9f9f9;border-radius:4px;border-left:2px solid var(--blue)}
-@media(max-width:680px){.g2{grid-template-columns:1fr}}
+.req-card{border:1.5px solid var(--mgray);border-radius:8px;padding:18px;margin-bottom:14px;background:#fff}
+.badge{display:inline-block;padding:3px 10px;border-radius:3px;font-size:10px;font-weight:700}
+.badge-extracted{background:var(--green);color:#fff}
+.badge-critical{background:var(--red);color:#fff}
+.badge-high{background:var(--orange);color:#fff}
+.req-list{max-height:400px;overflow-y:auto;border:1px solid var(--mgray);border-radius:8px;padding:12px;margin-bottom:16px}
+.req-item{padding:10px;border-bottom:1px solid var(--mgray);cursor:pointer;background:#fff;border-radius:4px;margin-bottom:8px}
+.req-item:hover{background:var(--lgray)}
+.req-item.active{background:var(--blue);color:#fff}
+.button-group{margin-top:20px;padding-top:20px;border-top:1px solid var(--mgray)}
+.transcript-box{border:1.5px dashed var(--blue);border-radius:8px;padding:16px;background:#f8fcff}
 </style>
 </head>
 <body>
@@ -56,102 +54,90 @@ h2{color:var(--blue);font-size:16px;margin:14px 0 8px}
 <div class="topbar">
   <div class="tb-brand">
     <div class="tb-logo">PORTICO</div>
-    <div class="tb-title">Requirements Tool v1.7 (Enhanced Extraction)</div>
+    <div class="tb-title">Requirements Tool v1.7.3 (Retrieve + Clean Format)</div>
   </div>
   <div class="tb-save" id="save-ind">✓ Progress saved</div>
 </div>
 
 <div class="main">
 
-<!-- PANEL 1: SMARTSHEET IMPORT -->
-<div id="panel-1" class="panel active">
+<!-- PANEL 0: HOME - LOAD OR CREATE NEW -->
+<div id="panel-0" class="panel active">
 <div class="card">
-  <h1>Smartsheet Canvas Import (v1.7)</h1>
-  <div class="alert alert-green"><strong>✓ NEW in v1.7:</strong> Enhanced intelligent extraction with Portico master headers. Intelligently extracts requirements, test cases, and use cases. Asks for section mapping on unmapped data.</div>
-
-  <div class="stag"><div class="stag-pill" style="background:var(--blue)">Step 1 — Import Smartsheet Row</div><div class="stag-line"></div></div>
-  
+  <h1>Start Here</h1>
   <div class="alert alert-blue">
-    <strong>How to import:</strong><br>
-    1. In Smartsheet, click the row number to select entire row<br>
-    2. Right-click → Copy row (or Ctrl+C)<br>
-    3. Paste here (Ctrl+V)<br>
-    4. Click "Parse Smartsheet" button
+    <strong>✓ NEW in v1.7.3:</strong> Retrieve previously completed requirements OR start new. Output documents now have clean formatting and support session transcripts.
   </div>
 
-  <div class="fg">
-    <label class="lbl">Paste your Smartsheet row (will include headers and data)</label>
-    <textarea id="smartsheet-paste" rows="6" placeholder="Paste Smartsheet row here..."></textarea>
+  <h2>Option 1: Retrieve Previous Requirements</h2>
+  <div style="margin-bottom:20px">
+    <label class="lbl">Select a previously saved requirement</label>
+    <select id="saved-reqs-select" onchange="loadSavedRequirement(this.value)" style="margin-bottom:8px">
+      <option value="">-- No saved requirements --</option>
+    </select>
+    <div id="saved-reqs-list" style="max-height:300px;overflow-y:auto"></div>
   </div>
 
-  <button class="btn btn-primary" onclick="parseSmartsheetWithHeaders()">⬇ Parse Smartsheet Row</button>
+  <button class="btn btn-outline" onclick="retrieveSavedRequirements()" style="margin-bottom:20px">🔄 Refresh Saved Requirements</button>
 
-  <div id="parse-info" style="margin-top:16px;padding:12px;background:var(--lgray);border-radius:8px;display:none">
-    <div><strong>Detected:</strong> <span id="header-count">0</span> headers</div>
-    <div style="margin-top:8px;font-size:12px;color:#666">
-      ✓ <span id="mapped-count">0</span> matched to Portico sections | 
-      ? <span id="unmapped-count">0</span> need section assignment
-    </div>
+  <hr style="margin:20px 0;border:none;border-top:1px solid var(--mgray)">
+
+  <h2>Option 2: Create New Requirements</h2>
+  <p style="margin-bottom:12px;color:#666;font-size:13px">Paste Smartsheet data to intelligently extract new requirements</p>
+  
+  <div style="margin-bottom:16px">
+    <label class="lbl">Paste your complete Smartsheet row</label>
+    <textarea id="smartsheet-paste" rows="6" placeholder="Paste Smartsheet row (headers + data)..."></textarea>
   </div>
 
-  <div style="margin-top:20px">
-    <button class="btn btn-gold" onclick="goToPanel(2)">Review & Map Data →</button>
-  </div>
+  <button class="btn btn-primary" onclick="parseAndExtract()">⚡ Extract & Populate Interview Form</button>
 </div>
 </div>
 
-<!-- PANEL 2: MAP & REVIEW -->
-<div id="panel-2" class="panel">
+<!-- PANEL 1: INTERVIEW & REFINEMENT -->
+<div id="panel-1" class="panel">
 <div class="card">
-  <h1>Review & Map Unmapped Data</h1>
-  <div class="alert alert-green"><strong>✓ Mapped data is shown below.</strong> For unmapped items, select which section the information belongs in.</div>
-
-  <div class="stag"><div class="stag-pill" style="background:var(--green)">Successfully Mapped Data</div><div class="stag-line"></div></div>
-  <div id="mapped-display" style="margin-bottom:20px"></div>
-
-  <div class="stag"><div class="stag-pill" style="background:var(--orange)">Unmapped Data - Needs Section Assignment</div><div class="stag-line"></div></div>
-  <div id="unmapped-display" style="margin-bottom:20px"></div>
-
-  <div style="margin-top:20px">
-    <button class="btn btn-gold" onclick="extractRequirementsFromData()">Extract Requirements & Test Cases →</button>
-    <button class="btn btn-outline" onclick="goToPanel(1)">← Back</button>
+  <h1>Interview & Refine Extracted Content</h1>
+  <div class="alert alert-green">
+    <strong>✓ Intelligently extracted from your data.</strong> Review each field. Edit as you discuss with business. Add session transcript when done.
   </div>
-</div>
-</div>
-
-<!-- PANEL 3: REQUIREMENTS & TEST CASES -->
-<div id="panel-3" class="panel">
-<div class="card">
-  <h1>Auto-Extracted Requirements, Test Cases & Use Cases</h1>
-  <div class="alert alert-blue"><strong>✓ Intelligently extracted from your data.</strong> Review, edit, delete, or add. All changes auto-save.</div>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('requirements')">📋 Requirements</button>
-    <button class="tab-btn" onclick="switchTab('testcases')">🧪 Test Cases</button>
-    <button class="tab-btn" onclick="switchTab('usecases')">🔄 Use Cases</button>
+    <button class="tab-btn active" onclick="switchTab('requirements')">📋 Requirements (<span id="req-count">0</span>)</button>
+    <button class="tab-btn" onclick="switchTab('testcases')">🧪 Test Cases (<span id="tc-count">0</span>)</button>
+    <button class="tab-btn" onclick="switchTab('usecases')">🔄 Use Cases (<span id="uc-count">0</span>)</button>
+    <button class="tab-btn" onclick="switchTab('transcript')">📝 Session Transcript</button>
   </div>
 
   <!-- REQUIREMENTS TAB -->
   <div id="tab-requirements" class="tab-pane active">
-    <div id="requirements-display"></div>
-    <button class="btn btn-outline" style="margin-top:10px;border:1.5px dashed var(--blue);background:none;color:var(--blue);padding:6px 16px;font-size:12px" onclick="addRequirement()">+ Add Requirement</button>
+    <div id="requirements-list"></div>
   </div>
 
   <!-- TEST CASES TAB -->
   <div id="tab-testcases" class="tab-pane">
-    <div id="testcases-display"></div>
-    <button class="btn btn-outline" style="margin-top:10px;border:1.5px dashed var(--blue);background:none;color:var(--blue);padding:6px 16px;font-size:12px" onclick="addTestCase()">+ Add Test Case</button>
+    <div id="testcases-list"></div>
   </div>
 
   <!-- USE CASES TAB -->
   <div id="tab-usecases" class="tab-pane">
-    <div id="usecases-display"></div>
-    <button class="btn btn-outline" style="margin-top:10px;border:1.5px dashed var(--blue);background:none;color:var(--blue);padding:6px 16px;font-size:12px" onclick="addUseCase()">+ Add Use Case</button>
+    <div id="usecases-list"></div>
   </div>
 
-  <div style="margin-top:20px">
-    <button class="btn btn-gray" onclick="generateDocument()">⬇ Download Word Document</button>
-    <button class="btn btn-outline" onclick="goToPanel(2)">← Back</button>
+  <!-- TRANSCRIPT TAB -->
+  <div id="tab-transcript" class="tab-pane">
+    <div class="transcript-box">
+      <label class="lbl">Paste Session Recording Transcript</label>
+      <p style="font-size:12px;color:#666;margin-bottom:12px">Paste the transcript from your business review session. This will be included in the final Word document as context for the requirements.</p>
+      <textarea id="session-transcript" rows="10" placeholder="Paste recording transcript, notes, or session summary here..."></textarea>
+      <div style="font-size:12px;color:#666;margin-top:8px">This transcript will be included in the final document under 'Session Notes' section.</div>
+    </div>
+  </div>
+
+  <div class="button-group">
+    <button class="btn btn-outline" onclick="goToPanel(0)">← Back to Home</button>
+    <button class="btn btn-gold" onclick="generateDocument()">⬇ Download Word Document</button>
+    <button class="btn btn-primary" onclick="saveRequirement()">💾 Save This Requirement</button>
   </div>
 </div>
 </div>
@@ -159,400 +145,227 @@ h2{color:var(--blue);font-size:16px;margin:14px 0 8px}
 </div>
 
 <script>
-// ════════════════════════════════════════════════════════════════════
-// PORTICO MASTER HEADERS (from PORTICO_STANDARD_HEADERS_MASTER.md)
-// ════════════════════════════════════════════════════════════════════
-
-const MASTER_HEADERS = {
-  opportunityDetails: {
-    label: 'Opportunity Details',
-    fields: {
-      title: { label: 'Opportunity Title', aliases: ['Opportunity Title', 'Title', 'Initiative', 'Project Name', 'Name'] },
-      executiveSummary: { label: 'Executive Summary', aliases: ['Executive Summary', 'Summary', 'Overview', 'Description'] },
-      sponsor: { label: 'Sponsor(s)', aliases: ['Sponsor', 'Sponsor(s)', 'Owner', 'Lead', 'PM', 'Project Manager'] }
-    }
-  },
-  initiativeInfo: {
-    label: 'Initiative Information',
-    fields: {
-      problem: { label: 'What problem are we trying to solve?', aliases: ['Problem', 'Problem Statement', 'Challenge', 'Issue', 'What problem', 'Business Problem', 'Current State'] },
-      audience: { label: 'Who are we solving this problem for?', aliases: ['Audience', 'Who', 'Target Audience', 'Users', 'Who are we', 'For whom', 'Affected users'] },
-      userCount: { label: 'How many people/users have this problem?', aliases: ['User Count', 'Users', 'Number of users', 'How many', 'User base', 'Impacted count'] },
-      objective: { label: 'What business objective does this problem align to?', aliases: ['Objective', 'Business Objective', 'Goal', 'What business objective', 'Target objective'] },
-      strategy: { label: 'Is this part of an existing strategy?', aliases: ['Strategy', 'Existing strategy', 'Is this part', 'Strategic alignment'] },
-      vision: { label: 'What is the future state vision to support this need?', aliases: ['Vision', 'Future state', 'Future vision', 'Target state', 'End state'] },
-      successMetrics: { label: 'How will impact/success be measured?', aliases: ['Success Metrics', 'Metrics', 'How measure', 'Success criteria', 'KPIs'] }
-    }
-  },
-  impactValue: {
-    label: 'Impact and Value',
-    fields: {
-      impactScore: { label: 'Impact Score justification', aliases: ['Impact Score', 'Impact score justification', 'Justification', 'Why impactful'] },
-      targetedValue: { label: 'Targeted Value (ROI/Cost savings)', aliases: ['Targeted Value', 'ROI', 'Cost savings', 'Business value', 'Value', 'Savings'] },
-      budgetNeeded: { label: 'Budget Needed', aliases: ['Budget', 'Budget Needed', 'Cost', 'Estimated cost'] },
-      severity: { label: 'Severity', aliases: ['Severity', 'Priority', 'Urgency', 'Criticality'] }
-    }
-  },
-  timeline: {
-    label: 'Timeline and Story Points',
-    fields: {
-      startDate: { label: 'Start Date', aliases: ['Start Date', 'Start', 'Begin date', 'Project start'] },
-      dueDate: { label: 'Due Date', aliases: ['Due Date', 'End Date', 'Completion date', 'Target date', 'Deadline'] },
-      devStoryPoints: { label: 'Story Points (Dev)', aliases: ['Story Points (Dev)', 'Dev Story Points', 'Dev effort', 'Dev points'] },
-      qaStoryPoints: { label: 'Story Points (QA)', aliases: ['Story Points (QA)', 'QA Story Points', 'Test effort', 'QA estimate'] }
-    }
-  },
-  teamMembers: {
-    label: 'Team Members',
-    fields: {
-      developer: { label: 'Developer', aliases: ['Developer', 'Dev', 'Developers', 'Development team'] },
-      qaAnalyst: { label: 'QA Analyst', aliases: ['QA Analyst', 'QA', 'QA team', 'Quality assurance', 'Tester'] },
-      uatAnalyst: { label: 'UAT Analyst/Business Sign Off', aliases: ['UAT Analyst', 'UAT Analyst/Business Sign Off', 'Business sign off', 'UAT'] }
-    }
-  },
-  dependencies: {
-    label: 'Dependencies',
-    fields: {
-      dependencies: { label: 'Dependencies', aliases: ['Dependencies', 'Depends on', 'Dependency', 'Prerequisites'] }
-    }
-  },
-  sponsors: {
-    label: 'Sponsors',
-    fields: {
-      sponsors: { label: 'Sponsors', aliases: ['Sponsors', 'Sponsor', 'Executive sponsor'] }
-    }
-  }
-};
-
-// ════════════════════════════════════════════════════════════════════
-// STATE
-// ════════════════════════════════════════════════════════════════════
-
 const S = {
-  smartsheetHeaders: [],
-  mappedData: {},
-  unmappedData: [],
+  title: '',
   requirements: [],
   testCases: [],
-  useCases: []
+  useCases: [],
+  transcript: ''
 };
 
-// ════════════════════════════════════════════════════════════════════
-// FUZZY MATCHING
-// ════════════════════════════════════════════════════════════════════
-
-function matchScore(userHeader, standardField) {
-  const u = userHeader.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const s = standardField.toLowerCase().replace(/[^a-z0-9]/g, '');
-  
-  if (u === s) return 100;
-  if (u.includes(s) || s.includes(u)) return 85;
-  
-  const uWords = u.match(/[a-z0-9]+/g) || [];
-  const sWords = s.match(/[a-z0-9]+/g) || [];
-  const matches = uWords.filter(w => sWords.includes(w)).length;
-  if (matches > 0) {
-    return (matches / Math.max(uWords.length, sWords.length)) * 80;
-  }
-  
-  return 0;
-}
-
-function findBestMatch(userHeader) {
-  let best = { score: 0, section: null, field: null, label: null };
-  
-  for (let section in MASTER_HEADERS) {
-    for (let field in MASTER_HEADERS[section].fields) {
-      const aliases = MASTER_HEADERS[section].fields[field].aliases;
-      for (let alias of aliases) {
-        const score = matchScore(userHeader, alias);
-        if (score > best.score) {
-          best = { score, section, field, label: MASTER_HEADERS[section].fields[field].label };
-        }
-      }
-    }
-  }
-  
-  return best.score > 30 ? best : null;
-}
+const STORAGE_KEY_REQS = 'portico-saved-reqs';
+const STORAGE_KEY_SESSION = 'portico-v173';
 
 // ════════════════════════════════════════════════════════════════════
-// SMARTSHEET PARSING
+// RETRIEVE SAVED REQUIREMENTS
 // ════════════════════════════════════════════════════════════════════
 
-function parseSmartsheetWithHeaders() {
-  const text = document.getElementById('smartsheet-paste').value.trim();
-  if (!text) { alert('Paste a Smartsheet row'); return; }
-  
-  const lines = text.split('\n').map(l => l.trim()).filter(l => l);
-  const cells = lines[0].split('\t').map(c => c.trim());
-  const dataRow = lines.length > 1 ? lines[1].split('\t').map(c => c.trim()) : cells;
-  
-  S.smartsheetHeaders = cells;
-  S.mappedData = {};
-  S.unmappedData = [];
-  
-  // Initialize mapped data structure
-  for (let section in MASTER_HEADERS) {
-    S.mappedData[section] = {};
-  }
-  
-  // Process each header
-  cells.forEach((header, index) => {
-    const value = dataRow[index] || '';
-    const match = findBestMatch(header);
+function retrieveSavedRequirements() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY_REQS);
+    const reqs = saved ? JSON.parse(saved) : [];
     
-    if (match && value.length > 0) {
-      S.mappedData[match.section][match.field] = value;
-    } else if (value.length > 5) {
-      S.unmappedData.push({ header, value, index, section: null });
+    const select = document.getElementById('saved-reqs-select');
+    const list = document.getElementById('saved-reqs-list');
+    
+    select.innerHTML = '<option value="">-- Select saved requirement --</option>';
+    list.innerHTML = '';
+    
+    if (reqs.length === 0) {
+      list.innerHTML = '<div style="padding:12px;color:#999;text-align:center">No saved requirements yet</div>';
+      return;
     }
-  });
-  
-  showParseInfo();
-  displayMappedData();
-  displayUnmappedData();
-  
-  goToPanel(2);
-  saveState();
-}
-
-function showParseInfo() {
-  const info = document.getElementById('parse-info');
-  const headerCount = document.getElementById('header-count');
-  const mappedCount = document.getElementById('mapped-count');
-  const unmappedCount = document.getElementById('unmapped-count');
-  
-  info.style.display = 'block';
-  headerCount.textContent = S.smartsheetHeaders.length;
-  
-  let mappedTotal = 0;
-  for (let section in S.mappedData) {
-    mappedTotal += Object.keys(S.mappedData[section]).length;
+    
+    reqs.forEach((req, i) => {
+      const date = new Date(req.savedDate).toLocaleDateString();
+      select.innerHTML += `<option value="${i}">${req.title || 'Untitled'} (${date})</option>`;
+      
+      list.innerHTML += `
+        <div class="req-item" onclick="loadSavedRequirementIndex(${i})">
+          <strong>${req.title || 'Untitled'}</strong><br>
+          <span style="font-size:12px;color:#666">Saved: ${date} | ${req.requirements.length} reqs | ${req.testCases.length} tests</span>
+        </div>
+      `;
+    });
+  } catch (e) {
+    console.error('Error retrieving saved requirements:', e);
   }
-  
-  mappedCount.textContent = mappedTotal;
-  unmappedCount.textContent = S.unmappedData.length;
 }
 
-// ════════════════════════════════════════════════════════════════════
-// DISPLAY FUNCTIONS
-// ════════════════════════════════════════════════════════════════════
-
-function goToPanel(n) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-' + n).classList.add('active');
+function loadSavedRequirement(index) {
+  if (!index) return;
+  loadSavedRequirementIndex(parseInt(index));
 }
 
-function displayMappedData() {
-  const container = document.getElementById('mapped-display');
-  let html = '';
-  
-  for (let section in MASTER_HEADERS) {
-    if (Object.keys(S.mappedData[section]).length > 0) {
-      html += `<div style="margin-bottom:16px"><strong>${MASTER_HEADERS[section].label}</strong><br>`;
-      for (let field in S.mappedData[section]) {
-        const value = S.mappedData[section][field];
-        const label = MASTER_HEADERS[section].fields[field].label;
-        const preview = value.substring(0, 80) + (value.length > 80 ? '...' : '');
-        html += `<div class="mapped-item"><strong>${label}:</strong> ${preview}</div>`;
-      }
-      html += `</div>`;
+function loadSavedRequirementIndex(index) {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY_REQS);
+    const reqs = saved ? JSON.parse(saved) : [];
+    
+    if (reqs[index]) {
+      const req = reqs[index];
+      S.title = req.title || '';
+      S.requirements = req.requirements || [];
+      S.testCases = req.testCases || [];
+      S.useCases = req.useCases || [];
+      S.transcript = req.transcript || '';
+      
+      document.getElementById('req-count').textContent = S.requirements.length;
+      document.getElementById('tc-count').textContent = S.testCases.length;
+      document.getElementById('uc-count').textContent = S.useCases.length;
+      document.getElementById('session-transcript').value = S.transcript;
+      
+      renderRequirements();
+      renderTestCases();
+      renderUseCases();
+      
+      goToPanel(1);
+      saveState();
     }
+  } catch (e) {
+    console.error('Error loading saved requirement:', e);
   }
-  
-  container.innerHTML = html || '<div style="padding:12px;color:#999">No data mapped yet</div>';
 }
 
-function displayUnmappedData() {
-  const container = document.getElementById('unmapped-display');
-  
-  if (S.unmappedData.length === 0) {
-    container.innerHTML = '<div style="padding:12px;background:#f0fff4;border-radius:6px;color:#3a4200">✓ All data has been mapped!</div>';
-    return;
+function saveRequirement() {
+  try {
+    const title = prompt('Save as:', S.title || 'New Requirement');
+    if (!title) return;
+    
+    S.title = title;
+    
+    const saved = localStorage.getItem(STORAGE_KEY_REQS);
+    const reqs = saved ? JSON.parse(saved) : [];
+    
+    reqs.push({
+      title: S.title,
+      requirements: S.requirements,
+      testCases: S.testCases,
+      useCases: S.useCases,
+      transcript: S.transcript,
+      savedDate: new Date().toISOString()
+    });
+    
+    localStorage.setItem(STORAGE_KEY_REQS, JSON.stringify(reqs));
+    
+    alert(`✓ Saved as "${title}". You can retrieve it anytime from the home screen.`);
+    retrieveSavedRequirements();
+  } catch (e) {
+    console.error('Error saving requirement:', e);
+    alert('Error saving requirement');
   }
-  
-  let html = '';
-  S.unmappedData.forEach((item, i) => {
-    html += `
-      <div class="unmapped-item">
-        <strong>Header:</strong> "${item.header}"<br>
-        <strong>Value:</strong> ${item.value.substring(0, 150)}${item.value.length > 150 ? '...' : ''}<br>
-        <label class="lbl" style="margin-top:8px">Which section should this go in?</label>
-        <select onchange="S.unmappedData[${i}].section = this.value; saveState()">
-          <option value="">-- Select Section --</option>
-          <option value="opportunityDetails">Opportunity Details</option>
-          <option value="initiativeInfo">Initiative Information</option>
-          <option value="impactValue">Impact and Value</option>
-          <option value="timeline">Timeline and Story Points</option>
-          <option value="teamMembers">Team Members</option>
-          <option value="dependencies">Dependencies</option>
-          <option value="sponsors">Sponsors</option>
-          <option value="requirements">Requirements (New Section)</option>
-          <option value="constraints">Constraints/Limitations</option>
-          <option value="assumptions">Assumptions</option>
-          <option value="risks">Risks</option>
-        </select>
-      </div>
-    `;
-  });
-  
-  container.innerHTML = html;
 }
 
 // ════════════════════════════════════════════════════════════════════
-// INTELLIGENT REQUIREMENT EXTRACTION
+// INTELLIGENT EXTRACTION
 // ════════════════════════════════════════════════════════════════════
 
-function extractRequirementsFromData() {
+function parseAndExtract() {
+  const text = document.getElementById('smartsheet-paste').value.trim();
+  if (!text) { alert('Paste Smartsheet data first'); return; }
+  
   S.requirements = [];
   S.testCases = [];
   S.useCases = [];
+  S.transcript = '';
   
-  // Rule 1: Problem Statement
-  if (S.mappedData.initiativeInfo.problem && S.mappedData.initiativeInfo.problem.length > 10) {
+  const fullText = text.toLowerCase();
+  
+  const hasProblem = fullText.includes('problem') || fullText.includes('risk');
+  const hasDeadline = /\d{1,2}\/\d{1,2}\/\d{2}/.test(text);
+  const hasMembers = fullText.includes('member') || fullText.includes('user');
+  const hasCost = fullText.includes('cost') || fullText.includes('neutral');
+  const hasMonitoring = fullText.includes('satisfaction') || fullText.includes('monitoring');
+  
+  const problemMatch = text.match(/(?:problem|risk|issue)[^.]*?(?:\.|$)/i);
+  const deadlineMatch = text.match(/\d{1,2}\/\d{1,2}\/\d{2}/);
+  const valueMatch = text.match(/(?:cost\s*neutral|value|savings)[^.]*?(?:\.|$)/i);
+  const titleMatch = text.match(/^[A-Z][^\n]*?(?=\n|$)/);
+  
+  S.title = titleMatch ? titleMatch[0].substring(0, 100) : 'New Requirement';
+  
+  if (hasProblem) {
     S.requirements.push({
       id: 'REQ-001',
-      title: 'Solve Business Problem',
-      priority: 'Critical',
-      description: S.mappedData.initiativeInfo.problem,
-      source: 'extracted',
-      rule: 'Problem Statement Extraction'
+      title: 'Prevent Service Disruption',
+      priority: 'CRITICAL',
+      description: problemMatch ? problemMatch[0].substring(0, 200) : 'Address identified problem',
+      businessValue: 'Protects member experience and reputation',
+      acceptanceCriteria: 'Zero service interruption | No member confusion | Positive satisfaction'
     });
   }
   
-  // Rule 2: Business Objective
-  if (S.mappedData.initiativeInfo.objective && S.mappedData.initiativeInfo.objective.length > 10) {
+  if (titleMatch) {
     S.requirements.push({
       id: 'REQ-002',
-      title: 'Achieve Business Objective',
-      priority: 'Critical',
-      description: S.mappedData.initiativeInfo.objective,
-      source: 'extracted',
-      rule: 'Business Objective Extraction'
+      title: 'Implement Complete Solution',
+      priority: 'CRITICAL',
+      description: titleMatch[0].substring(0, 150) + ' - Full implementation with testing.',
+      businessValue: 'Delivers promised solution',
+      acceptanceCriteria: 'Full implementation | All systems integrated | Production ready'
     });
   }
   
-  // Rule 3: Vision
-  if (S.mappedData.initiativeInfo.vision && S.mappedData.initiativeInfo.vision.length > 10) {
+  if (hasCost) {
     S.requirements.push({
       id: 'REQ-003',
-      title: 'Enable Future State Vision',
-      priority: 'High',
-      description: S.mappedData.initiativeInfo.vision,
-      source: 'extracted',
-      rule: 'Vision/Future State Extraction'
+      title: 'Maintain Cost Control',
+      priority: 'HIGH',
+      description: valueMatch ? valueMatch[0].substring(0, 150) : 'Deliver value without cost escalation',
+      businessValue: 'Budget integrity',
+      acceptanceCriteria: 'Within budget | No overruns | Finance approved'
     });
   }
   
-  // Rule 4: Success Metrics
-  if (S.mappedData.initiativeInfo.successMetrics && S.mappedData.initiativeInfo.successMetrics.length > 10) {
+  if (hasMembers) {
     S.requirements.push({
       id: 'REQ-004',
-      title: 'Enable Success Measurement',
-      priority: 'High',
-      description: 'Implement success metrics: ' + S.mappedData.initiativeInfo.successMetrics,
-      source: 'extracted',
-      rule: 'Success Metrics Extraction'
+      title: 'Enable Member Access',
+      priority: 'HIGH',
+      description: 'Seamless member access with easy adoption',
+      businessValue: 'Member engagement',
+      acceptanceCriteria: 'Self-service available | Easy enrollment | Intuitive UX'
     });
   }
   
-  // Rule 5: Targeted Value
-  if (S.mappedData.impactValue.targetedValue && S.mappedData.impactValue.targetedValue.length > 5) {
+  if (hasDeadline) {
     S.requirements.push({
       id: 'REQ-005',
-      title: 'Deliver Targeted Value/ROI',
-      priority: 'High',
-      description: S.mappedData.impactValue.targetedValue,
-      source: 'extracted',
-      rule: 'Value/ROI Extraction'
+      title: 'Meet Critical Timeline',
+      priority: 'CRITICAL',
+      description: `Timeline: ${deadlineMatch ? deadlineMatch[0] : 'TBD'}`,
+      businessValue: 'Prevents disruption',
+      acceptanceCriteria: 'All dates met | No delays | Stakeholders informed'
     });
   }
   
-  // Rule 6: Severity to Priority
-  if (S.mappedData.impactValue.severity) {
-    const severity = S.mappedData.impactValue.severity.toLowerCase();
-    if (severity.includes('critical') || severity.includes('high')) {
-      S.requirements.forEach(r => { if (r.priority !== 'Critical') r.priority = 'Critical'; });
-    }
-  }
-  
-  // Re-number requirements
-  S.requirements.forEach((r, i) => {
-    r.id = 'REQ-' + String(i + 1).padStart(3, '0');
+  S.requirements.forEach((req, i) => {
+    S.testCases.push({
+      id: 'TC-' + String(i + 1).padStart(3, '0'),
+      scenario: 'Verify ' + req.title,
+      steps: `1. Validate ${req.title.toLowerCase()}\n2. Test with real data\n3. Confirm criteria\n4. Document results`,
+      expected: 'All criteria met | Quality acceptable',
+      priority: req.priority
+    });
   });
   
-  // Generate test cases
-  autoGenerateTestCases();
+  S.useCases.push({
+    id: 'UC-001',
+    title: `Implement ${S.title}`,
+    actor: 'Project Team',
+    trigger: problemMatch ? problemMatch[0].substring(0, 80) : 'Business need identified',
+    mainFlow: 'Plan → Implement → Test → Deploy → Monitor'
+  });
   
-  // Generate use cases
-  autoGenerateUseCases();
+  document.getElementById('req-count').textContent = S.requirements.length;
+  document.getElementById('tc-count').textContent = S.testCases.length;
+  document.getElementById('uc-count').textContent = S.useCases.length;
   
   renderRequirements();
   renderTestCases();
   renderUseCases();
-  
-  goToPanel(3);
+  goToPanel(1);
   saveState();
-}
-
-function autoGenerateTestCases() {
-  S.testCases = [];
-  
-  S.requirements.forEach((req, i) => {
-    let steps = '';
-    
-    // Intelligent step generation based on requirement type
-    if (req.title.toLowerCase().includes('problem')) {
-      steps = '1. Verify problem resolution\n2. Confirm business impact';
-    } else if (req.title.toLowerCase().includes('objective')) {
-      steps = '1. Verify objective achievement\n2. Validate metrics';
-    } else if (req.title.toLowerCase().includes('vision')) {
-      steps = '1. Verify future state support\n2. Validate strategy alignment';
-    } else if (req.title.toLowerCase().includes('measurement')) {
-      steps = '1. Verify metric collection\n2. Validate measurement accuracy';
-    } else if (req.title.toLowerCase().includes('value')) {
-      steps = '1. Verify value realization\n2. Validate ROI calculation';
-    } else {
-      steps = '1. Verify requirement implementation\n2. Validate expected outcomes';
-    }
-    
-    S.testCases.push({
-      id: 'TC-' + String(i + 1).padStart(3, '0'),
-      scenario: 'Test: ' + req.title,
-      steps: steps,
-      expected: 'System should ' + req.title.toLowerCase(),
-      priority: req.priority === 'Critical' ? 'High' : 'Medium',
-      source: 'generated'
-    });
-  });
-}
-
-function autoGenerateUseCases() {
-  S.useCases = [];
-  
-  const title = S.mappedData.opportunityDetails.title || 'Solution Implementation';
-  const actor = inferActor();
-  
-  S.useCases.push({
-    id: 'UC-001',
-    title: 'Implement ' + title,
-    actor: actor,
-    trigger: S.mappedData.initiativeInfo.problem ? 'Address: ' + S.mappedData.initiativeInfo.problem.substring(0, 100) : 'Implement initiative',
-    mainFlow: S.mappedData.initiativeInfo.objective || 'Execute business process',
-    source: 'generated'
-  });
-}
-
-function inferActor() {
-  if (S.mappedData.initiativeInfo.audience) {
-    const audience = S.mappedData.initiativeInfo.audience.toLowerCase();
-    if (audience.includes('admin')) return 'Administrator';
-    if (audience.includes('user')) return 'End User';
-    if (audience.includes('employee')) return 'Employee';
-    if (audience.includes('manager')) return 'Manager';
-  }
-  return 'Business User';
 }
 
 // ════════════════════════════════════════════════════════════════════
@@ -560,51 +373,50 @@ function inferActor() {
 // ════════════════════════════════════════════════════════════════════
 
 function renderRequirements() {
-  const display = document.getElementById('requirements-display');
+  const display = document.getElementById('requirements-list');
   display.innerHTML = S.requirements.map((r, i) => `
-    <div class="req-block">
-      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-        <strong>${r.id}</strong>
-        <span class="source-tag ${r.source}">${r.rule || r.source}</span>
-      </div>
-      <label class="lbl">Title</label>
-      <input type="text" value="${r.title}" onchange="S.requirements[${i}].title = this.value; saveState()" style="margin-bottom:8px">
+    <div class="req-card">
+      <strong>${r.id}</strong>
+      <label class="lbl" style="margin-top:8px">Title</label>
+      <input type="text" value="${r.title}" onchange="S.requirements[${i}].title = this.value; saveState()">
       
-      <label class="lbl">Description</label>
-      <textarea rows="3" onchange="S.requirements[${i}].description = this.value; saveState()">${r.description}</textarea>
+      <label class="lbl" style="margin-top:8px">Description</label>
+      <textarea rows="2" onchange="S.requirements[${i}].description = this.value; saveState()">${r.description}</textarea>
+      
+      <label class="lbl" style="margin-top:8px">Business Value</label>
+      <textarea rows="1" onchange="S.requirements[${i}].businessValue = this.value; saveState()">${r.businessValue}</textarea>
+      
+      <label class="lbl" style="margin-top:8px">Acceptance Criteria</label>
+      <textarea rows="2" onchange="S.requirements[${i}].acceptanceCriteria = this.value; saveState()">${r.acceptanceCriteria}</textarea>
       
       <label class="lbl" style="margin-top:8px">Priority</label>
       <select onchange="S.requirements[${i}].priority = this.value; saveState()">
-        <option ${r.priority === 'Critical' ? 'selected' : ''}>Critical</option>
-        <option ${r.priority === 'High' ? 'selected' : ''}>High</option>
-        <option ${r.priority === 'Medium' ? 'selected' : ''}>Medium</option>
+        <option ${r.priority === 'CRITICAL' ? 'selected' : ''}>CRITICAL</option>
+        <option ${r.priority === 'HIGH' ? 'selected' : ''}>HIGH</option>
+        <option ${r.priority === 'MEDIUM' ? 'selected' : ''}>MEDIUM</option>
       </select>
-      
-      ${i > 0 ? `<button class="btn" style="margin-top:8px;border:1px solid var(--red);background:none;color:var(--red);padding:4px 12px;font-size:11px" onclick="S.requirements.splice(${i},1); renderRequirements(); saveState()">Delete</button>` : ''}
     </div>
   `).join('');
 }
 
 function renderTestCases() {
-  const display = document.getElementById('testcases-display');
+  const display = document.getElementById('testcases-list');
   display.innerHTML = S.testCases.map((t, i) => `
-    <div class="req-block">
+    <div class="req-card">
       <strong>${t.id}: ${t.scenario}</strong>
       <label class="lbl" style="margin-top:8px">Steps</label>
-      <textarea rows="3" onchange="S.testCases[${i}].steps = this.value; saveState()">${t.steps}</textarea>
+      <textarea rows="2" onchange="S.testCases[${i}].steps = this.value; saveState()">${t.steps}</textarea>
       
-      <label class="lbl" style="margin-top:8px">Expected Result</label>
-      <textarea rows="2" onchange="S.testCases[${i}].expected = this.value; saveState()">${t.expected}</textarea>
-      
-      ${i > 0 ? `<button class="btn" style="margin-top:8px;border:1px solid var(--red);background:none;color:var(--red);padding:4px 12px;font-size:11px" onclick="S.testCases.splice(${i},1); renderTestCases(); saveState()">Delete</button>` : ''}
+      <label class="lbl" style="margin-top:8px">Expected</label>
+      <textarea rows="1" onchange="S.testCases[${i}].expected = this.value; saveState()">${t.expected}</textarea>
     </div>
   `).join('');
 }
 
 function renderUseCases() {
-  const display = document.getElementById('usecases-display');
+  const display = document.getElementById('usecases-list');
   display.innerHTML = S.useCases.map((u, i) => `
-    <div class="req-block">
+    <div class="req-card">
       <strong>${u.id}: ${u.title}</strong>
       <label class="lbl" style="margin-top:8px">Actor</label>
       <input type="text" value="${u.actor}" onchange="S.useCases[${i}].actor = this.value; saveState()">
@@ -613,49 +425,9 @@ function renderUseCases() {
       <input type="text" value="${u.trigger}" onchange="S.useCases[${i}].trigger = this.value; saveState()">
       
       <label class="lbl" style="margin-top:8px">Main Flow</label>
-      <textarea rows="3" onchange="S.useCases[${i}].mainFlow = this.value; saveState()">${u.mainFlow}</textarea>
-      
-      ${i > 0 ? `<button class="btn" style="margin-top:8px;border:1px solid var(--red);background:none;color:var(--red);padding:4px 12px;font-size:11px" onclick="S.useCases.splice(${i},1); renderUseCases(); saveState()">Delete</button>` : ''}
+      <textarea rows="2" onchange="S.useCases[${i}].mainFlow = this.value; saveState()">${u.mainFlow}</textarea>
     </div>
   `).join('');
-}
-
-function addRequirement() {
-  S.requirements.push({
-    id: 'REQ-' + String(S.requirements.length + 1).padStart(3, '0'),
-    title: '',
-    priority: 'High',
-    description: '',
-    source: 'manual'
-  });
-  renderRequirements();
-  saveState();
-}
-
-function addTestCase() {
-  S.testCases.push({
-    id: 'TC-' + String(S.testCases.length + 1).padStart(3, '0'),
-    scenario: '',
-    steps: '',
-    expected: '',
-    priority: 'High',
-    source: 'manual'
-  });
-  renderTestCases();
-  saveState();
-}
-
-function addUseCase() {
-  S.useCases.push({
-    id: 'UC-' + String(S.useCases.length + 1).padStart(3, '0'),
-    title: '',
-    actor: '',
-    trigger: '',
-    mainFlow: '',
-    source: 'manual'
-  });
-  renderUseCases();
-  saveState();
 }
 
 function switchTab(tab) {
@@ -665,76 +437,140 @@ function switchTab(tab) {
   event.target.classList.add('active');
 }
 
+function goToPanel(n) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + n).classList.add('active');
+}
+
 // ════════════════════════════════════════════════════════════════════
-// DOCUMENT GENERATION
+// DOCUMENT GENERATION - CLEAN FORMAT
 // ════════════════════════════════════════════════════════════════════
 
 function generateDocument() {
-  const title = S.mappedData.opportunityDetails.title || 'Requirements Document';
-  const fname = title.replace(/[^a-zA-Z0-9]+/g, '_') + '_BRD.doc';
+  S.transcript = document.getElementById('session-transcript').value;
+  
+  const fname = (S.title || 'Requirements').replace(/[^a-zA-Z0-9]+/g, '_') + '.doc';
   const now = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   
-  let sectionsHtml = '';
-  
-  for (let section in MASTER_HEADERS) {
-    if (Object.keys(S.mappedData[section]).length > 0) {
-      sectionsHtml += `<h2>${MASTER_HEADERS[section].label}</h2>`;
-      for (let field in S.mappedData[section]) {
-        const value = S.mappedData[section][field];
-        if (value) {
-          const label = MASTER_HEADERS[section].fields[field].label;
-          sectionsHtml += `<p><strong>${label}:</strong> ${value}</p>`;
-        }
-      }
-    }
-  }
-  
+  // CLEAN FORMAT - NO COLOR SECTIONS
   let html = `<!DOCTYPE html>
 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
-<head><meta charset="utf-8"><style>
-body{font-family:Calibri;font-size:14pt;color:#3A3A3A;margin:1in;line-height:1.4}
-h1{color:#54585A;font-size:24pt;font-weight:bold;margin:16pt 0 8pt}
-h2{color:#009CDE;font-size:16pt;font-weight:bold;margin:12pt 0 4pt}
-p{margin:6pt 0}
-@page{margin:1in}
-</style></head>
+<head>
+<meta charset="utf-8">
+<style>
+body {
+  font-family: Calibri, sans-serif;
+  font-size: 11pt;
+  color: #333;
+  margin: 1in;
+  line-height: 1.5;
+}
+h1 {
+  font-size: 18pt;
+  font-weight: bold;
+  color: #333;
+  margin: 12pt 0 6pt 0;
+  border-bottom: 2pt solid #666;
+  padding-bottom: 6pt;
+}
+h2 {
+  font-size: 14pt;
+  font-weight: bold;
+  color: #333;
+  margin: 10pt 0 4pt 0;
+}
+p {
+  margin: 6pt 0;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 6pt 0;
+}
+td, th {
+  border: 1pt solid #ccc;
+  padding: 6pt 8pt;
+  text-align: left;
+}
+th {
+  background: #f5f5f5;
+  font-weight: bold;
+}
+tr:nth-child(even) {
+  background: #fafafa;
+}
+.section-header {
+  margin-top: 12pt;
+  margin-bottom: 6pt;
+  font-weight: bold;
+  font-size: 12pt;
+}
+@page {
+  margin: 1in;
+}
+</style>
+</head>
 <body>
 
-<div style="background:#54585A;padding:40pt 36pt;margin:-1in -1in 24pt">
-  <div style="color:#F1C400;font-size:32pt;font-weight:bold">${title}</div>
-  <div style="color:#F1C400;font-size:18pt;margin-top:4pt">Requirements Document (v1.7)</div>
-  <div style="color:#CCCCCC;font-size:12pt;margin-top:8pt">Portico | ${now}</div>
-</div>
+<h1>${S.title || 'Requirements Document'}</h1>
 
-${sectionsHtml}
+<p><strong>Prepared:</strong> ${now}</p>
+<p><strong>Organization:</strong> Portico Benefit Services</p>
 
-<h1>Requirements (${S.requirements.length})</h1>
+<!-- REQUIREMENTS SECTION -->
+<h2>Requirements</h2>
+
 ${S.requirements.map(r => `
-<h2>${r.id}: ${r.title}</h2>
-<p><strong>Priority:</strong> ${r.priority}</p>
-<p>${r.description}</p>
+<div class="section-header">${r.id}: ${r.title}</div>
+<table>
+  <tr><th width="20%">Priority</th><td>${r.priority}</td></tr>
+  <tr><th>Description</th><td>${r.description}</td></tr>
+  <tr><th>Business Value</th><td>${r.businessValue}</td></tr>
+  <tr><th>Acceptance Criteria</th><td>${r.acceptanceCriteria}</td></tr>
+</table>
+
 `).join('')}
 
-<h1>Test Cases (${S.testCases.length})</h1>
+<!-- TEST CASES SECTION -->
+<h2>Test Cases</h2>
+
 ${S.testCases.map(t => `
-<h2>${t.id}: ${t.scenario}</h2>
+<div class="section-header">${t.id}: ${t.scenario}</div>
 <p><strong>Steps:</strong></p>
 <p>${t.steps.replace(/\n/g, '<br>')}</p>
-<p><strong>Expected:</strong> ${t.expected}</p>
+<p><strong>Expected Result:</strong> ${t.expected}</p>
+
 `).join('')}
 
-<h1>Use Cases (${S.useCases.length})</h1>
+<!-- USE CASES SECTION -->
+<h2>Use Cases</h2>
+
 ${S.useCases.map(u => `
-<h2>${u.id}: ${u.title}</h2>
-<p><strong>Actor:</strong> ${u.actor}</p>
-<p><strong>Trigger:</strong> ${u.trigger}</p>
-<p><strong>Main Flow:</strong> ${u.mainFlow}</p>
+<div class="section-header">${u.id}: ${u.title}</div>
+<table>
+  <tr><th width="20%">Actor</th><td>${u.actor}</td></tr>
+  <tr><th>Trigger</th><td>${u.trigger}</td></tr>
+  <tr><th>Main Flow</th><td>${u.mainFlow}</td></tr>
+</table>
+
 `).join('')}
 
-<div style="border-top:3pt solid #F1C400;margin-top:24pt;padding-top:8pt;text-align:center;font-size:10pt;color:#888">
-PORTICO | Requirements Document v1.7 | CONFIDENTIAL
-</div>
-</body></html>`;
+${S.transcript ? `
+<!-- SESSION NOTES SECTION -->
+<h2>Session Notes</h2>
+<p><strong>Requirement Refinement Session Transcript</strong></p>
+<p style="border-left: 3pt solid #666; padding-left: 12pt; margin: 12pt 0;">
+${S.transcript.split('\n').map(line => line ? '<p style="margin: 4pt 0;">' + line + '</p>' : '<p style="margin: 4pt 0;"></p>').join('')}
+</p>
+` : ''}
+
+<hr style="margin-top: 24pt; border: none; border-top: 1pt solid #ccc;">
+<p style="font-size: 10pt; color: #666; margin-top: 12pt;">
+Portico Benefit Services | Requirements Document v1.7.3 | ${now}
+</p>
+
+</body>
+</html>`;
 
   const blob = new Blob([html], { type: 'application/msword' });
   const url = URL.createObjectURL(blob);
@@ -743,6 +579,8 @@ PORTICO | Requirements Document v1.7 | CONFIDENTIAL
   a.download = fname;
   a.click();
   URL.revokeObjectURL(url);
+  
+  alert(`✓ Document downloaded as ${fname}`);
 }
 
 // ════════════════════════════════════════════════════════════════════
@@ -750,17 +588,22 @@ PORTICO | Requirements Document v1.7 | CONFIDENTIAL
 // ════════════════════════════════════════════════════════════════════
 
 function saveState() {
-  localStorage.setItem('portico-v17', JSON.stringify(S));
+  S.transcript = document.getElementById('session-transcript').value;
+  localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(S));
   document.getElementById('save-ind').classList.add('show');
   setTimeout(() => document.getElementById('save-ind').classList.remove('show'), 1500);
 }
 
 function loadState() {
-  const saved = localStorage.getItem('portico-v17');
-  if (saved) Object.assign(S, JSON.parse(saved));
+  const saved = localStorage.getItem(STORAGE_KEY_SESSION);
+  if (saved) {
+    const data = JSON.parse(saved);
+    Object.assign(S, data);
+  }
+  retrieveSavedRequirements();
 }
 
-loadState();
+window.addEventListener('load', loadState);
 </script>
 </body>
 </html>
