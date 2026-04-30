@@ -3,1234 +3,906 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Requirements Document Tool</title>
+<title>Portico | BRD Tool v1.8</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --navy:   #1E3A5F;
-  --slate:  #2C4A6E;
-  --mid:    #4A6FA5;
-  --accent: #2E86AB;
-  --teal:   #1A7A6E;
-  --amber:  #C47A1B;
-  --crimson:#9B2335;
-  --sage:   #4A7C59;
-  --bg:     #F0F2F5;
-  --card:   #FFFFFF;
-  --border: #D1D9E0;
-  --text:   #1A2332;
-  --muted:  #6B7A8D;
-  --light:  #F7F9FC;
-  --success:#2E7D52;
+:root{
+  --gold:#F1C400;--gray:#54585A;--blue:#009CDE;--orange:#D86018;
+  --green:#A2AD00;--red:#C5003E;--lgray:#F4F4F4;--mgray:#D0D7DE;
+  --dgray:#3A3A3A;--navy:#2E3A4E;
 }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Calibri,'Segoe UI',sans-serif;font-size:14px;color:var(--dgray);background:#EEF1F4;height:100vh;display:flex;flex-direction:column;overflow:hidden}
 
-body { font-family: 'Segoe UI', Calibri, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+/* ── TOP BAR ── */
+.topbar{background:var(--gray);padding:0 20px;height:48px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:100;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.tb-left{display:flex;align-items:center;gap:14px}
+.tb-logo{color:var(--gold);font-size:18px;font-weight:800;letter-spacing:3px}
+.tb-title{color:#ccc;font-size:12px}
+.tb-right{display:flex;align-items:center;gap:10px}
+.tb-badge{font-size:11px;padding:3px 10px;border-radius:12px;font-weight:700}
+.tb-saved{background:rgba(162,173,0,.25);color:var(--green);opacity:0;transition:opacity .4s}
+.tb-saved.show{opacity:1}
 
-/* ── LAYOUT ── */
-.shell { display: flex; flex-direction: column; min-height: 100vh; }
+/* ── STEP BAR ── */
+.stepbar{background:var(--lgray);border-bottom:1px solid var(--mgray);padding:0 20px;height:44px;display:flex;align-items:center;gap:4px;flex-shrink:0}
+.step-item{display:flex;align-items:center;gap:6px;cursor:pointer;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;color:#999;transition:all .15s}
+.step-item.active{background:var(--blue);color:#fff}
+.step-item.done{color:var(--green)}
+.step-item .dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:#ddd;color:#999;flex-shrink:0}
+.step-item.active .dot{background:rgba(255,255,255,.3);color:#fff}
+.step-item.done .dot{background:var(--green);color:#fff}
+.step-div{width:20px;height:1px;background:var(--mgray)}
 
-.topbar {
-  background: var(--navy);
-  padding: 0 28px;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky; top: 0; z-index: 200;
-  box-shadow: 0 2px 10px rgba(0,0,0,.25);
+/* ── MAIN LAYOUT ── */
+.workspace{display:flex;flex:1;overflow:hidden}
+.left-panel{width:420px;flex-shrink:0;overflow-y:auto;background:#fff;border-right:1px solid var(--mgray);display:flex;flex-direction:column}
+.right-panel{flex:1;overflow-y:auto;background:var(--lgray);padding:20px}
+
+/* ── LEFT PANEL: FORM ── */
+.form-section{padding:16px 16px 0;border-bottom:1px solid var(--lgray)}
+.form-section:last-child{border-bottom:none;padding-bottom:16px}
+.section-label{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#999;margin-bottom:10px}
+.field-group{margin-bottom:12px}
+.field-group label{display:block;font-size:11px;font-weight:700;color:var(--gray);margin-bottom:4px}
+.field-group input,.field-group textarea,.field-group select{
+  width:100%;border:1.5px solid var(--mgray);border-radius:5px;
+  padding:7px 9px;font-family:inherit;font-size:12px;color:var(--dgray);
+  background:#fff;outline:none;transition:border-color .15s;resize:vertical
 }
-.topbar-left { display: flex; align-items: center; gap: 16px; }
-.topbar-brand { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 0.5px; }
-.topbar-sub { font-size: 12px; color: rgba(255,255,255,.55); }
-.topbar-right { display: flex; align-items: center; gap: 12px; }
-.save-badge { font-size: 11px; color: #6FD09B; font-weight: 600; opacity: 0; transition: opacity .4s; }
-.save-badge.show { opacity: 1; }
+.field-group input:focus,.field-group textarea:focus,.field-group select:focus{border-color:var(--blue);background:#f8fcff}
+.field-group textarea{min-height:60px;line-height:1.4}
+.scope-list{display:flex;flex-direction:column;gap:5px}
+.scope-row{display:flex;gap:5px}
+.scope-row input{flex:1}
+.scope-row button{padding:0 8px;border:1px solid var(--mgray);border-radius:4px;background:none;cursor:pointer;color:#999;font-size:14px}
+.scope-row button:hover{color:var(--red);border-color:var(--red)}
+.add-item-btn{margin-top:6px;background:none;border:1.5px dashed var(--blue);border-radius:5px;padding:5px;width:100%;color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.add-item-btn:hover{background:#f0f9ff}
 
-/* ── PROGRESS ── */
-.progress-bar {
-  background: var(--card);
-  border-bottom: 1px solid var(--border);
-  padding: 0 28px;
-  display: flex;
-  align-items: center;
-  height: 60px;
-  gap: 0;
-}
-.step-item {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  gap: 0;
-}
-.step-dot {
-  width: 28px; height: 28px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 800; flex-shrink: 0;
-  transition: all .2s;
-}
-.step-dot.done { background: var(--teal); color: #fff; cursor: pointer; }
-.step-dot.active { background: var(--accent); color: #fff; box-shadow: 0 0 0 3px rgba(46,134,171,.25); }
-.step-dot.pending { background: #E0E6EE; color: var(--muted); }
-.step-label { font-size: 11px; font-weight: 600; margin-left: 8px; white-space: nowrap; }
-.step-label.done { color: var(--teal); }
-.step-label.active { color: var(--accent); }
-.step-label.pending { color: var(--muted); }
-.step-line { flex: 1; height: 2px; background: #E0E6EE; margin: 0 8px; }
-.step-line.done { background: var(--teal); }
+/* ── BOTTOM ACTIONS ── */
+.panel-actions{padding:12px 16px;border-top:1px solid var(--mgray);background:#fff;flex-shrink:0;display:flex;flex-direction:column;gap:8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border:none;border-radius:6px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;width:100%}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-gold{background:var(--gold);color:var(--gray)}
+.btn-gray{background:none;border:1.5px solid var(--mgray);color:var(--gray)}
+.btn-green{background:var(--green);color:#fff}
+.btn-sm{width:auto;padding:6px 12px;font-size:11px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
 
-/* ── MAIN CONTENT ── */
-.main { flex: 1; padding: 28px; max-width: 1000px; margin: 0 auto; width: 100%; }
+/* ── RIGHT PANEL: PREVIEW ── */
+.preview-card{background:#fff;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.08);padding:32px 36px;max-width:780px;margin:0 auto}
+.preview-empty{text-align:center;padding:60px 20px;color:#aaa}
+.preview-empty .icon{font-size:48px;margin-bottom:16px}
+.preview-empty p{font-size:14px}
 
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 28px;
-  margin-bottom: 16px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.06);
-}
+/* ── BRD PREVIEW STYLES ── */
+.brd-cover{background:var(--navy);padding:28px;border-radius:4px;margin-bottom:20px;text-align:center}
+.brd-cover h1{color:var(--gold);font-size:22px;font-weight:800;letter-spacing:1px}
+.brd-cover h2{color:var(--gold);font-size:16px;font-weight:600;margin-top:4px}
+.brd-cover p{color:#ccc;font-size:12px;margin-top:8px}
+.brd-section{margin-bottom:24px}
+.brd-section-hdr{display:flex;gap:0;margin-bottom:12px;border-radius:3px;overflow:hidden}
+.brd-section-num{background:var(--navy);color:#fff;font-weight:800;font-size:14px;padding:8px 14px;min-width:36px;text-align:center}
+.brd-section-title{background:#D6E4F0;color:var(--navy);font-weight:700;font-size:13px;padding:8px 14px;letter-spacing:1px;flex:1}
+.brd-subhdr{color:var(--blue);font-weight:700;font-size:13px;margin:12px 0 6px;border-bottom:2px solid var(--blue);padding-bottom:3px}
+.brd-table{width:100%;border-collapse:collapse;margin-bottom:8px;font-size:12px}
+.brd-table th{background:var(--navy);color:#fff;padding:7px 10px;text-align:left;font-weight:700;border:1px solid var(--mgray)}
+.brd-table td{padding:7px 10px;border:1px solid var(--mgray);vertical-align:top}
+.brd-table tr:nth-child(even) td{background:#f8f8f8}
+.brd-table .label{background:#f2f2f2;font-weight:700;width:28%;color:var(--gray)}
+.brd-context{background:#f0fff4;border-left:3px solid var(--green);padding:8px;margin-top:6px;font-size:11px;border-radius:2px}
+.brd-context strong{color:var(--green)}
+.brd-bullet{padding-left:20px;font-size:12px;line-height:1.6;color:#444}
+.brd-bullet li{margin-bottom:3px}
+.empty-val{color:#bbb;font-style:italic}
+.req-block{border:1px solid var(--mgray);border-radius:5px;overflow:hidden;margin-bottom:10px}
+.req-block-hdr{background:var(--gray);color:#fff;font-weight:700;font-size:12px;padding:6px 10px}
 
-.section-label {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
-  color: var(--accent); margin-bottom: 16px;
-}
-.section-label::after { content: ''; display: block; width: 40px; height: 2px; background: var(--accent); border-radius: 1px; }
+/* ── DOCUMENT TAB (upload/paste) ── */
+.doc-item{border:1px solid var(--mgray);border-radius:5px;padding:8px;margin-bottom:6px;background:var(--lgray);display:flex;gap:8px;align-items:flex-start}
+.doc-item-name{font-size:12px;font-weight:700;flex:1}
+.doc-item-meta{font-size:10px;color:#999}
+.doc-item-remove{background:none;border:none;cursor:pointer;color:#bbb;font-size:14px;padding:0 2px}
+.doc-item-remove:hover{color:var(--red)}
+.drop-zone{border:2px dashed var(--blue);border-radius:8px;padding:20px;text-align:center;background:#f8fcff;cursor:pointer;transition:all .15s}
+.drop-zone:hover{background:#f0f6ff}
+.drop-zone p{font-size:12px;color:#888;margin-top:6px}
+.integrate-notice{background:#f0fff4;border-left:3px solid var(--green);border-radius:4px;padding:8px 10px;font-size:11px;color:#3a4200;margin-top:8px}
 
-.field-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 5px; text-transform: uppercase; }
-.field-group { margin-bottom: 14px; }
+/* ── REQ / NFR sub-tabs ── */
+.subtabs{display:flex;gap:4px;margin-bottom:12px}
+.subtab{padding:5px 12px;border-radius:16px;border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;background:#eee;color:#888;transition:all .15s}
+.subtab.active{background:var(--blue);color:#fff}
 
-input, select, textarea {
-  width: 100%; border: 1.5px solid var(--border); border-radius: 6px;
-  padding: 8px 12px; font-size: 13px; font-family: inherit;
-  color: var(--text); background: var(--card); outline: none;
-  transition: border-color .15s, box-shadow .15s;
-  line-height: 1.5;
-}
-input:focus, select:focus, textarea:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(46,134,171,.12);
-}
-textarea { resize: vertical; }
-select { cursor: pointer; }
-
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-
-/* ── BUTTONS ── */
-.btn {
-  border: none; border-radius: 6px; padding: 10px 22px;
-  font-weight: 700; font-size: 13px; cursor: pointer; font-family: inherit;
-  transition: all .15s; display: inline-flex; align-items: center; gap: 8px;
-}
-.btn-primary { background: var(--navy); color: #fff; }
-.btn-primary:hover { background: var(--slate); }
-.btn-primary:disabled { background: #A0B0C0; cursor: not-allowed; }
-.btn-accent { background: var(--accent); color: #fff; }
-.btn-accent:hover { background: #1a6a87; }
-.btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--muted); }
-.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
-.btn-ghost { background: transparent; border: 1.5px dashed var(--border); color: var(--muted); font-size: 12px; padding: 7px 14px; }
-.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-.btn-danger-outline { background: transparent; border: 1.5px solid var(--border); color: var(--crimson); font-size: 11px; padding: 4px 10px; }
-.btn-danger-outline:hover { border-color: var(--crimson); background: #FFF5F5; }
-.btn-save { background: #EAF6F0; border: 1.5px solid var(--teal); color: var(--teal); }
-.btn-save:hover { background: var(--teal); color: #fff; }
-
-/* ── TABS ── */
-.tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 20px; }
-.tab {
-  padding: 7px 14px; border-radius: 6px; border: 1.5px solid var(--border);
-  font-size: 12px; font-weight: 600; cursor: pointer; background: var(--card);
-  color: var(--muted); transition: all .15s; font-family: inherit;
-}
-.tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
-.tab:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
-
-/* ── SUBCARD ── */
-.subcard {
-  border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 14px;
-}
-.subcard-header {
-  padding: 10px 16px; font-weight: 700; font-size: 13px;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.subcard-body { padding: 16px; background: var(--light); }
-
-/* ── CALLOUT ── */
-.callout {
-  border-radius: 6px; padding: 12px 16px; font-size: 13px;
-  margin-bottom: 18px; line-height: 1.6; border-left: 4px solid;
-}
-.callout-info { background: #EBF4FA; border-color: var(--accent); color: #1A3A4F; }
-.callout-warn { background: #FDF6EC; border-color: var(--amber); color: #4A3010; }
-.callout-success { background: #EAF6EF; border-color: var(--teal); color: #1A3A2A; }
-.callout-error { background: #FCECEA; border-color: var(--crimson); color: #4A1010; }
-
-/* ── PASTE BOX ── */
-.paste-area {
-  width: 100%; min-height: 120px; border: 2px dashed var(--border);
-  border-radius: 8px; padding: 16px; font-size: 12px; font-family: 'Courier New', monospace;
-  color: var(--muted); background: var(--light); resize: vertical;
-  transition: border-color .15s;
-}
-.paste-area:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(46,134,171,.1); }
-
-/* ── STATS ── */
-.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
-.stat-card { background: var(--light); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; border-top: 3px solid; }
-.stat-num { font-size: 28px; font-weight: 800; }
-.stat-lbl { font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 3px; letter-spacing: 0.5px; }
-
-/* ── SCOPE ITEM ── */
-.scope-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
-.scope-row input { flex: 1; }
-
-/* ── ERROR ── */
-.error-box { background: #FCECEA; border: 1px solid var(--crimson); border-radius: 6px; padding: 10px 14px; color: var(--crimson); font-size: 13px; margin-top: 12px; }
-
-/* ── UPLOAD MSG ── */
-.upload-msg { border-radius: 6px; padding: 10px 14px; font-size: 13px; margin-top: 12px; border: 1px solid; }
-.upload-ok { background: #EAF6EF; border-color: var(--teal); color: var(--teal); }
-.upload-err { background: #FCECEA; border-color: var(--crimson); color: var(--crimson); }
-
-/* ── INPUT METHOD TOGGLE ── */
-.method-toggle { display: flex; gap: 0; margin-bottom: 20px; border: 1.5px solid var(--border); border-radius: 7px; overflow: hidden; }
-.method-btn { flex: 1; padding: 10px; text-align: center; cursor: pointer; font-size: 13px; font-weight: 600; background: var(--light); color: var(--muted); transition: all .15s; border: none; font-family: inherit; }
-.method-btn.active { background: var(--navy); color: #fff; }
-.method-btn:hover:not(.active) { background: #E8EFF6; }
+/* ── SAVED LIST ── */
+.saved-item{border:1px solid var(--mgray);border-radius:5px;padding:9px 12px;margin-bottom:6px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:#fff;transition:all .15s}
+.saved-item:hover{border-color:var(--blue);background:#f8fcff}
+.saved-item-name{font-size:13px;font-weight:700;color:var(--dgray)}
+.saved-item-meta{font-size:11px;color:#999}
 </style>
 </head>
 <body>
-<div class="shell" id="app">
-  <!-- Rendered by JS -->
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="tb-left">
+    <span class="tb-logo">PORTICO</span>
+    <span class="tb-title">Business Requirements Document Tool v1.8</span>
+  </div>
+  <div class="tb-right">
+    <span class="tb-saved tb-badge" id="save-ind">✓ Saved</span>
+    <button class="btn btn-gray btn-sm" onclick="newDocument()">+ New BRD</button>
+    <button class="btn btn-gold btn-sm" onclick="generateAndDownload()">⬇ Download BRD</button>
+  </div>
+</div>
+
+<!-- STEP BAR -->
+<div class="stepbar">
+  <div class="step-item active" id="step-1" onclick="gotoStep(1)">
+    <div class="dot">1</div>Canvas Data
+  </div>
+  <div class="step-div"></div>
+  <div class="step-item" id="step-2" onclick="gotoStep(2)">
+    <div class="dot">2</div>Scope & Stakeholders
+  </div>
+  <div class="step-div"></div>
+  <div class="step-item" id="step-3" onclick="gotoStep(3)">
+    <div class="dot">3</div>Requirements
+  </div>
+  <div class="step-div"></div>
+  <div class="step-item" id="step-4" onclick="gotoStep(4)">
+    <div class="dot">4</div>Business Documents
+  </div>
+  <div class="step-div"></div>
+  <div class="step-item" id="step-5" onclick="gotoStep(5)">
+    <div class="dot">5</div>Saved BRDs
+  </div>
+</div>
+
+<!-- WORKSPACE -->
+<div class="workspace">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div id="left-content" style="flex:1;overflow-y:auto"></div>
+    <div class="panel-actions" id="panel-actions"></div>
+  </div>
+
+  <!-- RIGHT PANEL: LIVE PREVIEW -->
+  <div class="right-panel">
+    <div id="preview-area">
+      <div class="preview-empty">
+        <div class="icon">📋</div>
+        <p>Fill in the fields and click<br><strong>Generate Document</strong></p>
+        <p style="margin-top:8px;font-size:12px">The requirements document will appear here, ready to download.</p>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════
-// PALETTE — generic professional (no org-specific colors)
-// ═══════════════════════════════════════════════════════
-const C = {
-  navy:"#1E3A5F", slate:"#2C4A6E", mid:"#4A6FA5", accent:"#2E86AB",
-  teal:"#1A7A6E", amber:"#C47A1B", crimson:"#9B2335", sage:"#4A7C59",
-  gray:"#6B7A8D", lgray:"#F7F9FC", mgray:"#D1D9E0", dgray:"#1A2332", white:"#FFFFFF"
+// ══════════════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════════════
+let S = {
+  title:'', sponsor:'', docOwner:'', businessUnit:'', version:'1.0 DRAFT',
+  objective:'', problem:'', audience:'', userCount:'', roiValue:'', successMetrics:'',
+  moscow:'', targetDate:'', dependencies:'', vision:'', strategy:'',
+  inScope:['','',''], outScope:['',''],
+  stakeholders:[{name:'',type:'Sponsor',involvement:'Approver',commsNeeds:'Executive summary updates'}],
+  requirements:[{id:'BRD-001',title:'',priority:'High',description:'',businessValue:'',acceptanceCriteria:'',actors:'',stakeholder:'',businessContext:[]}],
+  nfrs:[{category:'Availability',requirement:'',priority:'High'},{category:'Security',requirement:'',priority:'High'},{category:'Performance',requirement:'',priority:'Medium'}],
+  constraints:['',''],
+  businessDocuments:[],
+  glossary:[{term:'SME',definition:'Subject Matter Expert'},{term:'UAT',definition:'User Acceptance Testing'},{term:'BRD',definition:'Business Requirements Document'}]
 };
 
-// ═══════════════════════════════════════════════════════
-// CANVAS FIELD DEFINITIONS — all columns from Smartsheet schema
-// ═══════════════════════════════════════════════════════
-const CANVAS_FIELDS = [
-  { id:"title",         label:"Opportunity Title",              aliases:["opportunity title","title"],                   multi:false },
-  { id:"execSummary",   label:"Executive Summary",              aliases:["executive summary","summary"],                 multi:true  },
-  { id:"reqType",       label:"Request Type",                   aliases:["request type","type","initiative","enhancement","defect","incident"], multi:false },
-  { id:"initiativeName",label:"Initiative Name",                aliases:["initiative name","initiative"],                multi:false },
-  { id:"domain",        label:"Domain",                         aliases:["domain"],                                      multi:false },
-  { id:"capability",    label:"Capability",                     aliases:["capability"],                                  multi:false },
-  { id:"sdTicket",      label:"SD Ticket #",                    aliases:["sd ticket","ticket","sd #"],                   multi:false },
-  { id:"adoCard",       label:"ADO Card #",                     aliases:["ado card","ado #","ado"],                      multi:false },
-  { id:"fixVersion",    label:"Fix Version",                    aliases:["fix version","version","release"],             multi:false },
-  { id:"sprintName",    label:"Sprint Name",                    aliases:["sprint name","sprint"],                        multi:false },
-  { id:"createdDate",   label:"Created Date",                   aliases:["created date","created","date created"],       multi:false },
-  { id:"targetDate",    label:"Due Date",                       aliases:["due date","target date","deadline"],           multi:false },
-  { id:"reqByDate",     label:"Requested By Date",              aliases:["requested by","req by","requested delivery"],  multi:false },
-  { id:"submitter",     label:"Submitter Name",                 aliases:["submitter","submitted by","submitter name"],   multi:false },
-  { id:"sponsor",       label:"Sponsors",                       aliases:["sponsor","sponsors"],                          multi:false },
-  { id:"ba",            label:"Business Analyst",               aliases:["business analyst","ba","analyst"],             multi:false },
-  { id:"developer",     label:"Developer",                      aliases:["developer","dev"],                             multi:false },
-  { id:"qa",            label:"QA Analyst",                     aliases:["qa analyst","qa","quality"],                   multi:false },
-  { id:"uat",           label:"UAT Analyst / Sign-Off",         aliases:["uat analyst","uat","sign off","sign-off"],     multi:false },
-  { id:"moscow",        label:"MoSCoW Score",                   aliases:["moscow","must have","should have","could have","won't have","mosocw"], multi:false },
-  { id:"impactScore",   label:"Impact Score",                   aliases:["impact score","impact"],                       multi:false },
-  { id:"impactJust",    label:"Impact Score Justification",     aliases:["impact score justification","justification"],  multi:true  },
-  { id:"confidence",    label:"Confidence %",                   aliases:["confidence","confidence %"],                   multi:false },
-  { id:"storyDev",      label:"Story Points (Dev)",             aliases:["story points dev","story points (dev)","dev points"], multi:false },
-  { id:"storyQA",       label:"Story Points (QA)",              aliases:["story points qa","story points (qa)","qa points"], multi:false },
-  { id:"severity",      label:"Severity",                       aliases:["severity"],                                    multi:true  },
-  { id:"strategy",      label:"Existing Strategy",              aliases:["existing strategy","strategy","part of an existing strategy"], multi:false },
-  { id:"objective",     label:"Business Objective",             aliases:["business objective","objective","what business objective"], multi:true  },
-  { id:"problem",       label:"Problem to Solve",               aliases:["problem","what problem","problem to solve","what problem are we trying"], multi:true  },
-  { id:"audience",      label:"Who We're Solving For",          aliases:["who are we solving","who we're solving","audience","solving for"], multi:false },
-  { id:"userCount",     label:"Users / Groups Affected",        aliases:["how many","user count","users affected","number of users"], multi:false },
-  { id:"vision",        label:"Future State Vision",            aliases:["future state","vision","future state vision"],  multi:true  },
-  { id:"successMetrics",label:"How Impact Will Be Measured",    aliases:["impact measured","success measured","how will impact","success metrics"], multi:true  },
-  { id:"roiValue",      label:"Targeted Value / ROI",           aliases:["targeted value","roi","cost savings","value"],  multi:false },
-  { id:"dependencies",  label:"Dependencies",                   aliases:["dependencies","depends on"],                   multi:false },
-];
+let currentStep = 1;
+const STORE_KEY = 'portico-brd-v18';
+const SAVED_KEY = 'portico-brd-saved-v18';
 
-// ═══════════════════════════════════════════════════════
-// PASTE PARSER — parses TSV copied from Smartsheet grid
-// ═══════════════════════════════════════════════════════
-function parsePastedData(raw) {
-  const lines = raw.trim().split(/\r?\n/);
-  if (lines.length < 2) return null;
+function saveState(){
+  localStorage.setItem(STORE_KEY, JSON.stringify(S));
+  const el = document.getElementById('save-ind');
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 1600);
+}
 
-  // Parse TSV headers and single data row
-  const parseRow = (line) => line.split('\t').map(c => c.trim());
-  const headers = parseRow(lines[0]);
-  const dataRow  = parseRow(lines[lines.length > 1 ? 1 : 0]);
+function loadState(){
+  try{
+    const d = localStorage.getItem(STORE_KEY);
+    if(d) S = {...S, ...JSON.parse(d)};
+  }catch(e){}
+}
 
-  const result = {};
-  headers.forEach((h, i) => {
-    const val = dataRow[i] || "";
-    if (!h || !val) return;
-    const hNorm = h.toLowerCase().replace(/[^a-z0-9\s]/g, "").trim();
+// ══════════════════════════════════════════════════════════════════════════════
+// SMARTSHEET PASTE EXTRACTION
+// ══════════════════════════════════════════════════════════════════════════════
+function extractFromPaste(){
+  const text = document.getElementById('ss-paste').value.trim();
+  if(!text){ alert('Paste your Smartsheet data first'); return; }
 
-    // Match against canvas field aliases
-    for (const field of CANVAS_FIELDS) {
-      for (const alias of field.aliases) {
-        const aliasNorm = alias.toLowerCase().replace(/[^a-z0-9\s]/g, "").trim();
-        if (hNorm.includes(aliasNorm) || aliasNorm.includes(hNorm.slice(0, 6))) {
-          if (!result[field.id]) result[field.id] = val;
-          break;
-        }
+  const lines = text.split('\n');
+  const pairs = {};
+  const headers = lines[0]?.split('\t');
+  const values  = lines[1]?.split('\t');
+
+  if(headers && values && headers.length === values.length){
+    headers.forEach((h,i) => { pairs[h.trim().toLowerCase()] = values[i]?.trim() || ''; });
+  } else {
+    lines.forEach(line => {
+      const [k,...rest] = line.split(/:\t|\t/);
+      if(k && rest.length) pairs[k.trim().toLowerCase()] = rest.join('\t').trim();
+    });
+    // also try to match anything
+    lines.forEach(line => {
+      const m = line.match(/^(.+?)\s{2,}(.+)$/);
+      if(m) pairs[m[1].trim().toLowerCase()] = m[2].trim();
+    });
+  }
+
+  const get = (...keys) => {
+    for(const k of keys){
+      for(const pk of Object.keys(pairs)){
+        if(pk.includes(k) || k.includes(pk)) return pairs[pk];
       }
     }
-  });
-  return result;
-}
-
-// ═══════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════
-let state = {
-  step: 1,
-  inputMode: "paste",   // "paste" | "api"
-  pasteRaw: "",
-  parseError: "",
-  ssToken: "", ssSheetId: "",
-  ssSheet: null, ssColMap: {},
-  loading: false, apiError: "",
-  canvas: {},
-  iv: initInterview(),
-  tab: "stakeholders",
-  spToken: "", spUrl: "",
-  uploading: false, uploadMsg: "",
-  saved: false,
-};
-
-function initInterview() {
-  return {
-    stakeholders: [{ name:"", role:"", type:"Sponsor", involvement:"Approver", commsNeeds:"Executive summary updates" }],
-    requirements: [emptyReq(1), emptyReq(2)],
-    useCases:     [emptyUC(1)],
-    nfrs:         [emptyNFR(1)],
-    devHandover:  { systemComponents:"", dataModel:"", apiChanges:"", integrations:"", envReqs:"", deployNotes:"", rollback:"" },
-    testCases:    [emptyTC(1), emptyTC(2)],
-    uatCases:     [emptyUAT(1)],
-    inScope:      [""],
-    outScope:     [""],
-    docOwner:     "",
-    businessUnit: "",
-    version:      "1.0 DRAFT",
+    return '';
   };
-}
-function emptyReq(n) { return { id:`REQ-${String(n).padStart(3,"0")}`, title:"", priority:"Critical", type:"Functional", description:"", actors:"", preconditions:"", postconditions:"", ac:"" }; }
-function emptyUC(n)  { return { id:`UC-${String(n).padStart(3,"0")}`, title:"", actor:"", trigger:"", mainFlow:"", altFlows:"", post:"", linkedReqs:"" }; }
-function emptyTC(n)  { return { id:`TC-${String(n).padStart(3,"0")}`, scenario:"", steps:"", expected:"", priority:"High" }; }
-function emptyUAT(n) { return { id:`UAT-${String(n).padStart(3,"0")}`, scenario:"", userStory:"", given:"", when:"", then:"", acceptance:"" }; }
-function emptyNFR(n) { return { id:`NFR-${String(n).padStart(3,"0")}`, category:"Performance", requirement:"", priority:"High" }; }
 
-// ═══════════════════════════════════════════════════════
-// STORAGE
-// ═══════════════════════════════════════════════════════
-async function loadFromStorage() {
-  try {
-    const s = await window.storage.get("req-tool-v2");
-    if (s) {
-      const d = JSON.parse(s.value);
-      if (d.canvas) state.canvas = d.canvas;
-      if (d.iv) state.iv = { ...initInterview(), ...d.iv };
-      if (d.step && d.step > 1) state.step = d.step;
-    }
-  } catch {}
-}
-async function saveToStorage() {
-  try {
-    await window.storage.set("req-tool-v2", JSON.stringify({ canvas: state.canvas, iv: state.iv, step: state.step }));
-    state.saved = true;
-    render();
-    setTimeout(() => { state.saved = false; render(); }, 1600);
-  } catch {}
-}
-let autoSaveTimer = null;
-function scheduleAutoSave() { clearTimeout(autoSaveTimer); autoSaveTimer = setTimeout(saveToStorage, 900); }
+  S.title         = get('title','opportunity','name') || S.title;
+  S.sponsor       = get('sponsor') || S.sponsor;
+  S.targetDate    = get('date','deadline','due') || S.targetDate;
+  S.objective     = get('objective','business obj') || S.objective;
+  S.problem       = get('problem','problem to solve','solving') || S.problem;
+  S.audience      = get('who','audience','solving for') || S.audience;
+  S.userCount     = get('user count','how many','number of') || S.userCount;
+  S.roiValue      = get('roi','value','targeted value','cost') || S.roiValue;
+  S.successMetrics= get('success','metric','measure') || S.successMetrics;
+  S.moscow        = get('moscow','priority','must') || S.moscow;
+  S.vision        = get('vision','future state','future') || S.vision;
+  S.dependencies  = get('depend') || S.dependencies;
+  S.strategy      = get('strategy') || S.strategy;
 
-// ═══════════════════════════════════════════════════════
-// SMARTSHEET API
-// ═══════════════════════════════════════════════════════
-async function connectSS() {
-  state.loading = true; state.apiError = ""; render();
-  try {
-    const res = await fetch(`https://api.smartsheet.com/2.0/sheets/${state.ssSheetId}`, {
-      headers: { Authorization: `Bearer ${state.ssToken}`, Accept: "application/json" }
-    });
-    if (!res.ok) throw new Error(`Smartsheet API: ${res.status} ${res.statusText}`);
-    const data = await res.json();
-    state.ssSheet = data;
-    const map = {};
-    CANVAS_FIELDS.forEach(f => {
-      const col = data.columns?.find(c => {
-        const t = c.title?.toLowerCase().replace(/[^a-z]/g,"");
-        return f.aliases.some(a => t?.includes(a.replace(/[^a-z]/g,"").slice(0,7)));
-      });
-      if (col) map[f.id] = col.id;
-    });
-    state.ssColMap = map;
-    state.step = 2;
-  } catch(e) { state.apiError = e.message; }
-  state.loading = false; render();
+  renderStep(1);
+  refreshPreview();
+  saveState();
+  alert('✓ Data extracted! Review and edit the fields on the left.');
 }
 
-function selectSSRow(row) {
-  const extracted = {};
-  CANVAS_FIELDS.forEach(f => {
-    const colId = state.ssColMap[f.id];
-    if (colId) {
-      const cell = row.cells?.find(c => c.columnId === colId);
-      if (cell?.value != null) extracted[f.id] = String(cell.value);
-    }
+// ══════════════════════════════════════════════════════════════════════════════
+// STEP RENDERING
+// ══════════════════════════════════════════════════════════════════════════════
+function gotoStep(n){
+  currentStep = n;
+  document.querySelectorAll('.step-item').forEach((el,i)=>{
+    el.classList.toggle('active', i+1 === n);
+    el.classList.toggle('done', i+1 < n);
   });
-  state.canvas = extracted;
-  state.step = 3;
-  render();
+  renderStep(n);
 }
 
-// ═══════════════════════════════════════════════════════
-// DOCUMENT GENERATOR
-// ═══════════════════════════════════════════════════════
-function buildDoc(canvas, iv) {
-  const now = new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});
-  const cv = (v, fb="[ to be completed ]") => v || `<span style="color:#B0B8C4;font-style:italic;">${fb}</span>`;
-  const nl = (s) => (s||"").replace(/\n/g,"<br>");
+function renderStep(n){
+  const lc = document.getElementById('left-content');
+  const pa = document.getElementById('panel-actions');
 
-  const hdr = (txt, bg=C.navy) =>
-    `<td style="background:${bg};color:#fff;font-weight:bold;font-size:10.5pt;padding:5pt 8pt;border:1pt solid #C8D0DA;">${txt}</td>`;
-  const cell = (txt, bg="#FFFFFF") =>
-    `<td style="background:${bg};font-size:10.5pt;padding:5pt 8pt;border:1pt solid #C8D0DA;vertical-align:top;">${txt}</td>`;
-
-  const banner = (num, title, color, pb=true) => `
-    ${pb?`<p style="page-break-before:always;margin:0;"> </p>`:""}
-    <table style="width:100%;border-collapse:collapse;margin:14pt 0 6pt;">
-      <tr>
-        <td style="background:${color};color:#fff;font-weight:bold;font-size:13pt;padding:8pt 14pt;width:36pt;text-align:center;border:none;">${num}</td>
-        <td style="background:#EEF2F6;color:${color};font-weight:bold;font-size:11pt;padding:8pt 14pt;letter-spacing:1.5px;border:none;text-transform:uppercase;">${title}</td>
-      </tr>
-    </table>`;
-
-  const h2 = (t) => `<h2 style="font-size:13pt;color:${C.slate};font-weight:bold;margin:10pt 0 4pt;font-family:Calibri;">${t}</h2>`;
-  const src = (t) => `<p style="font-size:9.5pt;color:${C.mid};font-style:italic;margin:0 0 5pt;">↳ Canvas: ${t}</p>`;
-
-  const reqBlock = (r) => `
-    <table style="width:100%;border-collapse:collapse;margin:8pt 0;">
-      <tr><td colspan="2" style="background:${C.navy};color:#fff;font-weight:bold;font-size:10.5pt;padding:6pt 10pt;">Requirement ${r.id}</td></tr>
-      <tr>${hdr("Title")}${cell(cv(r.title),"#F7F9FC")}</tr>
-      <tr>${hdr("Priority",C.slate)}${cell(`<span style="font-weight:bold;color:${r.priority==="Critical"?C.crimson:r.priority==="High"?C.amber:C.teal}">${r.priority}</span>`)}</tr>
-      <tr>${hdr("Type")}${cell(cv(r.type),"#F7F9FC")}</tr>
-      <tr>${hdr("Description",C.slate)}${cell(nl(cv(r.description)))}</tr>
-      <tr>${hdr("Primary Actors")}${cell(cv(r.actors),"#F7F9FC")}</tr>
-      <tr>${hdr("Preconditions",C.slate)}${cell(nl(cv(r.preconditions)))}</tr>
-      <tr>${hdr("Postconditions")}${cell(nl(cv(r.postconditions)),"#F7F9FC")}</tr>
-      <tr>${hdr("Acceptance Criteria",C.slate)}${cell(nl(cv(r.ac)))}</tr>
-    </table>`;
-
-  const ucBlock = (u) => `
-    <table style="width:100%;border-collapse:collapse;margin:8pt 0;">
-      <tr><td colspan="2" style="background:${C.teal};color:#fff;font-weight:bold;font-size:10.5pt;padding:6pt 10pt;">${u.id}: ${cv(u.title,"[ Use Case Title ]")}</td></tr>
-      ${[["Actor",u.actor],["Trigger",u.trigger],["Main Flow",u.mainFlow],["Alternate Flows",u.altFlows],["Postconditions",u.post],["Linked Requirements",u.linkedReqs]]
-        .map(([l,v],i)=>`<tr>${hdr(l,i%2===0?C.navy:C.slate)}${cell(nl(cv(v)),i%2===0?"#fff":"#F7F9FC")}</tr>`).join("")}
-    </table>`;
-
-  const tcBlock = (t) => `
-    <table style="width:100%;border-collapse:collapse;margin:8pt 0;">
-      <tr>
-        ${hdr("Test ID")}${cell(t.id,"#F7F9FC")}
-        ${hdr("Priority",C.slate)}${cell(`<span style="color:${t.priority==="High"||t.priority==="Critical"?C.amber:C.teal};font-weight:bold;">${t.priority}</span>`)}
-      </tr>
-      <tr>${hdr("Scenario",C.slate)}${cell(nl(cv(t.scenario)),"#F7F9FC")}</tr>
-      <tr>${hdr("Steps")}${cell(nl(cv(t.steps)))}</tr>
-      <tr>${hdr("Expected Result",C.slate)}${cell(nl(cv(t.expected)),"#F7F9FC")}</tr>
-      <tr>${hdr("Actual Result")}${cell('<span style="color:#B0B8C4;font-style:italic;">[ complete during testing ]</span>')}</tr>
-      <tr>${hdr("Pass / Fail",C.slate)}${cell("☐  Pass     ☐  Fail     ☐  Blocked")}</tr>
-    </table>`;
-
-  const uatBlock = (u) => `
-    <table style="width:100%;border-collapse:collapse;margin:8pt 0;">
-      <tr><td colspan="2" style="background:${C.sage};color:#fff;font-weight:bold;font-size:10.5pt;padding:6pt 10pt;">${u.id}: ${cv(u.scenario,"[ Business Scenario ]")}</td></tr>
-      <tr>${hdr("User Story")}${cell(cv(u.userStory),"#F7F9FC")}</tr>
-      <tr>${hdr("Given",C.slate)}${cell(cv(u.given))}</tr>
-      <tr>${hdr("When")}${cell(cv(u.when),"#F7F9FC")}</tr>
-      <tr>${hdr("Then",C.slate)}${cell(cv(u.then))}</tr>
-      <tr>${hdr("Acceptance Decision")}${cell("☐  Accepted     ☐  Conditionally Accepted     ☐  Rejected","#F7F9FC")}</tr>
-      <tr>${hdr("Business Owner Sign-Off",C.slate)}${cell("Signature: _______________________     Date: ___________")}</tr>
-    </table>`;
-
-  return `<html xmlns:o='urn:schemas-microsoft-com:office:office'
-   xmlns:w='urn:schemas-microsoft-com:office:word'
-   xmlns='http://www.w3.org/TR/REC-html40'>
-<head><meta charset="utf-8"><meta name="ProgId" content="Word.Document">
-<style>
-  body { font-family:Calibri,sans-serif; font-size:11pt; color:#1A2332; margin:0.9in; line-height:1.45; }
-  h2 { font-size:13pt; color:#2C4A6E; font-weight:bold; margin:10pt 0 4pt; }
-  table { width:100%; border-collapse:collapse; margin:5pt 0 12pt; font-size:10.5pt; }
-  td,th { border:1pt solid #C8D0DA; padding:5pt 8pt; vertical-align:top; }
-  p { margin:3pt 0 7pt; }
-  @page { margin:0.9in; }
-</style>
-</head>
-<body>
-
-<!-- COVER -->
-<div style="background:${C.navy};padding:36pt 40pt;margin:-0.9in -0.9in 20pt;display:block;">
-  <div style="color:#FFFFFF;font-size:10pt;font-weight:600;letter-spacing:3px;opacity:.7;margin-bottom:4pt;font-family:Calibri;">REQUIREMENTS DOCUMENT</div>
-  <div style="color:#FFFFFF;font-size:28pt;font-weight:800;font-family:Calibri;line-height:1.15;">${cv(canvas.title,"[ Opportunity Title ]")}</div>
-  <div style="color:rgba(255,255,255,.65);font-size:13pt;margin-top:6pt;font-family:Calibri;">${cv(canvas.initiativeName, canvas.reqType || "Initiative")}</div>
-</div>
-
-<!-- COVER META TABLE -->
-<table>
-  <tr>${hdr("Opportunity Title")}${cell(cv(canvas.title),"#F7F9FC")}${hdr("Request Type",C.slate)}${cell(cv(canvas.reqType),"#F7F9FC")}</tr>
-  <tr>${hdr("Initiative Name")}${cell(cv(canvas.initiativeName))}${hdr("Domain / Capability",C.slate)}${cell([canvas.domain,canvas.capability].filter(Boolean).join(" · ") || "[ to be completed ]")}</tr>
-  <tr>${hdr("SD Ticket #")}${cell(cv(canvas.sdTicket),"#F7F9FC")}${hdr("ADO Card #",C.slate)}${cell(cv(canvas.adoCard),"#F7F9FC")}</tr>
-  <tr>${hdr("Fix Version")}${cell(cv(canvas.fixVersion))}${hdr("Sprint",C.slate)}${cell(cv(canvas.sprintName))}</tr>
-  <tr>${hdr("Business Unit")}${cell(cv(iv.businessUnit),"#F7F9FC")}${hdr("Document Owner",C.slate)}${cell(cv(iv.docOwner),"#F7F9FC")}</tr>
-  <tr>${hdr("Version")}${cell(iv.version||"1.0 DRAFT")}${hdr("Prepared",C.slate)}${cell(now)}</tr>
-</table>
-
-<div style="background:#EBF4FA;border-left:4pt solid ${C.accent};padding:10pt 14pt;margin:10pt 0;font-size:10.5pt;">
-  <strong>Canvas-sourced fields</strong> (Sections 1–6) were populated from the Smartsheet intake entry.
-  <strong>BA-developed fields</strong> (Sections 7–14) were captured during stakeholder interviews.
-  This document is the authoritative requirements specification for development, testing, and UAT.
-</div>
-
-<!-- ═══ SECTION 1 — IDENTIFICATION ═══ -->
-${banner("1","Identification & People",C.navy,false)}
-${h2("1.1  Project Team")}
-<table>
-  <tr>${hdr("Role",C.navy)}${hdr("Name",C.navy)}${hdr("Created",C.navy)}${hdr("Due Date",C.navy)}${hdr("Requested By",C.navy)}</tr>
-  <tr>${cell("Sponsor(s)")}${cell(cv(canvas.sponsor),"#F7F9FC")}${cell(cv(canvas.createdDate),"#F7F9FC")}${cell(cv(canvas.targetDate),"#F7F9FC")}${cell(cv(canvas.reqByDate),"#F7F9FC")}</tr>
-  <tr>${cell("Submitter")}${cell(cv(canvas.submitter))}${cell("—")}${cell("—")}${cell("—")}</tr>
-  <tr>${cell("Business Analyst")}${cell(cv(canvas.ba),"#F7F9FC")}${cell("—","#F7F9FC")}${cell("—","#F7F9FC")}${cell("—","#F7F9FC")}</tr>
-  <tr>${cell("Developer")}${cell(cv(canvas.developer))}${cell("—")}${cell("—")}${cell("—")}</tr>
-  <tr>${cell("QA Analyst")}${cell(cv(canvas.qa),"#F7F9FC")}${cell("—","#F7F9FC")}${cell("—","#F7F9FC")}${cell("—","#F7F9FC")}</tr>
-  <tr>${cell("UAT / Sign-Off")}${cell(cv(canvas.uat))}${cell("—")}${cell("—")}${cell("—")}</tr>
-</table>
-${h2("1.2  Executive Summary")}
-${src("Executive Summary")}
-<p>${nl(cv(canvas.execSummary))}</p>
-
-<!-- ═══ SECTION 2 — SCORING ═══ -->
-${banner("2","Scoring & Priority",C.slate)}
-${h2("2.1  Canvas scores")}
-<table>
-  <tr>
-    ${hdr("MoSCoW Score",C.navy)}${hdr("Impact Score",C.navy)}${hdr("Confidence %",C.navy)}${hdr("Story Pts (Dev)",C.navy)}${hdr("Story Pts (QA)",C.navy)}
-  </tr>
-  <tr>
-    ${cell(`<strong>${cv(canvas.moscow)}</strong>`,"#F7F9FC")}
-    ${cell(`<strong>${cv(canvas.impactScore)}</strong>`,"#F7F9FC")}
-    ${cell(`<strong>${cv(canvas.confidence)}</strong>`,"#F7F9FC")}
-    ${cell(`<strong>${cv(canvas.storyDev)}</strong>`,"#F7F9FC")}
-    ${cell(`<strong>${cv(canvas.storyQA)}</strong>`,"#F7F9FC")}
-  </tr>
-</table>
-${h2("2.2  Impact score justification")}
-${src("Impact Score Justification")}
-<p>${nl(cv(canvas.impactJust))}</p>
-${h2("2.3  Impact dimensions")}
-<table>
-  <tr>${hdr("Dimension",C.slate)}${hdr("Threshold",C.slate)}${hdr("Applies?",C.slate)}</tr>
-  ${[["Operational","2+ FTE impact"],["Financial","5+% risk to future revenue"],["Compliance","Risk of loss of confidential information"],["Security / Strategic","Severely limits strategic growth"]]
-    .map(([d,t])=>`<tr>${cell(d)}${cell(t,"#F7F9FC")}${cell("☐ Yes     ☐ No")}</tr>`).join("")}
-</table>
-
-<!-- ═══ SECTION 3 — PROBLEM STATEMENT ═══ -->
-${banner("3","Problem Statement",C.navy)}
-${h2("3.1  What problem are we solving?")}
-${src("What Problem are we trying to Solve?")}
-<p>${nl(cv(canvas.problem))}</p>
-${h2("3.2  Severity — Impact if not solved")}
-${src("Severity")}
-<p>${nl(cv(canvas.severity))}</p>
-${h2("3.3  Who are we solving this for?")}
-${src("Who are we Solving this Problem for? · How many people/users?")}
-<table>
-  <tr>${hdr("Audience / Segment",C.navy)}${cell(cv(canvas.audience),"#F7F9FC")}${hdr("Users / Groups Affected",C.navy)}${cell(cv(canvas.userCount),"#F7F9FC")}</tr>
-</table>
-${h2("3.4  When must this be addressed?")}
-<table>
-  <tr>${hdr("Required By",C.navy)}${cell(cv(canvas.reqByDate||canvas.targetDate),"#F7F9FC")}${hdr("Urgency Rationale",C.navy)}${cell(cv(canvas.severity),"#F7F9FC")}</tr>
-</table>
-
-<!-- ═══ SECTION 4 — STRATEGIC ALIGNMENT ═══ -->
-${banner("4","Strategic Alignment",C.slate)}
-${h2("4.1  Business objective alignment")}
-${src("What Business Objective Does This Problem Align To?")}
-<p>${nl(cv(canvas.objective))}</p>
-${h2("4.2  Existing strategy connection")}
-${src("Is this Part of An Existing Strategy?")}
-<table>
-  <tr>${hdr("Strategy / Initiative",C.slate)}${hdr("Alignment",C.slate)}${hdr("Notes",C.slate)}</tr>
-  ${(canvas.strategy||"").split(",").filter(Boolean).map(s=>`<tr>${cell(s.trim())}${cell("Direct","#F7F9FC")}${cell("[ add notes ]")}</tr>`).join("")||`<tr>${cell(cv(canvas.strategy))}${cell("[ strength ]","#F7F9FC")}${cell("[ notes ]")}</tr>`}
-</table>
-
-<!-- ═══ SECTION 5 — FUTURE STATE ═══ -->
-${banner("5","Future State & Dependencies",C.teal)}
-${h2("5.1  Future state vision")}
-${src("What is the Future State Vision to Support this Need?")}
-<p>${nl(cv(canvas.vision))}</p>
-${h2("5.2  In-scope / Out-of-scope")}
-<table>
-  <tr>${hdr("IN SCOPE",C.teal)}${hdr("OUT OF SCOPE",C.crimson)}</tr>
-  <tr>
-    <td>${iv.inScope.filter(Boolean).map(s=>`• ${s}`).join("<br>")||"<span style='color:#B0B8C4;font-style:italic;'>[ BA to define ]</span>"}</td>
-    <td>${iv.outScope.filter(Boolean).map(s=>`• ${s}`).join("<br>")||"<span style='color:#B0B8C4;font-style:italic;'>[ BA to define ]</span>"}</td>
-  </tr>
-</table>
-${h2("5.3  Dependencies")}
-${src("Dependencies")}
-<table>
-  <tr>${hdr("Dependency",C.navy)}${hdr("Type",C.navy)}${hdr("Owner / Status",C.navy)}</tr>
-  ${(canvas.dependencies||"").split(",").filter(Boolean).map(d=>`<tr>${cell(d.trim())}${cell("System / Process / Team","#F7F9FC")}${cell("[ owner / TBD ]")}</tr>`).join("")||`<tr>${cell(cv(""))}${cell("[ type ]","#F7F9FC")}${cell("[ owner ]")}</tr>`}
-</table>
-
-<!-- ═══ SECTION 6 — VALUE & METRICS ═══ -->
-${banner("6","Value & Success Metrics",C.sage)}
-${h2("6.1  Targeted value / ROI")}
-${src("Targeted Value (ROI/Cost Savings)")}
-<p>${nl(cv(canvas.roiValue))}</p>
-<table>
-  <tr>${hdr("Value Category",C.sage)}${hdr("Description",C.sage)}${hdr("Est. Impact",C.sage)}</tr>
-  ${[["Labor Cost Reduction","","[ $$ or FTE ]"],["Error Elimination","","[ frequency / cost ]"],["Reputational / Revenue","","[ risk or gain ]"]]
-    .map(([l,d,e])=>`<tr>${cell(l)}${cell(d||cv(""),"#F7F9FC")}${cell(e)}</tr>`).join("")}
-</table>
-${h2("6.2  Success metrics")}
-${src("How will Impact/Success be Measured?")}
-<table>
-  <tr>${hdr("KPI / Metric",C.sage)}${hdr("Baseline",C.sage)}${hdr("Target",C.sage)}${hdr("Measurement Method",C.sage)}</tr>
-  ${(canvas.successMetrics||"").split(/[,\n]/).filter(Boolean).map(m=>`<tr>${cell(m.trim(),"#F7F9FC")}${cell("[ current ]")}${cell("[ goal ]")}${cell("[ how tracked ]")}</tr>`).join("")||`<tr>${cell(cv(""),"#F7F9FC")}${cell("[ current ]")}${cell("[ goal ]")}${cell("[ how tracked ]")}</tr>`}
-</table>
-
-<!-- ═══ SECTION 7 — STAKEHOLDERS ═══ -->
-${banner("7","Stakeholders & Roles",C.navy)}
-<table>
-  <tr>${hdr("Name / Role",C.navy)}${hdr("Type",C.navy)}${hdr("Involvement",C.navy)}${hdr("Communication Needs",C.navy)}</tr>
-  ${iv.stakeholders.map((s,i)=>`<tr>${cell(cv(s.name),i%2?"#F7F9FC":"#fff")}${cell(cv(s.type),i%2?"#F7F9FC":"#fff")}${cell(cv(s.involvement),i%2?"#F7F9FC":"#fff")}${cell(cv(s.commsNeeds),i%2?"#F7F9FC":"#fff")}</tr>`).join("")}
-</table>
-
-<!-- ═══ SECTION 8 — FUNCTIONAL REQUIREMENTS ═══ -->
-${banner("8","Functional Requirements",C.slate)}
-${iv.requirements.map(r=>reqBlock(r)).join("<br>")}
-
-<!-- ═══ SECTION 9 — USE CASES ═══ -->
-${banner("9","Use Cases",C.teal)}
-${h2("9.1  Use case summary")}
-<table>
-  <tr>${hdr("UC ID",C.teal)}${hdr("Title",C.teal)}${hdr("Actor",C.teal)}${hdr("Req. ID(s)",C.teal)}${hdr("Priority",C.teal)}</tr>
-  ${iv.useCases.map((u,i)=>`<tr>${cell(u.id,i%2?"#F7F9FC":"#fff")}${cell(cv(u.title),i%2?"#F7F9FC":"#fff")}${cell(cv(u.actor),i%2?"#F7F9FC":"#fff")}${cell(cv(u.linkedReqs),i%2?"#F7F9FC":"#fff")}${cell("High",i%2?"#F7F9FC":"#fff")}</tr>`).join("")}
-</table>
-${h2("9.2  Detailed use cases")}
-${iv.useCases.map(u=>ucBlock(u)).join("<br>")}
-
-<!-- ═══ SECTION 10 — NON-FUNCTIONAL REQUIREMENTS ═══ -->
-${banner("10","Non-Functional Requirements",C.navy)}
-<table>
-  <tr>${hdr("NFR ID",C.navy)}${hdr("Category",C.navy)}${hdr("Requirement",C.navy)}${hdr("Priority",C.navy)}</tr>
-  ${iv.nfrs.map((n,i)=>`<tr>${cell(n.id,i%2?"#F7F9FC":"#fff")}${cell(n.category,i%2?"#F7F9FC":"#fff")}${cell(cv(n.requirement),i%2?"#F7F9FC":"#fff")}${cell(n.priority,i%2?"#F7F9FC":"#fff")}</tr>`).join("")}
-</table>
-
-<!-- ═══ SECTION 11 — ACCEPTANCE CRITERIA SUMMARY ═══ -->
-${banner("11","Acceptance Criteria Summary",C.slate)}
-<p style="font-size:10.5pt;">UAT sign-off requires 100% pass on Critical requirements and 90% pass on High requirements prior to go-live authorization.</p>
-<table>
-  <tr>${hdr("Req. ID",C.slate)}${hdr("Title",C.slate)}${hdr("Priority",C.slate)}${hdr("Key Acceptance Criterion",C.slate)}</tr>
-  ${iv.requirements.map((r,i)=>`<tr>${cell(r.id,i%2?"#F7F9FC":"#fff")}${cell(cv(r.title),i%2?"#F7F9FC":"#fff")}${cell(`<span style="color:${r.priority==="Critical"?C.crimson:C.amber};font-weight:bold;">${r.priority}</span>`,i%2?"#F7F9FC":"#fff")}${cell(cv(r.ac?.split("\n")[0]),i%2?"#F7F9FC":"#fff")}</tr>`).join("")}
-</table>
-
-<!-- ═══ SECTION 12 — DEVELOPER HANDOVER ═══ -->
-${banner("12","Developer Handover Checklist",C.navy)}
-<p style="font-size:10.5pt;">This section is the authoritative technical handover to the development team. All items must be confirmed before sprint planning begins.</p>
-<table>
-  <tr>${hdr("Category",C.navy)}${hdr("Detail",C.navy)}${hdr("Status",C.navy)}</tr>
-  ${[
-    ["System Components Affected", iv.devHandover.systemComponents],
-    ["Data Model / Schema Changes", iv.devHandover.dataModel],
-    ["API Changes / New Endpoints", iv.devHandover.apiChanges],
-    ["Integration Points", iv.devHandover.integrations],
-    ["Environment Requirements", iv.devHandover.envReqs],
-    ["Deployment Notes", iv.devHandover.deployNotes],
-    ["Rollback Plan", iv.devHandover.rollback],
-  ].map(([l,v],i)=>`<tr>${hdr(l,i%2===0?C.navy:C.slate)}${cell(cv(v),"#F7F9FC")}${cell("☐ Dev Confirmed     ☐ In Progress     ☐ TBD")}</tr>`).join("")}
-</table>
-<table>
-  <tr>${hdr("Architecture Review Required?",C.navy)}${cell("☐ Yes     ☐ No")}${hdr("Security Review Required?",C.slate)}${cell("☐ Yes     ☐ No")}</tr>
-  <tr>${hdr("Legal / Compliance Review Required?",C.navy)}${cell("☐ Yes     ☐ No")}${hdr("Estimated Dev Effort",C.slate)}${cell("[ story points or days ]")}</tr>
-</table>
-
-<!-- ═══ SECTION 13 — TEST CASES ═══ -->
-${banner("13","Test Cases",C.teal)}
-<p style="font-size:10.5pt;">These test cases are provided for the QA/Testing team. Each maps to a functional requirement. Review, supplement, and execute prior to UAT.</p>
-${iv.testCases.map(t=>tcBlock(t)).join("<br>")}
-<table style="margin-top:14pt;">
-  <tr>${hdr("Test Summary",C.teal)}${hdr("Count",C.teal)}${hdr("Result",C.teal)}</tr>
-  <tr>${cell("Total Test Cases")}${cell(String(iv.testCases.length),"#F7F9FC")}${cell("—")}</tr>
-  <tr>${cell("Passed","#F7F9FC")}${cell("[ fill in ]")}${cell("—","#F7F9FC")}</tr>
-  <tr>${cell("Failed")}${cell("[ fill in ]","#F7F9FC")}${cell("—")}</tr>
-  <tr>${cell("Blocked","#F7F9FC")}${cell("[ fill in ]")}${cell("—","#F7F9FC")}</tr>
-</table>
-
-<!-- ═══ SECTION 14 — UAT & APPROVALS ═══ -->
-${banner("14","UAT Cases & Approvals",C.sage)}
-<p style="font-size:10.5pt;">UAT cases are written from the business user's perspective and define conditions under which the business will accept the delivered solution.</p>
-${iv.uatCases.map(u=>uatBlock(u)).join("<br>")}
-<div style="background:#EEF2F6;border:1pt solid #C8D0DA;padding:10pt;margin-top:14pt;font-size:10.5pt;">
-  <strong>UAT Sign-Off:</strong> All cases must be Accepted or Conditionally Accepted before proceeding to production.
-  <table style="margin-top:8pt;">
-    <tr>${hdr("Sponsor / Business Owner",C.sage)}${hdr("Signature",C.sage)}${hdr("Date",C.sage)}${hdr("Decision",C.sage)}</tr>
-    <tr>${cell(cv(canvas.sponsor))}${cell("___________________________")}${cell("___________")}${cell("☐ Accept     ☐ Reject")}</tr>
-  </table>
-</div>
-${h2("14.1  Sign-off")}
-<table>
-  <tr>${hdr("Role",C.navy)}${hdr("Name",C.navy)}${hdr("Signature",C.navy)}${hdr("Date",C.navy)}</tr>
-  <tr>${cell("Sponsor")}${cell(cv(canvas.sponsor),"#F7F9FC")}${cell("___________________________","#F7F9FC")}${cell("___________","#F7F9FC")}</tr>
-  <tr>${cell("BA / PM")}${cell(cv(iv.docOwner))}${cell("___________________________")}${cell("___________")}</tr>
-  <tr>${cell("IT Lead")}${cell(cv(canvas.developer),"#F7F9FC")}${cell("___________________________","#F7F9FC")}${cell("___________","#F7F9FC")}</tr>
-  <tr>${cell("Testing Lead")}${cell(cv(canvas.qa))}${cell("___________________________")}${cell("___________")}</tr>
-</table>
-${h2("14.2  Revision history")}
-<table>
-  <tr>${hdr("Version",C.navy)}${hdr("Date",C.navy)}${hdr("Author",C.navy)}${hdr("Changes",C.navy)}</tr>
-  <tr>${cell("1.0","#F7F9FC")}${cell(now,"#F7F9FC")}${cell(cv(iv.docOwner)+" — BA/PM","#F7F9FC")}${cell("Initial draft from Smartsheet Canvas intake","#F7F9FC")}</tr>
-</table>
-
-<div style="border-top:2pt solid ${C.navy};margin-top:20pt;padding-top:8pt;text-align:center;font-size:9pt;color:#8A9BB0;">
-  Requirements Document  |  ${cv(canvas.title)}  |  Version ${iv.version||"1.0 DRAFT"}  |  ${now}  |  CONFIDENTIAL — Internal Use Only
-</div>
-</body></html>`;
+  switch(n){
+    case 1: lc.innerHTML = step1HTML(); pa.innerHTML = step1Actions(); break;
+    case 2: lc.innerHTML = step2HTML(); pa.innerHTML = step2Actions(); break;
+    case 3: lc.innerHTML = step3HTML(); pa.innerHTML = step3Actions(); break;
+    case 4: lc.innerHTML = step4HTML(); pa.innerHTML = step4Actions(); break;
+    case 5: lc.innerHTML = step5HTML(); pa.innerHTML = step5Actions(); break;
+  }
+  refreshPreview();
 }
 
-// ═══════════════════════════════════════════════════════
-// DOWNLOAD
-// ═══════════════════════════════════════════════════════
-function downloadDoc() {
-  const html = buildDoc(state.canvas, state.iv);
-  const fname = `${(state.canvas.title||"Requirements_Document").replace(/[^a-zA-Z0-9]+/g,"_")}_BRD.doc`;
-  const blob = new Blob([html], { type:"application/msword" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = fname; a.click();
+// ── STEP 1: Canvas Data ───────────────────────────────────────────────────────
+function step1HTML(){
+  return `
+  <div class="form-section">
+    <div class="section-label">Import from Smartsheet</div>
+    <div class="field-group">
+      <label>Paste Smartsheet row (headers + data, or any key:value format)</label>
+      <textarea id="ss-paste" rows="5" placeholder="Paste Smartsheet data here..."></textarea>
+    </div>
+    <button class="btn btn-blue" onclick="extractFromPaste()">⚡ Extract Fields</button>
+  </div>
+
+  <div class="form-section">
+    <div class="section-label">Project Header</div>
+    <div class="field-group"><label>Opportunity / Project Title</label>
+      <input value="${esc(S.title)}" oninput="S.title=this.value;refresh()" placeholder="e.g. Contribution Share Digitization"></div>
+    <div class="field-group"><label>Sponsor(s)</label>
+      <input value="${esc(S.sponsor)}" oninput="S.sponsor=this.value;refresh()" placeholder="e.g. Jeff Ryan"></div>
+    <div class="field-group"><label>Document Owner (BA/PM)</label>
+      <input value="${esc(S.docOwner)}" oninput="S.docOwner=this.value;refresh()" placeholder="Your name"></div>
+    <div class="field-group"><label>Business Unit</label>
+      <input value="${esc(S.businessUnit)}" oninput="S.businessUnit=this.value;refresh()" placeholder="e.g. Service Delivery Operations"></div>
+    <div class="field-group"><label>Target Date / Deadline</label>
+      <input value="${esc(S.targetDate)}" oninput="S.targetDate=this.value;refresh()" placeholder="e.g. 10/01/2026"></div>
+    <div class="field-group"><label>MoSCoW Priority</label>
+      <select oninput="S.moscow=this.value;refresh()">
+        ${['Must Have','Should Have','Could Have','Won\'t Have'].map(v=>`<option ${S.moscow===v?'selected':''}>${v}</option>`).join('')}
+      </select></div>
+    <div class="field-group"><label>Version</label>
+      <input value="${esc(S.version)}" oninput="S.version=this.value;refresh()" placeholder="1.0 DRAFT"></div>
+  </div>
+
+  <div class="form-section">
+    <div class="section-label">Problem & Objective</div>
+    <div class="field-group"><label>Business Objective</label>
+      <textarea oninput="S.objective=this.value;refresh()" placeholder="What business goal does this support?">${esc(S.objective)}</textarea></div>
+    <div class="field-group"><label>Problem to Solve</label>
+      <textarea oninput="S.problem=this.value;refresh()" placeholder="What problem are we solving?">${esc(S.problem)}</textarea></div>
+    <div class="field-group"><label>Who We're Solving For</label>
+      <textarea rows="2" oninput="S.audience=this.value;refresh()" placeholder="e.g. Large & Small Flex employers...">${esc(S.audience)}</textarea></div>
+    <div class="field-group"><label>Number of Users / Groups Affected</label>
+      <input value="${esc(S.userCount)}" oninput="S.userCount=this.value;refresh()" placeholder="e.g. ~500 employers annually"></div>
+    <div class="field-group"><label>Future State Vision</label>
+      <textarea oninput="S.vision=this.value;refresh()" placeholder="What does success look like?">${esc(S.vision)}</textarea></div>
+    <div class="field-group"><label>Targeted Value / ROI</label>
+      <textarea rows="2" oninput="S.roiValue=this.value;refresh()" placeholder="Expected cost savings, efficiency gains...">${esc(S.roiValue)}</textarea></div>
+    <div class="field-group"><label>Success Metrics</label>
+      <textarea rows="2" oninput="S.successMetrics=this.value;refresh()" placeholder="How will we measure success?">${esc(S.successMetrics)}</textarea></div>
+    <div class="field-group"><label>Known Dependencies</label>
+      <textarea rows="2" oninput="S.dependencies=this.value;refresh()" placeholder="Systems, teams, timelines...">${esc(S.dependencies)}</textarea></div>
+  </div>`;
+}
+function step1Actions(){ return `<button class="btn btn-blue" onclick="gotoStep(2)">Next: Scope & Stakeholders →</button>`; }
+
+// ── STEP 2: Scope & Stakeholders ──────────────────────────────────────────────
+function step2HTML(){
+  const inRows  = S.inScope.map((v,i)=>`<div class="scope-row"><input value="${esc(v)}" oninput="S.inScope[${i}]=this.value;refresh()" placeholder="In-scope item ${i+1}"><button onclick="removeScope('in',${i})">×</button></div>`).join('');
+  const outRows = S.outScope.map((v,i)=>`<div class="scope-row"><input value="${esc(v)}" oninput="S.outScope[${i}]=this.value;refresh()" placeholder="Out-of-scope item ${i+1}"><button onclick="removeScope('out',${i})">×</button></div>`).join('');
+
+  const stRows = S.stakeholders.map((s,i)=>`
+    <div style="border:1px solid var(--mgray);border-radius:5px;padding:10px;margin-bottom:8px;background:#fafafa">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <strong style="font-size:11px;color:var(--gray)">Stakeholder ${i+1}</strong>
+        ${i>0?`<button onclick="removeStakeholder(${i})" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:12px">Remove</button>`:''}
+      </div>
+      <div class="field-group"><label>Name / Role</label><input value="${esc(s.name)}" oninput="S.stakeholders[${i}].name=this.value;refresh()"></div>
+      <div class="field-group"><label>Type</label>
+        <select onchange="S.stakeholders[${i}].type=this.value;refresh()">
+          ${['Sponsor','Business Owner','BA/PM','Developer','SME','End User'].map(t=>`<option ${s.type===t?'selected':''}>${t}</option>`).join('')}
+        </select></div>
+      <div class="field-group"><label>Involvement</label>
+        <select onchange="S.stakeholders[${i}].involvement=this.value;refresh()">
+          ${['Approver','Owner','Contributor','Informed'].map(t=>`<option ${s.involvement===t?'selected':''}>${t}</option>`).join('')}
+        </select></div>
+      <div class="field-group"><label>Communication Needs</label><input value="${esc(s.commsNeeds)}" oninput="S.stakeholders[${i}].commsNeeds=this.value;refresh()"></div>
+    </div>`).join('');
+
+  return `
+  <div class="form-section">
+    <div class="section-label">Project Scope</div>
+    <div class="field-group">
+      <label>✅ In-Scope Items</label>
+      <div class="scope-list">${inRows}</div>
+      <button class="add-item-btn" onclick="addScope('in')">+ Add In-Scope Item</button>
+    </div>
+    <div class="field-group">
+      <label>🚫 Out-of-Scope Items</label>
+      <div class="scope-list">${outRows}</div>
+      <button class="add-item-btn" onclick="addScope('out')">+ Add Out-of-Scope Item</button>
+    </div>
+  </div>
+  <div class="form-section">
+    <div class="section-label">Constraints & Assumptions</div>
+    ${S.constraints.map((c,i)=>`<div class="scope-row" style="margin-bottom:6px"><input value="${esc(c)}" oninput="S.constraints[${i}]=this.value;refresh()" placeholder="Constraint or assumption ${i+1}"><button onclick="S.constraints.splice(${i},1);renderStep(2)" style="background:none;border:1px solid var(--mgray);border-radius:4px;cursor:pointer;color:#999;font-size:14px">×</button></div>`).join('')}
+    <button class="add-item-btn" onclick="S.constraints.push('');renderStep(2)">+ Add Constraint</button>
+  </div>
+  <div class="form-section">
+    <div class="section-label">Stakeholders & Roles</div>
+    ${stRows}
+    <button class="add-item-btn" onclick="addStakeholder()">+ Add Stakeholder</button>
+  </div>`;
+}
+function step2Actions(){ return `<div style="display:flex;gap:8px"><button class="btn btn-gray" style="flex:1" onclick="gotoStep(1)">← Back</button><button class="btn btn-blue" style="flex:2" onclick="gotoStep(3)">Next: Requirements →</button></div>`; }
+
+// ── STEP 3: Requirements & NFRs ───────────────────────────────────────────────
+function step3HTML(){
+  const reqHTML = S.requirements.map((r,i)=>`
+    <div style="border:1px solid var(--mgray);border-radius:6px;overflow:hidden;margin-bottom:10px">
+      <div style="background:var(--gray);color:#fff;padding:7px 10px;display:flex;justify-content:space-between;align-items:center">
+        <strong style="font-size:12px">${r.id || 'BRD-00'+(i+1)}</strong>
+        ${i>0?`<button onclick="S.requirements.splice(${i},1);renderStep(3)" style="background:none;border:1px solid rgba(255,255,255,.4);border-radius:3px;color:#fff;cursor:pointer;font-size:11px;padding:2px 7px">Remove</button>`:''}
+      </div>
+      <div style="padding:10px;background:#fafafa">
+        <div class="field-group"><label>Title</label><input value="${esc(r.title)}" oninput="S.requirements[${i}].title=this.value;refresh()" placeholder="Requirement title"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="field-group"><label>Priority</label>
+            <select onchange="S.requirements[${i}].priority=this.value;refresh()">
+              ${['High','Medium','Low','Critical'].map(p=>`<option ${r.priority===p?'selected':''}>${p}</option>`).join('')}
+            </select></div>
+          <div class="field-group"><label>Stakeholder</label><input value="${esc(r.stakeholder)}" oninput="S.requirements[${i}].stakeholder=this.value;refresh()" placeholder="e.g. Finance"></div>
+        </div>
+        <div class="field-group"><label>Description</label><textarea rows="2" oninput="S.requirements[${i}].description=this.value;refresh()" placeholder="Specific, measurable requirement...">${esc(r.description)}</textarea></div>
+        <div class="field-group"><label>Business Value</label><textarea rows="2" oninput="S.requirements[${i}].businessValue=this.value;refresh()" placeholder="Why does this matter?">${esc(r.businessValue||'')}</textarea></div>
+        <div class="field-group"><label>Acceptance Criteria</label><textarea rows="2" oninput="S.requirements[${i}].acceptanceCriteria=this.value;refresh()" placeholder="How do we know this is done?">${esc(r.acceptanceCriteria||'')}</textarea></div>
+        <div class="field-group"><label>Primary Actors</label><input value="${esc(r.actors||'')}" oninput="S.requirements[${i}].actors=this.value;refresh()" placeholder="e.g. Benefits Administrator, HR"></div>
+        ${r.businessContext && r.businessContext.length > 0 ? `<div style="background:#f0fff4;border-left:3px solid var(--green);padding:7px;font-size:11px;border-radius:2px;margin-top:4px"><strong style="color:var(--green)">📄 From documents:</strong><br>${r.businessContext.map(c=>`<em>${c.doc}:</em> "${c.text}"`).join('<br>')}</div>` : ''}
+      </div>
+    </div>`).join('');
+
+  const nfrHTML = S.nfrs.map((n,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 2fr auto;gap:6px;align-items:end;margin-bottom:6px;padding:8px;background:#fafafa;border-radius:5px;border:1px solid var(--mgray)">
+      <div class="field-group" style="margin-bottom:0"><label>Category</label>
+        <select onchange="S.nfrs[${i}].category=this.value;refresh()">
+          ${['Availability','Security','Performance','Scalability','Usability','Compliance','Audit Logging'].map(c=>`<option ${n.category===c?'selected':''}>${c}</option>`).join('')}
+        </select></div>
+      <div class="field-group" style="margin-bottom:0"><label>Requirement</label>
+        <input value="${esc(n.requirement)}" oninput="S.nfrs[${i}].requirement=this.value;refresh()" placeholder="Describe the non-functional requirement"></div>
+      ${i>0?`<button onclick="S.nfrs.splice(${i},1);renderStep(3)" style="height:34px;margin-top:18px;background:none;border:1px solid var(--red);border-radius:4px;color:var(--red);cursor:pointer;padding:0 8px">✕</button>`:'<div></div>'}
+    </div>`).join('');
+
+  return `
+  <div class="form-section">
+    <div class="subtabs">
+      <button class="subtab active" onclick="this.parentElement.querySelectorAll('.subtab').forEach(b=>b.classList.remove('active'));this.classList.add('active');document.getElementById('req-pane').style.display='block';document.getElementById('nfr-pane').style.display='none'">📋 Functional Reqs</button>
+      <button class="subtab" onclick="this.parentElement.querySelectorAll('.subtab').forEach(b=>b.classList.remove('active'));this.classList.add('active');document.getElementById('req-pane').style.display='none';document.getElementById('nfr-pane').style.display='block'">⚙️ Non-Functional</button>
+    </div>
+    <div id="req-pane">
+      ${reqHTML}
+      <button class="add-item-btn" onclick="addRequirement()">+ Add Requirement</button>
+    </div>
+    <div id="nfr-pane" style="display:none">
+      ${nfrHTML}
+      <button class="add-item-btn" onclick="S.nfrs.push({category:'Availability',requirement:'',priority:'High'});renderStep(3)">+ Add Non-Functional Requirement</button>
+    </div>
+  </div>`;
+}
+function step3Actions(){ return `<div style="display:flex;gap:8px"><button class="btn btn-gray" style="flex:1" onclick="gotoStep(2)">← Back</button><button class="btn btn-blue" style="flex:2" onclick="gotoStep(4)">Next: Documents →</button></div>`; }
+
+// ── STEP 4: Business Documents ────────────────────────────────────────────────
+function step4HTML(){
+  const docList = S.businessDocuments.length > 0
+    ? S.businessDocuments.map((d,i)=>`
+      <div class="doc-item">
+        <div style="flex:1">
+          <div class="doc-item-name">📄 ${esc(d.name)}</div>
+          <div class="doc-item-meta">${d.content.length.toLocaleString()} chars · ${new Date(d.addedDate).toLocaleDateString()}</div>
+          <div style="font-size:10px;color:#aaa;margin-top:3px;white-space:pre-line;overflow:hidden;max-height:40px">${esc(d.content.substring(0,120))}${d.content.length>120?'…':''}</div>
+        </div>
+        <button class="doc-item-remove" onclick="removeDoc(${i})">✕</button>
+      </div>`).join('')
+    : `<div style="padding:10px;color:#999;font-size:12px;text-align:center">No documents added yet</div>`;
+
+  return `
+  <div class="form-section">
+    <div class="section-label">Add Business Documents</div>
+    <p style="font-size:11px;color:#888;margin-bottom:10px;line-height:1.5">Upload or paste meeting transcripts, specs, interview notes, email threads, or any business document. The tool will extract relevant content and integrate it into each requirement.</p>
+
+    <div class="field-group">
+      <label>Document Name</label>
+      <input id="doc-name" placeholder="e.g. Meeting Notes 4/30, Requirements Spec v2">
+    </div>
+    <div class="field-group">
+      <label>Paste Content</label>
+      <textarea id="doc-text" rows="5" placeholder="Paste meeting transcript, spec, interview notes, email..."></textarea>
+    </div>
+    <button class="btn btn-blue" style="margin-bottom:12px" onclick="addDocFromPaste()">➕ Add Document</button>
+
+    <div style="border-top:1px solid var(--mgray);padding-top:10px;margin-top:4px">
+      <label class="field-group" style="display:block">
+        <span style="font-size:11px;font-weight:700;color:var(--gray);display:block;margin-bottom:4px">Upload File (.txt, .pdf, .docx)</span>
+        <div class="drop-zone" onclick="document.getElementById('doc-file-input').click()">
+          <div>📁 Click to upload file</div>
+          <p>Supports .txt, .pdf, .docx</p>
+        </div>
+        <input type="file" id="doc-file-input" accept=".txt,.pdf,.docx" style="display:none" onchange="addDocFromFile(this)">
+      </label>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="section-label">Added Documents (${S.businessDocuments.length})</div>
+    ${docList}
+    ${S.businessDocuments.length > 0 ? `
+    <div class="integrate-notice">✓ Documents will be <strong>intelligently integrated</strong> into requirements when you generate the BRD.</div>
+    <button class="btn btn-green" style="margin-top:8px" onclick="integrateDocuments()">🔗 Integrate Now into Requirements</button>` : ''}
+  </div>`;
+}
+function step4Actions(){ return `<div style="display:flex;gap:8px"><button class="btn btn-gray" style="flex:1" onclick="gotoStep(3)">← Back</button><button class="btn btn-gold" style="flex:2" onclick="generateAndDownload()">⬇ Download BRD</button></div>`; }
+
+// ── STEP 5: Saved BRDs ────────────────────────────────────────────────────────
+function step5HTML(){
+  const saved = getSavedList();
+  const list = saved.length > 0
+    ? saved.map((s,i)=>`
+      <div class="saved-item" onclick="loadSaved(${i})">
+        <div>
+          <div class="saved-item-name">${esc(s.title || 'Untitled BRD')}</div>
+          <div class="saved-item-meta">Saved: ${new Date(s.savedDate).toLocaleString()} · ${s.requirements.length} req(s) · ${s.businessDocuments.length} doc(s)</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-gold btn-sm" onclick="event.stopPropagation();downloadSaved(${i})">⬇</button>
+          <button class="btn btn-gray btn-sm" style="color:var(--red);border-color:var(--red)" onclick="event.stopPropagation();deleteSaved(${i})">✕</button>
+        </div>
+      </div>`).join('')
+    : `<div style="padding:20px;text-align:center;color:#bbb;font-size:13px">No saved BRDs yet.<br>Use the Save button to keep your work.</div>`;
+
+  return `<div class="form-section"><div class="section-label">Previously Saved BRDs</div>${list}</div>`;
+}
+function step5Actions(){ return `<button class="btn btn-blue" onclick="gotoStep(1)">← Return to Editor</button>`; }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// LIVE PREVIEW
+// ══════════════════════════════════════════════════════════════════════════════
+function refreshPreview(){
+  saveState();
+
+  const ev = (v) => v ? `<span>${esc(v)}</span>` : `<span class="empty-val">[ to be completed ]</span>`;
+  const listHTML = (arr) => arr.filter(Boolean).length > 0
+    ? `<ul class="brd-bullet">${arr.filter(Boolean).map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`
+    : `<ul class="brd-bullet"><li class="empty-val">[ to be defined ]</li></ul>`;
+
+  const reqRows = S.requirements.map(r=>`
+    <div class="req-block">
+      <div class="req-block-hdr">${esc(r.id||'BRD-001')}: ${esc(r.title||'[ title ]')}</div>
+      <table class="brd-table">
+        <tr><td class="label">Priority</td><td>${ev(r.priority)}</td></tr>
+        <tr><td class="label">Description</td><td>${ev(r.description)}</td></tr>
+        <tr><td class="label">Business Value</td><td>${ev(r.businessValue)}</td></tr>
+        <tr><td class="label">Acceptance Criteria</td><td>${ev(r.acceptanceCriteria)}</td></tr>
+        <tr><td class="label">Primary Actors</td><td>${ev(r.actors)}</td></tr>
+        ${r.businessContext && r.businessContext.length>0 ? `<tr><td class="label">Business Context</td><td><div class="brd-context">${r.businessContext.map(c=>`<strong>${esc(c.doc)}:</strong> ${esc(c.text)}`).join('<br>')}</div></td></tr>` : ''}
+      </table>
+    </div>`).join('');
+
+  const stRows = S.stakeholders.map((s,i)=>`
+    <tr>
+      <td>${ev(s.name)}</td><td>${ev(s.type)}</td>
+      <td>${ev(s.involvement)}</td><td>${ev(s.commsNeeds)}</td>
+    </tr>`).join('');
+
+  const docSection = S.businessDocuments.length > 0 ? `
+    <div class="brd-section">
+      <div class="brd-section-hdr"><div class="brd-section-num">9</div><div class="brd-section-title">Appendix: Source Documents & Interviews</div></div>
+      ${S.businessDocuments.map(d=>`
+        <div class="brd-subhdr">${esc(d.name)}</div>
+        <p style="font-size:11px;color:#555;white-space:pre-line">${esc(d.content)}</p>
+      `).join('')}
+    </div>` : '';
+
+  document.getElementById('preview-area').innerHTML = `
+  <div class="preview-card">
+    <div class="brd-cover">
+      <h1>Business Requirements Document</h1>
+      <h2>(BRD)</h2>
+      <p>Project Name: ${esc(S.title||'[Insert Project Name]')}</p>
+      <p>Date: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})} | Version: ${esc(S.version||'1.0 DRAFT')}</p>
+    </div>
+
+    <div class="brd-section">
+      <div class="brd-section-hdr"><div class="brd-section-num">1</div><div class="brd-section-title">Document Control</div></div>
+      <table class="brd-table">
+        <tr><th>Role</th><th>Name</th><th>Signature / Approval</th><th>Date</th></tr>
+        <tr><td>Project Sponsor</td><td>${ev(S.sponsor)}</td><td></td><td></td></tr>
+        <tr><td>Business Analyst</td><td>${ev(S.docOwner)}</td><td></td><td></td></tr>
+        <tr><td>Technical Lead</td><td></td><td></td><td></td></tr>
+      </table>
+    </div>
+
+    <div class="brd-section">
+      <div class="brd-section-hdr"><div class="brd-section-num">2</div><div class="brd-section-title">Executive Summary</div></div>
+      <p style="font-size:12px;color:#555;font-style:italic;padding:8px;background:#fff8e7;border-radius:4px">${ev([S.objective, S.problem].filter(Boolean).join(' '))}</p>
+    </div>
+
+    <div class="brd-section">
+      <div class="brd-section-hdr"><div class="brd-section-num">3</div><div class="brd-section-title">Project Scope</div></div>
+      <div class="brd-subhdr">3.1 In-Scope</div>${listHTML(S.inScope)}
+      <div class="brd-subhdr">3.2 Out-of-Scope</div>${listHTML(S.outScope)}
+    </div>
+
+    <div class="brd-section">
+      <div class="brd-section-hdr"><div class="brd-section-num">4</div><div class="brd-section-title">Business Requirements Summary</div></div>
+      <table class="brd-table">
+        <tr><th>Req ID</th><th>Description</th><th>Priority</th><th>Stakeholder</th></tr>
+        ${S.requirements.map((r,i)=>`<tr><td>${esc(r.id||'BRD-00'+(i+1))}</td><td>${ev(r.description||r.title)}</td><td><strong>${ev(r.priority)}</strong></td><td>${ev(r.stakeholder)}</td></tr>`).join('')}
+      </table>
+    </div>
+
+    <div class="brd-section">
+      <div class="brd-section-hdr"><div class="brd-section-num">5</div><div class="brd-section-title">Functional Requirements (Detail)</div></div>
+      ${reqRows}
+    </div>
+
+    <div class="brd-section">
+      <div class="brd-section-hdr"><div class="brd-section-num">6</div><div class="brd-section-title">Non-Functional Requirements</div></div>
+      <ul class="brd-bullet">${S.nfrs.map(n=>`<li><strong>${esc(n.category)}:</strong> ${ev(n.requirement)}</li>`).join('')}</ul>
+    </div>
+
+    <div class="brd-section">
+      <div class="brd-section-hdr"><div class="brd-section-num">7</div><div class="brd-section-title">Constraints and Assumptions</div></div>
+      ${listHTML(S.constraints)}
+    </div>
+
+    <div class="brd-section">
+      <div class="brd-section-hdr"><div class="brd-section-num">8</div><div class="brd-section-title">Stakeholders & Roles</div></div>
+      <table class="brd-table">
+        <tr><th>Name / Role</th><th>Type</th><th>Involvement</th><th>Communication Needs</th></tr>
+        ${stRows}
+      </table>
+    </div>
+
+    ${docSection}
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DOCUMENT ACTIONS
+// ══════════════════════════════════════════════════════════════════════════════
+function addDocFromPaste(){
+  const name    = document.getElementById('doc-name').value.trim();
+  const content = document.getElementById('doc-text').value.trim();
+  if(!name||!content){ alert('Please enter a document name and content'); return; }
+  S.businessDocuments.push({ name, content, addedDate: new Date().toISOString() });
+  renderStep(4);
+}
+
+function addDocFromFile(input){
+  const file = input.files[0];
+  if(!file) return;
+  const name = document.getElementById('doc-name').value.trim() || file.name;
+  const reader = new FileReader();
+  reader.onload = e => {
+    S.businessDocuments.push({ name, content: e.target.result, addedDate: new Date().toISOString() });
+    renderStep(4);
+  };
+  reader.readAsText(file);
+}
+
+function removeDoc(i){
+  S.businessDocuments.splice(i,1);
+  S.requirements.forEach(r => r.businessContext = []);
+  renderStep(4);
+}
+
+function integrateDocuments(){
+  if(S.businessDocuments.length === 0){ alert('Add documents first'); return; }
+  S.requirements.forEach(req => {
+    req.businessContext = [];
+    const keywords = [req.title, req.description, req.businessValue, req.acceptanceCriteria]
+      .filter(Boolean).join(' ').toLowerCase().split(/\s+/).filter(w => w.length > 4);
+    S.businessDocuments.forEach(doc => {
+      const lines = doc.content.split('\n');
+      const scored = lines.filter(l => l.trim().length > 15).map(line => {
+        const ll = line.toLowerCase();
+        const score = keywords.filter(k => ll.includes(k)).length;
+        return { text: line.trim().substring(0,200), score, doc: doc.name };
+      }).filter(l => l.score > 0).sort((a,b) => b.score - a.score);
+      if(scored.length > 0) req.businessContext.push(...scored.slice(0,2));
+    });
+  });
+  renderStep(4);
+  alert('✓ Documents integrated into requirements!');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DOCX GENERATION (calls Node.js via Blob + server)
+// Since we're in a browser, we fall back to a well-structured RTF/DOCX via
+// blob. The real generation happens via a separate Node.js script on SharePoint.
+// We use docx npm built via CDN (docx-browser) as fallback.
+// ══════════════════════════════════════════════════════════════════════════════
+
+async function generateAndDownloadDocx(){
+  // Use the Anthropic API to call our Node.js generator via a temp JSON payload
+  const fname = (S.title || 'BRD').replace(/[^a-zA-Z0-9]+/g,'_') + '.docx';
+  
+  // Signal to Claude to run the node script
+  if(window._claudeGenerate){
+    window._claudeGenerate(JSON.stringify(S), fname);
+    return;
+  }
+  
+  // Browser fallback: generate a clean, structured RTF that Word opens perfectly
+  generateRTF(fname);
+}
+
+function generateRTF(fname){
+  const now2 = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const esc2 = s => (s||'').replace(/\\/g,'\\\\').replace(/\{/g,'\\{').replace(/\}/g,'\\}').replace(/\n/g,'\\par ');
+
+  const hdr = (text) => `{\\pard\\sb240\\sa80\\b\\fs28\\cf3 ${esc2(text)}\\par}`;
+  const sub = (text) => `{\\pard\\sb160\\sa60\\b\\fs24\\cf2 ${esc2(text)}\\par}`;
+  const p   = (text) => `{\\pard\\sa80\\fs22 ${esc2(text||'[ to be completed ]')}\\par}`;
+
+  const row2 = (l,v) => `\\trowd\\trgaph115\\cellx2016\\cellx8748{\\pard\\intbl\\b\\fs22\\cf4 ${esc2(l)}\\cell}{\\pard\\intbl\\fs22 ${esc2(v||'')}\\cell}\\row`;
+  const row4h = (a,b,c,d) => `\\trowd\\trgaph115\\cellx2016\\cellx4032\\cellx6048\\cellx8748{\\pard\\intbl\\b\\fs22\\cf5 ${esc2(a)}\\cell}{\\pard\\intbl\\b\\fs22\\cf5 ${esc2(b)}\\cell}{\\pard\\intbl\\b\\fs22\\cf5 ${esc2(c)}\\cell}{\\pard\\intbl\\b\\fs22\\cf5 ${esc2(d)}\\cell}\\row`;
+  const row4  = (a,b,c,d) => `\\trowd\\trgaph115\\cellx2016\\cellx4032\\cellx6048\\cellx8748{\\pard\\intbl\\fs22 ${esc2(a)}\\cell}{\\pard\\intbl\\fs22 ${esc2(b)}\\cell}{\\pard\\intbl\\fs22 ${esc2(c)}\\cell}{\\pard\\intbl\\fs22 ${esc2(d)}\\cell}\\row`;
+
+  const sHdr = (num, title) =>
+    `\\trowd\\trgaph115\\cellx540\\cellx8748` +
+    `{\\pard\\intbl\\b\\fs26\\cf5 ${num}\\cell}` +
+    `{\\pard\\intbl\\b\\fs24\\cf3 ${esc2(title.toUpperCase())}\\cell}\\row`;
+
+  const reqBlocks = S.requirements.map(r => [
+    sub(`${r.id||'BRD-001'}: ${r.title||''}`),
+    row2('Priority', r.priority||'High'),
+    row2('Description', r.description||''),
+    row2('Business Value', r.businessValue||''),
+    row2('Acceptance Criteria', r.acceptanceCriteria||''),
+    row2('Primary Actors', r.actors||''),
+    ...(r.businessContext&&r.businessContext.length>0
+      ? [row2('Business Context', r.businessContext.map(c=>`[${c.doc}]: ${c.text}`).join('\n'))]
+      : []),
+    '{\\pard\\sa60 \\par}',
+  ].join('\n')).join('\n');
+
+  const stRows = S.stakeholders.map(s => row4(s.name||'', s.type||'', s.involvement||'', s.commsNeeds||'')).join('\n');
+  const inSc  = S.inScope.filter(Boolean).map(i=>`{\\pard\\li360\\fs22\\bullet  ${esc2(i)}\\par}`).join('');
+  const outSc = S.outScope.filter(Boolean).map(i=>`{\\pard\\li360\\fs22\\bullet  ${esc2(i)}\\par}`).join('');
+  const cons  = S.constraints.filter(Boolean).map(i=>`{\\pard\\li360\\fs22\\bullet  ${esc2(i)}\\par}`).join('');
+  const nfrB  = S.nfrs.map(n=>`{\\pard\\li360\\fs22\\bullet  {\\b ${esc2(n.category)}:} ${esc2(n.requirement)}\\par}`).join('');
+  const docSections = S.businessDocuments.map(d => `${sub(d.name)}\n${p(d.content)}`).join('\n');
+
+  const rtf = `{\\rtf1\\ansi\\deff0
+{\\fonttbl{\\f0 Calibri;}}
+{\\colortbl ;\\red255\\green255\\blue255;\\red46\\green117\\blue182;\\red46\\green58\\blue78;\\red242\\green242\\blue242;\\red255\\green255\\blue255;}
+\\widowctrl\\hyphauto
+\\paperw12240\\paperh15840\\margl1440\\margr1440\\margt1440\\margb1440
+\\f0
+
+{\\pard\\qc\\sb240\\b\\fs40\\cf3 Business Requirements Document\\par}
+{\\pard\\qc\\b\\fs30\\cf3 (BRD)\\par}
+{\\pard\\qc\\fs22\\cf2 Project Name: ${esc2(S.title||'[Insert Project Name]')}\\par}
+{\\pard\\qc\\fs22\\cf2 Date: ${esc2(now2)} | Version: ${esc2(S.version||'1.0 DRAFT')}\\par}
+{\\pard\\sa240 \\par}
+
+${sHdr(1,'Document Control')}
+${row4h('Role','Name','Signature / Approval','Date')}
+${row4('Project Sponsor', S.sponsor||'', '', '')}
+${row4('Business Analyst', S.docOwner||'', '', '')}
+${row4('Technical Lead', '', '', '')}
+{\\pard\\sa120 \\par}
+
+${sHdr(2,'Executive Summary')}
+${p([S.objective, S.problem].filter(Boolean).join(' '))}
+{\\pard\\sa80 \\par}
+
+${sHdr(3,'Project Scope')}
+${sub('3.1 In-Scope')}
+${inSc||p('[ to be defined ]')}
+${sub('3.2 Out-of-Scope')}
+${outSc||p('[ to be defined ]')}
+{\\pard\\sa80 \\par}
+
+${sHdr(4,'Business Requirements Summary')}
+${row4h('Req ID','Description','Priority','Stakeholder')}
+${S.requirements.map((r,i)=>row4(r.id||'BRD-00'+(i+1), r.description||r.title||'', r.priority||'High', r.stakeholder||'')).join('\n')}
+{\\pard\\sa80 \\par}
+
+${sHdr(5,'Functional Requirements (Detail)')}
+${reqBlocks}
+
+${sHdr(6,'Non-Functional Requirements')}
+${nfrB||p('[ to be defined ]')}
+{\\pard\\sa80 \\par}
+
+${sHdr(7,'Constraints and Assumptions')}
+${cons||p('[ to be defined ]')}
+{\\pard\\sa80 \\par}
+
+${sHdr(8,'Stakeholders & Roles')}
+${row4h('Name / Role','Type','Involvement','Communication Needs')}
+${stRows}
+{\\pard\\sa80 \\par}
+
+${S.businessDocuments.length > 0 ? `
+${sHdr(9,'Appendix: Source Documents & Interviews')}
+${p('The following documents informed the requirements above.')}
+${docSections}
+{\\pard\\sa80 \\par}
+` : ''}
+
+{\\pard\\brdrb\\brdrs\\brdrw10 \\par}
+{\\pard\\qc\\fs18\\cf2 Portico Benefit Services | Business Requirements Document | Confidential – Internal Use Only\\par}
+}`;
+
+  const blob = new Blob([rtf], { type:'application/rtf' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = fname.replace('.docx','.rtf');
+  a.click();
   URL.revokeObjectURL(url);
 }
 
-// ═══════════════════════════════════════════════════════
-// SHAREPOINT UPLOAD
-// ═══════════════════════════════════════════════════════
-async function uploadSP() {
-  state.uploading = true; state.uploadMsg = ""; render();
-  try {
-    const html = buildDoc(state.canvas, state.iv);
-    const fname = `${(state.canvas.title||"Requirements_Document").replace(/[^a-zA-Z0-9]+/g,"_")}_BRD.doc`;
-    const match = state.spUrl.match(/^(https:\/\/[^/]+)(\/sites\/[^/]+)(\/[^?]*)?/);
-    if (!match) throw new Error("Invalid SharePoint URL format");
-    const [, host, sitePath, libPath] = match;
-    const siteRes = await fetch(`https://graph.microsoft.com/v1.0/sites/${host.replace("https://","")}:${sitePath}`, { headers:{Authorization:`Bearer ${state.spToken}`} });
-    if (!siteRes.ok) throw new Error(`Could not locate SharePoint site: ${siteRes.status}`);
-    const site = await siteRes.json();
-    const drivesRes = await fetch(`https://graph.microsoft.com/v1.0/sites/${site.id}/drives`, { headers:{Authorization:`Bearer ${state.spToken}`} });
-    const drivesData = await drivesRes.json();
-    const drive = drivesData.value?.[0];
-    if (!drive) throw new Error("No document library found");
-    const folderPath = (libPath||"/Shared Documents").replace(/^\/+/,"");
-    const blob = new Blob([html], {type:"application/msword"});
-    const uploadRes = await fetch(`https://graph.microsoft.com/v1.0/drives/${drive.id}/root:/${folderPath}/${fname}:/content`, {
-      method:"PUT", headers:{Authorization:`Bearer ${state.spToken}`,"Content-Type":"application/msword"}, body:blob
-    });
-    if (!uploadRes.ok) throw new Error(`Upload failed: ${uploadRes.status}`);
-    const result = await uploadRes.json();
-    state.uploadMsg = `ok:✓ Uploaded: ${result.name||fname}`;
-  } catch(e) { state.uploadMsg = `err:✗ ${e.message}`; }
-  state.uploading = false; render();
+function generateAndDownload(){ generateAndDownloadDocx(); }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SAVE / LOAD
+// ══════════════════════════════════════════════════════════════════════════════
+function getSavedList(){
+  try{ return JSON.parse(localStorage.getItem(SAVED_KEY)||'[]'); }catch(e){ return []; }
 }
 
-// ═══════════════════════════════════════════════════════
-// RENDER
-// ═══════════════════════════════════════════════════════
-function set(key, val, sub=null) {
-  if (sub) state[key] = { ...state[key], [sub]: val };
-  else state[key] = val;
-  scheduleAutoSave();
-  render();
-}
-function setCanvas(id, val) { state.canvas = { ...state.canvas, [id]: val }; scheduleAutoSave(); render(); }
-function setIv(key, val) { state.iv = { ...state.iv, [key]: val }; scheduleAutoSave(); render(); }
-
-function inp(id, placeholder, multiline=false, rows=2) {
-  const val = state.canvas[id] || "";
-  if (multiline) {
-    return `<textarea rows="${rows}" class="paste-area" style="font-family:inherit;font-size:13px;min-height:auto;" 
-      oninput="setCanvas('${id}',this.value)" placeholder="${placeholder}">${escH(val)}</textarea>`;
-  }
-  return `<input value="${escH(val)}" oninput="setCanvas('${id}',this.value)" placeholder="${placeholder}">`;
-}
-function ivInp(key, subkey, placeholder, multiline=false, rows=2) {
-  const val = (state.iv[key]||{})[subkey] || "";
-  if (multiline) return `<textarea rows="${rows}" style="font-family:inherit;font-size:13px;width:100%;resize:vertical;" oninput="updateIvSub('${key}','${subkey}',this.value)" placeholder="${placeholder}">${escH(val)}</textarea>`;
-  return `<input value="${escH(val)}" oninput="updateIvSub('${key}','${subkey}',this.value)" placeholder="${placeholder}">`;
-}
-function escH(s) { return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-
-window.updateIvSub = (key, subkey, val) => {
-  state.iv = { ...state.iv, [key]: { ...state.iv[key], [subkey]: val } };
-  scheduleAutoSave(); render();
-};
-window.updateIvArr = (key, idx, subkey, val) => {
-  const arr = [...(state.iv[key]||[])];
-  arr[idx] = { ...arr[idx], [subkey]: val };
-  state.iv = { ...state.iv, [key]: arr };
-  scheduleAutoSave(); render();
-};
-window.updateScope = (key, idx, val) => {
-  const arr = [...(state.iv[key]||[])];
-  arr[idx] = val;
-  state.iv = { ...state.iv, [key]: arr };
-  scheduleAutoSave(); render();
-};
-window.removeArrItem = (key, idx) => {
-  state.iv = { ...state.iv, [key]: state.iv[key].filter((_,i)=>i!==idx) };
-  scheduleAutoSave(); render();
-};
-window.addArrItem = (key, factory) => {
-  state.iv = { ...state.iv, [key]: [...state.iv[key], factory(state.iv[key].length+1)] };
-  scheduleAutoSave(); render();
-};
-window.setCanvas = setCanvas;
-window.setIv = setIv;
-
-function renderProgress() {
-  const steps = ["Intake","Canvas Review","BA Interview","Generate"];
-  const s = state.step;
-  return `<div class="progress-bar">${steps.map((lbl,i)=>{
-    const n=i+1, done=n<s, active=n===s;
-    const dotClass = done?"done":active?"active":"pending";
-    const lblClass = done?"done":active?"active":"pending";
-    const line = i<steps.length-1 ? `<div class="step-line ${done||active?"done":""}"></div>` : "";
-    return `<div class="step-item">
-      <div class="step-dot ${dotClass}" ${done?`onclick="state.step=${n};render()"`:""}>${done?"✓":n}</div>
-      <span class="step-label ${lblClass}">${lbl}</span>
-      ${line}
-    </div>`;
-  }).join("")}</div>`;
+function saveCurrentBRD(){
+  const name = prompt('Save BRD as:', S.title || 'New BRD');
+  if(!name) return;
+  S.title = S.title || name;
+  const saved = getSavedList();
+  saved.unshift({ ...JSON.parse(JSON.stringify(S)), savedDate: new Date().toISOString() });
+  localStorage.setItem(SAVED_KEY, JSON.stringify(saved.slice(0, 20)));
+  alert(`✓ Saved as "${name}"`);
+  gotoStep(5);
 }
 
-function renderStep1() {
-  const mode = state.inputMode;
-  return `<div class="card">
-    <div class="section-label">STEP 1 — CANVAS INTAKE</div>
-    <p style="color:var(--muted);font-size:13px;margin-bottom:20px;">Populate canvas fields by pasting directly from Smartsheet, or connect via the API to select a row.</p>
-
-    <div class="method-toggle">
-      <button class="method-btn ${mode==="paste"?"active":""}" onclick="state.inputMode='paste';render()">📋 Paste from Smartsheet</button>
-      <button class="method-btn ${mode==="api"?"active":""}" onclick="state.inputMode='api';render()">🔌 API Connection</button>
-    </div>
-
-    ${mode==="paste" ? renderPasteMode() : renderAPIMode()}
-  </div>`;
+function loadSaved(i){
+  const saved = getSavedList();
+  if(saved[i]){ S = {...S, ...saved[i]}; gotoStep(1); refreshPreview(); }
 }
 
-function renderPasteMode() {
-  return `<div class="callout callout-info">
-    <strong>How to paste:</strong> In Smartsheet, select your header row + the data row you want, copy (Ctrl+C), then paste below.
-    The tool will auto-match columns to canvas fields using header names.
-  </div>
-  <div class="field-group">
-    <div class="field-label">Paste Smartsheet rows here (header + data row)</div>
-    <textarea class="paste-area" rows="6" oninput="state.pasteRaw=this.value;render()" 
-      placeholder="Priority&#9;SD Ticket #&#9;Opportunity Title&#9;Executive Summary&#9;...&#10;&#9;&#9;Contribution Share Optimization&#9;Automation of...&#9;...">${escH(state.pasteRaw)}</textarea>
-  </div>
-  ${state.parseError ? `<div class="error-box">${state.parseError}</div>` : ""}
-  <div style="display:flex;gap:10px;margin-top:16px;">
-    <button class="btn btn-primary" onclick="handleParse()">Parse & Continue →</button>
-    <button class="btn btn-outline" onclick="state.step=2;render()">Skip — Enter Manually</button>
-  </div>`;
+function downloadSaved(i){
+  const saved = getSavedList();
+  if(saved[i]){ S = {...S, ...saved[i]}; generateAndDownload(); }
 }
 
-function renderAPIMode() {
-  return `<div class="callout callout-info">
-    <strong>API path:</strong> Enter your Smartsheet Personal Access Token and Sheet ID. The tool will auto-map columns to canvas fields.
-  </div>
-  <div class="grid-2">
-    <div class="field-group">
-      <div class="field-label">Personal Access Token</div>
-      <input value="${escH(state.ssToken)}" oninput="state.ssToken=this.value" placeholder="Bearer token from Smartsheet API Access page" type="password">
-    </div>
-    <div class="field-group">
-      <div class="field-label">Sheet ID</div>
-      <input value="${escH(state.ssSheetId)}" oninput="state.ssSheetId=this.value" placeholder="e.g. 3932034510035844">
-    </div>
-  </div>
-  ${state.apiError ? `<div class="error-box">⚠ ${state.apiError}</div>` : ""}
-  <div style="display:flex;gap:10px;margin-top:16px;">
-    <button class="btn btn-primary" onclick="connectSS()" ${(!state.ssToken||!state.ssSheetId||state.loading)?"disabled":""}>
-      ${state.loading?"Connecting…":"Connect to Smartsheet"}
-    </button>
-    <button class="btn btn-outline" onclick="state.step=2;render()">Skip — Enter Manually</button>
-  </div>
-  ${state.step===2&&state.ssSheet ? renderRowSelector() : ""}`;
+function deleteSaved(i){
+  if(!confirm('Delete this saved BRD?')) return;
+  const saved = getSavedList();
+  saved.splice(i,1);
+  localStorage.setItem(SAVED_KEY, JSON.stringify(saved));
+  renderStep(5);
 }
 
-function renderRowSelector() {
-  const sheet = state.ssSheet;
-  return `<div style="margin-top:20px;">
-    <div class="section-label">SELECT ROW</div>
-    <p style="color:var(--muted);font-size:13px;margin-bottom:12px;">Sheet: <strong>${sheet.name}</strong> · ${sheet.rows?.length||0} rows · ${Object.keys(state.ssColMap).length}/${CANVAS_FIELDS.length} fields auto-mapped</p>
-    <div style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;">
-      ${(sheet.rows||[]).map(row=>{
-        const titleColId = state.ssColMap["title"];
-        const titleCell = row.cells?.find(c=>c.columnId===titleColId);
-        const title = titleCell?.value||`Row ${row.rowNumber}`;
-        return `<div onclick="selectSSRow_render(${row.id})" style="padding:12px 16px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:#fff;transition:all .15s;"
-          onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-          <div>
-            <div style="font-weight:700;font-size:14px;">${escH(String(title))}</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:2px;">Row ${row.rowNumber} · ${row.cells?.filter(c=>c.value).length||0} fields populated</div>
-          </div>
-          <div style="background:var(--navy);color:#fff;border-radius:5px;padding:4px 14px;font-size:12px;font-weight:700;">Select →</div>
-        </div>`;
-      }).join("")}
-    </div>
-  </div>`;
+function newDocument(){
+  if(!confirm('Start a new blank BRD? Unsaved changes will be lost.')) return;
+  S = {
+    title:'', sponsor:'', docOwner:'', businessUnit:'', version:'1.0 DRAFT',
+    objective:'', problem:'', audience:'', userCount:'', roiValue:'', successMetrics:'',
+    moscow:'Must Have', targetDate:'', dependencies:'', vision:'', strategy:'',
+    inScope:['','',''], outScope:['',''],
+    stakeholders:[{name:'',type:'Sponsor',involvement:'Approver',commsNeeds:'Executive summary updates'}],
+    requirements:[{id:'BRD-001',title:'',priority:'High',description:'',businessValue:'',acceptanceCriteria:'',actors:'',stakeholder:'',businessContext:[]}],
+    nfrs:[{category:'Availability',requirement:'',priority:'High'},{category:'Security',requirement:'',priority:'High'},{category:'Performance',requirement:'',priority:'Medium'}],
+    constraints:['',''],
+    businessDocuments:[],
+    glossary:[{term:'SME',definition:'Subject Matter Expert'},{term:'UAT',definition:'User Acceptance Testing'},{term:'BRD',definition:'Business Requirements Document'}]
+  };
+  gotoStep(1);
 }
 
-window.selectSSRow_render = (rowId) => {
-  const row = state.ssSheet?.rows?.find(r=>r.id===rowId);
-  if (row) selectSSRow(row);
-};
-
-window.handleParse = () => {
-  if (!state.pasteRaw.trim()) { state.parseError = "Please paste at least a header row and one data row."; render(); return; }
-  const result = parsePastedData(state.pasteRaw);
-  if (!result || Object.keys(result).length === 0) {
-    state.parseError = "Could not match any columns. Make sure you've copied both the header row and data row from Smartsheet.";
-    render(); return;
-  }
-  state.canvas = { ...state.canvas, ...result };
-  state.parseError = "";
-  state.step = 2;
-  render();
-};
-
-function renderStep2() {
-  const matched = Object.keys(state.canvas).filter(k=>state.canvas[k]).length;
-  const groups = [
-    { title:"Identification", color:"var(--navy)", ids:["title","execSummary","reqType","initiativeName","domain","capability","sdTicket","adoCard","fixVersion","sprintName"] },
-    { title:"Dates & People", color:"var(--slate)", ids:["createdDate","targetDate","reqByDate","submitter","sponsor"] },
-    { title:"Scoring", color:"var(--amber)", ids:["moscow","impactScore","impactJust","confidence","storyDev","storyQA","severity"] },
-    { title:"Problem Statement", color:"var(--crimson)", ids:["problem","audience","userCount"] },
-    { title:"Strategic Alignment", color:"var(--mid)", ids:["strategy","objective"] },
-    { title:"Future State & Value", color:"var(--teal)", ids:["vision","successMetrics","roiValue","dependencies"] },
-  ];
-
-  return `<div class="card">
-    <div class="section-label">STEP 2 — CANVAS REVIEW</div>
-    ${matched > 0 ? `<div class="callout callout-success"><strong>${matched} fields auto-populated.</strong> Review and edit any values before continuing to the BA interview.</div>` :
-      `<div class="callout callout-warn">No fields were auto-populated. Enter values manually below, or go back to try the paste/API approach.</div>`}
-
-    ${groups.map(g=>`
-      <div style="margin-bottom:22px;">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-          <div style="background:${g.color};color:#fff;font-size:10px;font-weight:800;padding:4px 12px;border-radius:3px;letter-spacing:1px;">${g.title.toUpperCase()}</div>
-          <div style="flex:1;height:1px;background:var(--border);"></div>
-        </div>
-        <div class="grid-2">
-          ${g.ids.map(id=>{
-            const field = CANVAS_FIELDS.find(f=>f.id===id);
-            if (!id.match(/businessUnit|docOwner|version/) && !field) return "";
-            const lbl = field?.label||id;
-            const isMulti = field?.multi||false;
-            // Special: businessUnit, docOwner, version from iv
-            if (id==="businessUnit") return `<div class="field-group"><div class="field-label">Business Unit</div><input value="${escH(state.iv.businessUnit)}" oninput="state.iv={...state.iv,businessUnit:this.value};scheduleAutoSave();render()"></div>`;
-            if (id==="docOwner") return `<div class="field-group"><div class="field-label">Document Owner (BA/PM)</div><input value="${escH(state.iv.docOwner)}" oninput="state.iv={...state.iv,docOwner:this.value};scheduleAutoSave();render()"></div>`;
-            if (id==="version") return `<div class="field-group"><div class="field-label">Version</div><input value="${escH(state.iv.version)}" oninput="state.iv={...state.iv,version:this.value};scheduleAutoSave();render()"></div>`;
-            return `<div class="field-group ${isMulti?"" : ""}"><div class="field-label">${lbl}</div>${inp(id,"[ enter value ]",isMulti,isMulti?3:1)}</div>`;
-          }).join("")}
-        </div>
-      </div>
-    `).join("")}
-
-    <div style="display:flex;gap:10px;margin-top:8px;">
-      <button class="btn btn-primary" onclick="state.step=3;render()">Continue to BA Interview →</button>
-      <button class="btn btn-outline" onclick="state.step=1;render()">← Back</button>
-    </div>
-  </div>`;
+// ══════════════════════════════════════════════════════════════════════════════
+// HELPER MUTATIONS
+// ══════════════════════════════════════════════════════════════════════════════
+function addScope(type){
+  if(type==='in') S.inScope.push(''); else S.outScope.push('');
+  renderStep(2);
 }
-
-function renderStep3() {
-  const tabs = [
-    {id:"stakeholders",label:"👥 Stakeholders"},
-    {id:"scope",label:"📐 Scope"},
-    {id:"requirements",label:"📋 Requirements"},
-    {id:"useCases",label:"🔄 Use Cases"},
-    {id:"nfrs",label:"⚙️ Non-Functional"},
-    {id:"devHandover",label:"💻 Dev Handover"},
-    {id:"testCases",label:"🧪 Test Cases"},
-    {id:"uatCases",label:"✅ UAT Cases"},
-  ];
-
-  return `<div class="card">
-    <div class="section-label">STEP 3 — BA INTERVIEW</div>
-    <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">Complete these sections through stakeholder interviews. Progress auto-saves.</p>
-    <div class="tabs">${tabs.map(t=>`<button class="tab ${state.tab===t.id?"active":""}" onclick="state.tab='${t.id}';render()">${t.label}</button>`).join("")}</div>
-    ${renderActiveTab()}
-    <div style="display:flex;gap:10px;margin-top:20px;">
-      <button class="btn btn-primary" onclick="state.step=4;render()">Generate Document →</button>
-      <button class="btn btn-save" onclick="saveToStorage()">💾 Save Progress</button>
-      <button class="btn btn-outline" onclick="state.step=2;render()">← Back</button>
-    </div>
-  </div>`;
+function removeScope(type,i){
+  if(type==='in') S.inScope.splice(i,1); else S.outScope.splice(i,1);
+  renderStep(2);
 }
-
-function renderActiveTab() {
-  const { tab, iv } = state;
-
-  if (tab==="stakeholders") return `<div>
-    ${iv.stakeholders.map((s,i)=>`<div class="subcard" style="margin-bottom:12px;">
-      <div class="subcard-header" style="background:var(--light);border-bottom:1px solid var(--border);">
-        <span style="font-size:13px;font-weight:700;color:var(--navy);">Stakeholder ${i+1}</span>
-        ${i>0?`<button class="btn-danger-outline btn" onclick="removeArrItem('stakeholders',${i})">✕ Remove</button>`:""}
-      </div>
-      <div class="subcard-body">
-        <div class="grid-2">
-          <div class="field-group"><div class="field-label">Name / Role</div><input value="${escH(s.name)}" oninput="updateIvArr('stakeholders',${i},'name',this.value)" placeholder="Full name and title"></div>
-          <div class="field-group"><div class="field-label">Type</div>
-            <select onchange="updateIvArr('stakeholders',${i},'type',this.value)">
-              ${["Sponsor","Business Owner","End User","SME","IT","Compliance","External"].map(o=>`<option ${s.type===o?"selected":""}>${o}</option>`).join("")}
-            </select></div>
-          <div class="field-group"><div class="field-label">Involvement</div>
-            <select onchange="updateIvArr('stakeholders',${i},'involvement',this.value)">
-              ${["Approver","Consulted","Informed","Contributor","SME"].map(o=>`<option ${s.involvement===o?"selected":""}>${o}</option>`).join("")}
-            </select></div>
-          <div class="field-group"><div class="field-label">Communication Needs</div><input value="${escH(s.commsNeeds)}" oninput="updateIvArr('stakeholders',${i},'commsNeeds',this.value)" placeholder="e.g. Executive summary updates"></div>
-        </div>
-      </div>
-    </div>`).join("")}
-    <button class="btn btn-ghost" onclick="addArrItem('stakeholders',()=>({name:'',role:'',type:'Sponsor',involvement:'Approver',commsNeeds:''}))">+ Add Stakeholder</button>
-  </div>`;
-
-  if (tab==="scope") return `<div class="grid-2" style="align-items:start;">
-    ${[["In Scope","inScope","var(--teal)"],["Out of Scope","outScope","var(--crimson)"]].map(([lbl,key,clr])=>`
-      <div>
-        <div style="font-weight:700;font-size:13px;color:${clr};margin-bottom:10px;">${lbl}</div>
-        ${iv[key].map((item,i)=>`<div class="scope-row">
-          <input value="${escH(item)}" oninput="updateScope('${key}',${i},this.value)" placeholder="Enter item">
-          <button class="btn btn-danger-outline" onclick="state.iv={...state.iv,${key}:state.iv['${key}'].filter((_,j)=>j!==${i})};scheduleAutoSave();render()">✕</button>
-        </div>`).join("")}
-        <button class="btn btn-ghost" onclick="state.iv={...state.iv,${key}:[...state.iv['${key}'],'']};scheduleAutoSave();render()">+ Add item</button>
-      </div>`).join("")}
-  </div>`;
-
-  if (tab==="requirements") return `<div>
-    ${iv.requirements.map((r,i)=>`<div class="subcard" style="margin-bottom:14px;">
-      <div class="subcard-header" style="background:var(--navy);color:#fff;">
-        <span>Requirement ${r.id}</span>
-        ${i>0?`<button class="btn" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:11px;padding:3px 10px;" onclick="removeArrItem('requirements',${i})">✕ Remove</button>`:""}
-      </div>
-      <div class="subcard-body">
-        <div class="grid-3" style="margin-bottom:12px;">
-          <div class="field-group"><div class="field-label">Title</div><input value="${escH(r.title)}" oninput="updateIvArr('requirements',${i},'title',this.value)" placeholder="Short descriptive title"></div>
-          <div class="field-group"><div class="field-label">Priority</div><select onchange="updateIvArr('requirements',${i},'priority',this.value)">${["Critical","High","Medium","Low"].map(p=>`<option ${r.priority===p?"selected":""}>${p}</option>`).join("")}</select></div>
-          <div class="field-group"><div class="field-label">Type</div><select onchange="updateIvArr('requirements',${i},'type',this.value)">${["Functional","Non-Functional","Compliance","Business Rule"].map(t=>`<option ${r.type===t?"selected":""}>${t}</option>`).join("")}</select></div>
-        </div>
-        ${[["Description","description",true,3],["Primary Actors","actors",false,1],["Preconditions","preconditions",true,2],["Postconditions","postconditions",true,2],["Acceptance Criteria","ac",true,4]].map(([lbl,key,ml,rows])=>`
-          <div class="field-group"><div class="field-label">${lbl}</div>
-            ${ml?`<textarea rows="${rows}" style="width:100%;resize:vertical;font-family:inherit;font-size:13px;" oninput="updateIvArr('requirements',${i},'${key}',this.value)" placeholder="${lbl}">${escH(r[key]||"")}</textarea>`
-              :`<input value="${escH(r[key]||"")}" oninput="updateIvArr('requirements',${i},'${key}',this.value)" placeholder="${lbl}">`}
-          </div>`).join("")}
-      </div>
-    </div>`).join("")}
-    <button class="btn btn-ghost" onclick="addArrItem('requirements',(n)=>({id:'REQ-'+String(n).padStart(3,'0'),title:'',priority:'Critical',type:'Functional',description:'',actors:'',preconditions:'',postconditions:'',ac:''}))">+ Add Requirement</button>
-  </div>`;
-
-  if (tab==="useCases") return `<div>
-    ${iv.useCases.map((u,i)=>`<div class="subcard" style="margin-bottom:14px;">
-      <div class="subcard-header" style="background:var(--teal);color:#fff;">
-        <span>Use Case ${u.id}</span>
-        ${i>0?`<button class="btn" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:11px;padding:3px 10px;" onclick="removeArrItem('useCases',${i})">✕ Remove</button>`:""}
-      </div>
-      <div class="subcard-body">
-        <div class="grid-2" style="margin-bottom:10px;">
-          <div class="field-group"><div class="field-label">Title</div><input value="${escH(u.title)}" oninput="updateIvArr('useCases',${i},'title',this.value)" placeholder="Use case title"></div>
-          <div class="field-group"><div class="field-label">Primary Actor</div><input value="${escH(u.actor)}" oninput="updateIvArr('useCases',${i},'actor',this.value)" placeholder="e.g. Member, Admin, System"></div>
-        </div>
-        ${[["Trigger","trigger",false,1,"What initiates this use case?"],["Main Flow","mainFlow",true,5,"Step-by-step flow"],["Alternate Flows","altFlows",true,3,"Exception / alternate paths"],["Postconditions","post",true,2,"End state after completion"],["Linked Requirements","linkedReqs",false,1,"e.g. REQ-001, REQ-002"]].map(([lbl,key,ml,rows,ph])=>`
-          <div class="field-group"><div class="field-label">${lbl}</div>
-            ${ml?`<textarea rows="${rows}" style="width:100%;resize:vertical;font-family:inherit;font-size:13px;" oninput="updateIvArr('useCases',${i},'${key}',this.value)" placeholder="${ph}">${escH(u[key]||"")}</textarea>`
-              :`<input value="${escH(u[key]||"")}" oninput="updateIvArr('useCases',${i},'${key}',this.value)" placeholder="${ph}">`}
-          </div>`).join("")}
-      </div>
-    </div>`).join("")}
-    <button class="btn btn-ghost" onclick="addArrItem('useCases',(n)=>({id:'UC-'+String(n).padStart(3,'0'),title:'',actor:'',trigger:'',mainFlow:'',altFlows:'',post:'',linkedReqs:''}))">+ Add Use Case</button>
-  </div>`;
-
-  if (tab==="nfrs") return `<div>
-    ${iv.nfrs.map((n,i)=>`<div class="subcard" style="margin-bottom:10px;">
-      <div class="subcard-body" style="display:grid;grid-template-columns:1fr 1.5fr 2fr 0.8fr;gap:10px;align-items:end;">
-        <div class="field-group" style="margin:0"><div class="field-label">NFR ID</div><input value="${escH(n.id)}" oninput="updateIvArr('nfrs',${i},'id',this.value)"></div>
-        <div class="field-group" style="margin:0"><div class="field-label">Category</div>
-          <select onchange="updateIvArr('nfrs',${i},'category',this.value)">${["Performance","Security","Scalability","Availability","Usability","Compliance","Data Retention","Audit Logging"].map(c=>`<option ${n.category===c?"selected":""}>${c}</option>`).join("")}</select></div>
-        <div class="field-group" style="margin:0"><div class="field-label">Requirement</div><input value="${escH(n.requirement)}" oninput="updateIvArr('nfrs',${i},'requirement',this.value)" placeholder="Describe the requirement"></div>
-        <div style="display:flex;gap:6px;align-items:flex-end;">
-          <div class="field-group" style="margin:0;flex:1"><div class="field-label">Priority</div>
-            <select onchange="updateIvArr('nfrs',${i},'priority',this.value)">${["Critical","High","Medium","Low"].map(p=>`<option ${n.priority===p?"selected":""}>${p}</option>`).join("")}</select></div>
-          ${i>0?`<button class="btn btn-danger-outline" style="padding:8px 10px;" onclick="removeArrItem('nfrs',${i})">✕</button>`:""}
-        </div>
-      </div>
-    </div>`).join("")}
-    <button class="btn btn-ghost" onclick="addArrItem('nfrs',(n)=>({id:'NFR-'+String(n).padStart(3,'0'),category:'Performance',requirement:'',priority:'High'}))">+ Add NFR</button>
-  </div>`;
-
-  if (tab==="devHandover") {
-    const d = iv.devHandover;
-    return `<div>
-      <div class="callout callout-info">Complete this section so development can begin sprint planning without additional discovery calls.</div>
-      ${[
-        ["System Components Affected","systemComponents",true,3,"e.g. CRM, Portal, APIs, databases"],
-        ["Data Model / Schema Changes","dataModel",true,3,"New tables, columns, or structure changes"],
-        ["API Changes / New Endpoints","apiChanges",true,3,"Endpoints created, modified, or deprecated"],
-        ["Integration Points","integrations",true,2,"Third-party systems, middleware, feeds"],
-        ["Environment Requirements","envReqs",false,1,"Config variables, infrastructure changes"],
-        ["Deployment Notes","deployNotes",true,2,"Sequence, timing, or deployment steps"],
-        ["Rollback Plan","rollback",true,2,"How to revert if deployment fails"],
-      ].map(([lbl,key,ml,rows,ph])=>`
-        <div class="field-group"><div class="field-label">${lbl}</div>
-          ${ml?`<textarea rows="${rows}" style="width:100%;resize:vertical;font-family:inherit;font-size:13px;" oninput="updateIvSub('devHandover','${key}',this.value)" placeholder="${ph}">${escH(d[key]||"")}</textarea>`
-            :`<input value="${escH(d[key]||"")}" oninput="updateIvSub('devHandover','${key}',this.value)" placeholder="${ph}">`}
-        </div>`).join("")}
-    </div>`;
-  }
-
-  if (tab==="testCases") return `<div>
-    <div class="callout callout-warn">Test cases are for the QA team — write from a technical perspective, one per functional requirement.</div>
-    ${iv.testCases.map((t,i)=>`<div class="subcard" style="margin-bottom:12px;">
-      <div class="subcard-header" style="background:var(--amber);color:#fff;">
-        <span>${t.id}</span>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <select style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:4px;padding:2px 6px;font-size:12px;" onchange="updateIvArr('testCases',${i},'priority',this.value)">
-            ${["Critical","High","Medium","Low"].map(p=>`<option ${t.priority===p?"selected":""}>${p}</option>`).join("")}
-          </select>
-          ${i>0?`<button class="btn" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:11px;padding:3px 10px;" onclick="removeArrItem('testCases',${i})">✕</button>`:""}
-        </div>
-      </div>
-      <div class="subcard-body">
-        ${[["Test Scenario","scenario",false,1,"e.g. User submits enrollment during open window"],["Test Steps (numbered)","steps",true,4,"1. Navigate to...\n2. Select...\n3. Confirm..."],["Expected Result","expected",true,3,"System should..."]].map(([lbl,key,ml,rows,ph])=>`
-          <div class="field-group"><div class="field-label">${lbl}</div>
-            ${ml?`<textarea rows="${rows}" style="width:100%;resize:vertical;font-family:inherit;font-size:13px;" oninput="updateIvArr('testCases',${i},'${key}',this.value)" placeholder="${ph}">${escH(t[key]||"")}</textarea>`
-              :`<input value="${escH(t[key]||"")}" oninput="updateIvArr('testCases',${i},'${key}',this.value)" placeholder="${ph}">`}
-          </div>`).join("")}
-      </div>
-    </div>`).join("")}
-    <button class="btn btn-ghost" onclick="addArrItem('testCases',(n)=>({id:'TC-'+String(n).padStart(3,'0'),scenario:'',steps:'',expected:'',priority:'High'}))">+ Add Test Case</button>
-  </div>`;
-
-  if (tab==="uatCases") return `<div>
-    <div class="callout callout-success">UAT cases are for <strong>business users</strong> — plain language, Given/When/Then format. The business team uses these to confirm the solution meets their needs.</div>
-    ${iv.uatCases.map((u,i)=>`<div class="subcard" style="margin-bottom:12px;">
-      <div class="subcard-header" style="background:var(--teal);color:#fff;">
-        <span>${u.id}</span>
-        ${i>0?`<button class="btn" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:11px;padding:3px 10px;" onclick="removeArrItem('uatCases',${i})">✕ Remove</button>`:""}
-      </div>
-      <div class="subcard-body">
-        ${[["Business Scenario","scenario",false,1,"Describe the business scenario being tested"],["User Story","userStory",false,1,"As a [role], I want to [action] so that [benefit]"],["Given (starting state)","given",true,2,"Given that the user is..."],["When (action taken)","when",true,2,"When the user..."],["Then (expected outcome)","then",true,2,"Then the system should..."],["Acceptance Criteria","acceptance",true,2,"The business will accept this if..."]].map(([lbl,key,ml,rows,ph])=>`
-          <div class="field-group"><div class="field-label">${lbl}</div>
-            ${ml?`<textarea rows="${rows}" style="width:100%;resize:vertical;font-family:inherit;font-size:13px;" oninput="updateIvArr('uatCases',${i},'${key}',this.value)" placeholder="${ph}">${escH(u[key]||"")}</textarea>`
-              :`<input value="${escH(u[key]||"")}" oninput="updateIvArr('uatCases',${i},'${key}',this.value)" placeholder="${ph}">`}
-          </div>`).join("")}
-      </div>
-    </div>`).join("")}
-    <button class="btn btn-ghost" onclick="addArrItem('uatCases',(n)=>({id:'UAT-'+String(n).padStart(3,'0'),scenario:'',userStory:'',given:'',when:'',then:'',acceptance:''}))">+ Add UAT Case</button>
-  </div>`;
-
-  return "";
+function addStakeholder(){
+  S.stakeholders.push({name:'',type:'SME',involvement:'Contributor',commsNeeds:''});
+  renderStep(2);
 }
-
-function renderStep4() {
-  const { canvas, iv } = state;
-  const canvasCount = Object.keys(canvas).filter(k=>canvas[k]).length;
-  const uploadOk = state.uploadMsg.startsWith("ok:");
-  const uploadErr = state.uploadMsg.startsWith("err:");
-
-  return `<div>
-    <div class="card">
-      <div class="section-label">GENERATE & EXPORT</div>
-      <div class="callout callout-success">
-        <strong>Ready to generate.</strong> Your document includes ${iv.requirements.length} requirement(s), ${iv.useCases.length} use case(s), ${iv.testCases.length} test case(s), and ${iv.uatCases.length} UAT case(s).
-      </div>
-      <div class="stats-grid">
-        ${[["Canvas Fields",canvasCount,"var(--accent)"],["Requirements",iv.requirements.length,"var(--navy)"],["Test Cases",iv.testCases.length,"var(--amber)"],["UAT Cases",iv.uatCases.length,"var(--teal)"]].map(([l,v,c])=>`
-          <div class="stat-card" style="border-top-color:${c};">
-            <div class="stat-num" style="color:${c};">${v}</div>
-            <div class="stat-lbl">${l}</div>
-          </div>`).join("")}
-      </div>
-      <button class="btn btn-primary" onclick="downloadDoc()" style="font-size:15px;padding:12px 32px;">
-        ⬇ Download Requirements Document (.doc)
-      </button>
-      <p style="font-size:12px;color:var(--muted);margin-top:8px;">Opens in Microsoft Word. All 14 sections included. Calibri 11pt · professional formatting.</p>
-    </div>
-
-    <div class="card">
-      <div class="section-label">UPLOAD TO SHAREPOINT</div>
-      <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">Upload directly to a SharePoint document library using a Microsoft Graph API token.</p>
-      <div class="callout callout-info">
-        <strong>To get a Graph token:</strong> Visit developer.microsoft.com/graph/graph-explorer, sign in with your Microsoft account, and copy the access token from the Access Token tab.
-      </div>
-      <div class="grid-2">
-        <div class="field-group"><div class="field-label">Microsoft Graph Access Token</div>
-          <input type="password" value="${escH(state.spToken)}" oninput="state.spToken=this.value" placeholder="eyJ0eXAi..."></div>
-        <div class="field-group"><div class="field-label">SharePoint Library URL</div>
-          <input value="${escH(state.spUrl)}" oninput="state.spUrl=this.value" placeholder="https://org.sharepoint.com/sites/Site/Shared Documents"></div>
-      </div>
-      <button class="btn btn-accent" onclick="uploadSP()" ${(!state.spToken||!state.spUrl||state.uploading)?"disabled":""} style="margin-top:4px;">
-        ${state.uploading?"Uploading…":"⬆ Upload to SharePoint"}
-      </button>
-      ${state.uploadMsg ? `<div class="upload-msg ${uploadOk?"upload-ok":"upload-err"}">${state.uploadMsg.slice(4)}</div>` : ""}
-    </div>
-
-    <div style="display:flex;gap:10px;">
-      <button class="btn btn-outline" onclick="state.step=3;render()">← Back to Interview</button>
-      <button class="btn" style="background:transparent;border:1.5px solid var(--crimson);color:var(--crimson);" 
-        onclick="if(confirm('Start a new document? Current progress will be cleared.')){window.storage.delete('req-tool-v2');state={...state,step:1,canvas:{},iv:initInterview(),pasteRaw:'',inputMode:'paste'};render();}">
-        Start New Document
-      </button>
-    </div>
-  </div>`;
+function removeStakeholder(i){ S.stakeholders.splice(i,1); renderStep(2); }
+function addRequirement(){
+  const n = S.requirements.length + 1;
+  S.requirements.push({id:`BRD-00${n}`,title:'',priority:'High',description:'',businessValue:'',acceptanceCriteria:'',actors:'',stakeholder:'',businessContext:[]});
+  renderStep(3);
 }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function refresh(){ refreshPreview(); }
 
-function render() {
-  const { step, saved } = state;
-  document.getElementById("app").innerHTML = `
-    <div class="shell">
-      <div class="topbar">
-        <div class="topbar-left">
-          <span class="topbar-brand">Requirements Document Tool</span>
-          <span class="topbar-sub">Smartsheet Canvas → BRD</span>
-        </div>
-        <div class="topbar-right">
-          <span class="save-badge ${saved?"show":""}">✓ Saved</span>
-        </div>
-      </div>
-      ${renderProgress()}
-      <div class="main">
-        ${step===1 ? renderStep1() : step===2 ? renderStep2() : step===3 ? renderStep3() : renderStep4()}
-      </div>
-    </div>`;
-}
+// ══════════════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════════════
+window.addEventListener('load', ()=>{
+  loadState();
+  gotoStep(1);
 
-// ── INIT ──
-(async () => {
-  await loadFromStorage();
-  render();
-})();
+  // Add Save button to topbar dynamically
+  const tbr = document.querySelector('.tb-right');
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'btn btn-gray btn-sm';
+  saveBtn.textContent = '💾 Save BRD';
+  saveBtn.onclick = saveCurrentBRD;
+  tbr.insertBefore(saveBtn, tbr.children[1]);
+});
 </script>
 </body>
 </html>
