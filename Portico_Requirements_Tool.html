@@ -441,148 +441,166 @@ const steps = {
   }
 };
 
-// ─── SMARTSHEET EXTRACTION ────────────────────────────────────────────────────
-// Synonym map: each field has multiple aliases so renamed/reordered columns still match
-const FIELD_SYNONYMS = {
-  title:          ['opportunity title','title','opportunity name','project name','opp title','name'],
-  sponsor:        ['sponsor','sponsors','sponsored by','who are the sponsors'],
-  docOwner:       ['owner','document owner','analyst','ba','pm','assigned to','created by'],
-  businessUnit:   ['business unit','unit','department','team','org'],
-  targetDate:     ['target date','deadline','due date','date needed','need by','when','go live','go-live'],
-  moscow:         ['moscow','must have','priority','priority score','moscow score'],
-  objective:      ['business objective','objective','goal','what objective','aligns to','alignment','business obj'],
-  problem:        ['problem statement','problem','what problem','problem to solve','issue','challenge','description','outlines'],
-  audience:       ['who are we solving','audience','segment','who is affected','solving for','who we','members affected'],
-  userCount:      ['how many','user count','users affected','groups affected','number of users','number of','affected users'],
-  roiValue:       ['targeted value','roi','cost savings','return on investment','value','financial impact','cost neutral'],
-  successMetrics: ['success metrics','how will','measured','kpi','metrics','measure impact','success measure'],
-  vision:         ['future state','vision','future state vision','desired end state','to be state'],
-  dependencies:   ['dependencies','dependency','depends on','blockers','known dependencies'],
-  strategy:       ['existing strategy','strategy','connected to','strategic connection','initiative'],
-  confidence:     ['confidence','confidence %','certainty'],
-  impactScore:    ['impact score','impact','score','impact criteria'],
-  severity:       ['severity','impact if not solved','impact if','consequence','severity impact'],
-};
+// ─── SMARTSHEET / CANVAS EXTRACTION (AI-powered) ─────────────────────────────
+async function extractSmartsheet(){
+  const raw = document.getElementById('ss-paste').value.trim();
+  if(!raw){ alert('Paste your Smartsheet / Opportunity Canvas data first'); return; }
 
-function norm(s){ return (s||'').toLowerCase().replace(/[^a-z0-9\s]/g,'').trim(); }
+  const btn = document.querySelector('[onclick="extractSmartsheet()"]');
+  const origText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block"></span> Reading your data…</span>';
 
-function scoreMatch(colHeader, aliases){
-  const nh = norm(colHeader);
-  for(const alias of aliases){
-    const na = norm(alias);
-    if(nh === na) return 100;                          // exact match
-    if(nh.includes(na) || na.includes(nh)) return 80; // substring match
-    // word overlap
-    const hw = new Set(nh.split(/\s+/));
-    const aw = na.split(/\s+/);
-    const overlap = aw.filter(w => w.length > 2 && hw.has(w)).length;
-    if(overlap > 0) return 40 + overlap * 10;
+  const apiKey = localStorage.getItem('portico-api-key');
+
+  // ── If API key available: use Claude to extract intelligently ──
+  if(apiKey){
+    try{
+      await extractWithAI(raw, apiKey);
+      btn.disabled = false; btn.innerHTML = origText;
+      return;
+    } catch(e){
+      // Fall through to local extraction if AI fails
+      console.warn('AI extraction failed, falling back to local:', e.message);
+    }
   }
-  return 0;
+
+  // ── Local fallback: synonym-based header matching ──
+  extractLocally(raw);
+  btn.disabled = false; btn.innerHTML = origText;
 }
 
-function buildColMap(headers){
-  const map = {}; // field → column index
-  headers.forEach((h, colIdx) => {
-    let bestField = null, bestScore = 30; // minimum threshold
-    for(const [field, aliases] of Object.entries(FIELD_SYNONYMS)){
-      const score = scoreMatch(h, aliases);
-      if(score > bestScore){ bestScore = score; bestField = field; }
-    }
-    if(bestField) map[bestField] = colIdx;
+async function extractWithAI(raw, apiKey){
+  const prompt = `You are a data extraction assistant. I will paste raw data copied from a Smartsheet Opportunity Canvas spreadsheet. It may be tab-separated rows, key-value pairs, or a mix. Your job is to identify and extract the following BRD fields from it.
+
+Return ONLY a valid JSON object with these exact keys (omit keys where no value is found):
+{
+  "title": "project/opportunity title",
+  "sponsor": "sponsor name(s)",
+  "docOwner": "document owner or BA/PM name",
+  "businessUnit": "business unit or team",
+  "targetDate": "target date or deadline",
+  "moscow": "MoSCoW priority (Must Have / Should Have / Could Have / Won't Have)",
+  "objective": "business objective",
+  "problem": "problem statement",
+  "audience": "who are we solving for / affected users",
+  "userCount": "number of users or groups affected",
+  "roiValue": "targeted value or ROI",
+  "successMetrics": "success metrics or KPIs",
+  "vision": "future state vision",
+  "dependencies": "known dependencies",
+  "strategy": "existing strategy connection",
+  "severity": "severity or impact if not solved",
+  "confidence": "confidence percentage",
+  "impactScore": "impact score"
+}
+
+Rules:
+- Match fields by meaning, not column position — column order may vary
+- If a cell looks like a name (e.g. "Mike Imgrund") it is likely a person's name (owner/sponsor), not a field value like business unit
+- Ignore row numbers, timestamps, system metadata, or anything that is clearly not a business field value
+- Return ONLY the JSON object, no explanation, no markdown
+
+Raw data:
+${raw}`;
+
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body: JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:1000,
+      messages:[{ role:'user', content: prompt }]
+    })
   });
-  return map;
+
+  if(!resp.ok) throw new Error(`API ${resp.status}`);
+  const data = await resp.json();
+  const text = data.content?.find(b=>b.type==='text')?.text || '';
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if(!jsonMatch) throw new Error('No JSON returned');
+
+  const extracted = JSON.parse(jsonMatch[0]);
+  let count = 0;
+  const brdFields = ['title','sponsor','docOwner','businessUnit','targetDate','moscow',
+    'objective','problem','audience','userCount','roiValue','successMetrics',
+    'vision','dependencies','strategy','severity','confidence','impactScore'];
+
+  brdFields.forEach(field => {
+    if(extracted[field] && String(extracted[field]).trim()){
+      D[field] = String(extracted[field]).trim();
+      count++;
+    }
+  });
+
+  render(); persist();
+  alert(`✓ AI extracted ${count} fields from your data.\n\nReview the form — edit anything that needs adjusting.`);
 }
 
-function extractSmartsheet(){
-  const raw = document.getElementById('ss-paste').value;
-  if(!raw.trim()){ alert('Paste your Smartsheet data first'); return; }
+function extractLocally(raw){
+  // Local fallback: works when no API key is set
+  // Handles key\tvalue or key:value pairs on separate lines
+  const lines = raw.split('\n').map(l=>l.trimEnd()).filter(l=>l.trim());
+  const SYNONYMS = {
+    title:['opportunity title','title','project name','opportunity name'],
+    sponsor:['sponsor','sponsors'],
+    docOwner:['owner','ba','pm','analyst','document owner','assigned to'],
+    businessUnit:['business unit','unit','department'],
+    targetDate:['target date','deadline','due date','go live','go-live'],
+    moscow:['moscow','priority','must have'],
+    objective:['business objective','objective','goal','alignment'],
+    problem:['problem statement','problem','problem to solve'],
+    audience:['who are we solving','audience','solving for','who is affected'],
+    userCount:['how many','user count','number of users','groups affected'],
+    roiValue:['targeted value','roi','cost savings','value'],
+    successMetrics:['success metrics','kpi','metrics','how will'],
+    vision:['future state','vision','future state vision'],
+    dependencies:['dependencies','dependency','depends on'],
+    strategy:['existing strategy','strategy'],
+    severity:['severity','impact if not solved'],
+    confidence:['confidence'],
+    impactScore:['impact score'],
+  };
+  const norm = s => (s||'').toLowerCase().replace(/[^a-z0-9\s]/g,'').trim();
 
-  const lines = raw.split('\n').map(l => l.trimEnd()).filter(l => l.trim());
   let matched = 0;
+  lines.forEach(line => {
+    // Try tab then colon as delimiter
+    const tIdx = line.indexOf('\t'), cIdx = line.indexOf(':');
+    let key='', val='';
+    if(tIdx>0){ key=line.substring(0,tIdx).trim(); val=line.substring(tIdx+1).trim(); }
+    else if(cIdx>0){ key=line.substring(0,cIdx).trim(); val=line.substring(cIdx+1).trim(); }
+    if(!key||!val||val.length<2) return;
 
-  // ── FORMAT 1: Two rows (headers row + values row, tab-separated) ──────────
-  // This is what you get when you copy a header row then a data row from Smartsheet/Excel
-  if(lines.length >= 2){
-    const hdrs = lines[0].split('\t');
-    const vals = lines[1].split('\t');
-    if(hdrs.length >= 2){
-      const colMap = buildColMap(hdrs);
-      for(const [field, colIdx] of Object.entries(colMap)){
-        const val = vals[colIdx]?.trim();
-        if(val && val !== '—' && val !== '-' && val.toLowerCase() !== 'null'){
-          D[field] = val;
-          matched++;
+    const nk = norm(key);
+    let bestField=null, bestScore=25;
+    for(const [field,aliases] of Object.entries(SYNONYMS)){
+      for(const alias of aliases){
+        const na=norm(alias);
+        let score=0;
+        if(nk===na) score=100;
+        else if(nk.includes(na)||na.includes(nk)) score=80;
+        else {
+          const hw=new Set(nk.split(' ')), aw=na.split(' ');
+          score = aw.filter(w=>w.length>2&&hw.has(w)).length * 30;
         }
+        if(score>bestScore){ bestScore=score; bestField=field; }
       }
     }
-  }
+    if(bestField){ D[bestField]=val; matched++; }
+  });
 
-  // ── FORMAT 2: Single row only (values, no headers) — use positional PASTE_MAP ──
-  // This is what you get when you copy just a data row from Smartsheet
-  if(matched === 0 && lines.length === 1){
-    const cols = lines[0].split('\t');
-    const PASTE_MAP = {
-      0:'title', 1:'problem', 2:'targetDate', 3:'moscow',
-      4:'confidence', 5:'impactScore', 6:'roiValue', 7:'severity',
-      8:'strategy', 9:'objective', 10:'audience', 11:'userCount',
-      12:'vision', 13:'successMetrics', 14:'dependencies', 15:'sponsor'
-    };
-    for(const [idx, field] of Object.entries(PASTE_MAP)){
-      const val = cols[parseInt(idx)]?.trim();
-      if(val && val !== '—' && val !== '-') { D[field] = val; matched++; }
-    }
-  }
-
-  // ── FORMAT 3: Key: Value pairs (one per line, e.g. from a form export) ────
-  if(matched === 0){
-    lines.forEach(line => {
-      const tabIdx = line.indexOf('\t');
-      const colonIdx = line.indexOf(':');
-      let key = '', val = '';
-      if(tabIdx > 0 && (colonIdx < 0 || tabIdx < colonIdx)){
-        key = line.substring(0, tabIdx).trim();
-        val = line.substring(tabIdx + 1).trim();
-      } else if(colonIdx > 0){
-        key = line.substring(0, colonIdx).trim();
-        val = line.substring(colonIdx + 1).trim();
-      }
-      if(!key || !val) return;
-      let bestField = null, bestScore = 30;
-      for(const [field, aliases] of Object.entries(FIELD_SYNONYMS)){
-        const score = scoreMatch(key, aliases);
-        if(score > bestScore){ bestScore = score; bestField = field; }
-      }
-      if(bestField){ D[bestField] = val; matched++; }
-    });
-  }
-
-  // ── FORMAT 4: Multi-row table (all rows are data, first row might be header) ──
-  // e.g. copying a full Smartsheet table view
-  if(matched === 0 && lines.length > 2){
-    const hdrs = lines[0].split('\t');
-    const colMap = buildColMap(hdrs);
-    // Try last row as the data row
-    const vals = lines[lines.length - 1].split('\t');
-    for(const [field, colIdx] of Object.entries(colMap)){
-      const val = vals[colIdx]?.trim();
-      if(val && val !== '—' && val !== '-'){ D[field] = val; matched++; }
-    }
-  }
-
-  if(matched === 0){
-    alert('⚠ No fields could be matched.\n\nTips:\n• Copy the header row AND the data row from Smartsheet (select both rows, Ctrl+C)\n• Or copy a single data row\n• Make sure it\'s tab-separated (standard Smartsheet/Excel copy)');
+  if(matched===0){
+    alert('⚠ Could not extract fields.\n\nFor best results:\n1. Set your API key (🔑 button top-right) — AI will read any format\n2. Or paste as "Label: Value" lines, one per row\n\nExample:\nOpportunity Title: Florida Narrow Network\nSponsor: psterling\nProblem: Current FL plan uses broad network...');
     return;
   }
-
-  render();
-  persist();
-
-  // Show what was extracted
-  const extracted = Object.entries(FIELD_SYNONYMS)
-    .filter(([f]) => D[f] && D[f].trim())
-    .map(([f]) => f);
-  alert(`✓ Extracted ${matched} fields: ${extracted.join(', ')}.\n\nReview the form and edit anything that needs adjusting.`);
+  render(); persist();
+  alert(`✓ Extracted ${matched} fields locally.\n\nTip: Set your API key for more accurate extraction from any paste format.`);
 }
 
 // ─── AI DOCUMENT PARSING ─────────────────────────────────────────────────────
