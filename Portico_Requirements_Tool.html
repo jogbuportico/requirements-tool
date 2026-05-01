@@ -111,9 +111,40 @@ body{font-family:Calibri,'Segoe UI',sans-serif;font-size:14px;color:var(--dgray)
 .tb-save-ind.show{opacity:1}
 .doc-item{border:1px solid var(--mgray);border-radius:5px;padding:8px 10px;margin-bottom:6px;background:var(--lgray);display:flex;gap:8px;align-items:flex-start}
 .doc-preview{font-size:10px;color:#999;margin-top:3px;white-space:pre-line;max-height:36px;overflow:hidden}
+
+/* API KEY MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;display:flex;align-items:center;justify-content:center}
+.modal-overlay.hidden{display:none}
+.modal{background:#fff;border-radius:10px;padding:28px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,.3)}
+.modal h2{color:var(--navy);font-size:18px;margin-bottom:6px}
+.modal p{font-size:12px;color:#666;margin-bottom:16px;line-height:1.6}
+.modal .fg{margin-bottom:14px}
+.modal input{font-family:monospace;font-size:12px;letter-spacing:.5px}
+.api-key-indicator{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 10px;border-radius:12px;cursor:pointer;border:none;font-family:inherit;font-weight:700}
+.api-key-indicator.set{background:rgba(162,173,0,.2);color:var(--green)}
+.api-key-indicator.unset{background:rgba(197,0,62,.15);color:var(--red)}
 </style>
 </head>
 <body>
+
+<!-- API KEY MODAL -->
+<div class="modal-overlay hidden" id="api-modal">
+  <div class="modal">
+    <h2>🔑 Anthropic API Key</h2>
+    <p>The AI document parsing feature uses the Claude API. Your key is stored only in your browser's localStorage — it is never sent anywhere except directly to <strong>api.anthropic.com</strong>.</p>
+    <p style="background:#fff8e7;padding:8px;border-radius:4px;border-left:3px solid var(--gold)">Get your key at <strong>console.anthropic.com</strong> → API Keys. Starts with <code>sk-ant-</code></p>
+    <div class="fg">
+      <label style="font-size:11px;font-weight:700;color:var(--gray);display:block;margin-bottom:4px">API Key</label>
+      <input type="password" id="api-key-input" placeholder="sk-ant-api03-..." style="width:100%;border:1.5px solid var(--mgray);border-radius:5px;padding:8px 10px;font-family:monospace;font-size:12px;outline:none">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-navy" style="flex:2" onclick="saveApiKey()">Save Key</button>
+      <button class="btn btn-outline" style="flex:1" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-outline" style="flex:1;color:var(--red);border-color:var(--red)" onclick="clearApiKey()">Clear</button>
+    </div>
+    <p style="margin-top:12px;font-size:10px;color:#bbb">Your key is stored in localStorage only and used solely for AI document parsing. All other features work without a key.</p>
+  </div>
+</div>
 
 <!-- TOP BAR -->
 <div class="topbar">
@@ -123,6 +154,7 @@ body{font-family:Calibri,'Segoe UI',sans-serif;font-size:14px;color:var(--dgray)
   </div>
   <div class="tb-right">
     <span class="tb-save-ind" id="save-ind">✓ Saved</span>
+    <button class="api-key-indicator unset" id="api-key-btn" onclick="openModal()">🔑 Set API Key</button>
     <button class="btn btn-outline btn-sm" onclick="newBRD()">+ New</button>
     <button class="btn btn-outline btn-sm" onclick="saveBRD()">💾 Save</button>
     <button class="btn btn-gold btn-sm" onclick="downloadBRD()">⬇ Download BRD</button>
@@ -535,9 +567,17 @@ Rules:
 
 Document: ${rawContent}`;
 
+  const apiKey = localStorage.getItem('portico-api-key');
+  if(!apiKey){ openModal(); throw new Error('API key required — enter your Anthropic API key first'); }
+
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 2000,
@@ -545,7 +585,10 @@ Document: ${rawContent}`;
     })
   });
 
-  if(!resp.ok) throw new Error(`API ${resp.status}`);
+  if(!resp.ok){
+    const errText = await resp.text().catch(()=>'');
+    throw new Error(`API ${resp.status}${errText ? ': ' + errText.substring(0,120) : ''}`);
+  }
   const data = await resp.json();
   const text = data.content?.find(b=>b.type==='text')?.text || '';
 
@@ -997,8 +1040,37 @@ function showPane(showId,hideId,btn){
 const x = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const rp = () => { persist(); renderPreview(); };
 
+// ─── API KEY MANAGEMENT ───────────────────────────────────────────────────────
+function openModal(){
+  const stored = localStorage.getItem('portico-api-key') || '';
+  document.getElementById('api-key-input').value = stored;
+  document.getElementById('api-modal').classList.remove('hidden');
+}
+function closeModal(){ document.getElementById('api-modal').classList.add('hidden'); }
+function saveApiKey(){
+  const key = document.getElementById('api-key-input').value.trim();
+  if(!key){ alert('Please enter your API key'); return; }
+  if(!key.startsWith('sk-ant-')){ if(!confirm('This doesn\'t look like an Anthropic API key (should start with sk-ant-). Save anyway?')) return; }
+  localStorage.setItem('portico-api-key', key);
+  updateKeyIndicator();
+  closeModal();
+  alert('✓ API key saved. You can now use AI document parsing.');
+}
+function clearApiKey(){
+  if(!confirm('Remove stored API key?')) return;
+  localStorage.removeItem('portico-api-key');
+  updateKeyIndicator();
+  closeModal();
+}
+function updateKeyIndicator(){
+  const btn = document.getElementById('api-key-btn');
+  const hasKey = !!localStorage.getItem('portico-api-key');
+  btn.textContent = hasKey ? '🔑 API Key ✓' : '🔑 Set API Key';
+  btn.className = 'api-key-indicator ' + (hasKey ? 'set' : 'unset');
+}
+
 // ─── INIT ────────────────────────────────────────────────────────────────────
-window.addEventListener('load', ()=>{ load(); goto(1); });
+window.addEventListener('load', ()=>{ load(); goto(1); updateKeyIndicator(); });
 </script>
 </body>
 </html>
