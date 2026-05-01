@@ -3,906 +3,1002 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portico | BRD Tool v1.8</title>
+<title>Portico | BRD Tool v1.9</title>
 <style>
 :root{
   --gold:#F1C400;--gray:#54585A;--blue:#009CDE;--orange:#D86018;
   --green:#A2AD00;--red:#C5003E;--lgray:#F4F4F4;--mgray:#D0D7DE;
-  --dgray:#3A3A3A;--navy:#2E3A4E;
+  --dgray:#3A3A3A;--navy:#2E3A4E;--ltblue:#D6E4F0;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Calibri,'Segoe UI',sans-serif;font-size:14px;color:var(--dgray);background:#EEF1F4;height:100vh;display:flex;flex-direction:column;overflow:hidden}
 
-/* ── TOP BAR ── */
-.topbar{background:var(--gray);padding:0 20px;height:48px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:100;box-shadow:0 2px 6px rgba(0,0,0,.25)}
-.tb-left{display:flex;align-items:center;gap:14px}
+.topbar{background:var(--navy);padding:0 20px;height:50px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 .tb-logo{color:var(--gold);font-size:18px;font-weight:800;letter-spacing:3px}
-.tb-title{color:#ccc;font-size:12px}
-.tb-right{display:flex;align-items:center;gap:10px}
-.tb-badge{font-size:11px;padding:3px 10px;border-radius:12px;font-weight:700}
-.tb-saved{background:rgba(162,173,0,.25);color:var(--green);opacity:0;transition:opacity .4s}
-.tb-saved.show{opacity:1}
+.tb-sub{color:#8899aa;font-size:12px;margin-left:12px}
+.tb-right{display:flex;align-items:center;gap:8px}
 
-/* ── STEP BAR ── */
-.stepbar{background:var(--lgray);border-bottom:1px solid var(--mgray);padding:0 20px;height:44px;display:flex;align-items:center;gap:4px;flex-shrink:0}
-.step-item{display:flex;align-items:center;gap:6px;cursor:pointer;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;color:#999;transition:all .15s}
-.step-item.active{background:var(--blue);color:#fff}
-.step-item.done{color:var(--green)}
-.step-item .dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:#ddd;color:#999;flex-shrink:0}
-.step-item.active .dot{background:rgba(255,255,255,.3);color:#fff}
-.step-item.done .dot{background:var(--green);color:#fff}
-.step-div{width:20px;height:1px;background:var(--mgray)}
+.stepbar{background:var(--lgray);border-bottom:2px solid var(--mgray);padding:0 16px;height:42px;display:flex;align-items:center;gap:2px;flex-shrink:0}
+.step{display:flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;color:#aaa;cursor:pointer;transition:all .15s;user-select:none}
+.step.active{background:var(--blue);color:#fff}
+.step.done{color:var(--green)}
+.step-num{width:18px;height:18px;border-radius:50%;background:#ddd;color:#999;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.step.active .step-num{background:rgba(255,255,255,.25);color:#fff}
+.step.done .step-num{background:var(--green);color:#fff}
+.step-sep{width:16px;height:1px;background:var(--mgray)}
 
-/* ── MAIN LAYOUT ── */
 .workspace{display:flex;flex:1;overflow:hidden}
-.left-panel{width:420px;flex-shrink:0;overflow-y:auto;background:#fff;border-right:1px solid var(--mgray);display:flex;flex-direction:column}
-.right-panel{flex:1;overflow-y:auto;background:var(--lgray);padding:20px}
 
-/* ── LEFT PANEL: FORM ── */
-.form-section{padding:16px 16px 0;border-bottom:1px solid var(--lgray)}
-.form-section:last-child{border-bottom:none;padding-bottom:16px}
-.section-label{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#999;margin-bottom:10px}
-.field-group{margin-bottom:12px}
-.field-group label{display:block;font-size:11px;font-weight:700;color:var(--gray);margin-bottom:4px}
-.field-group input,.field-group textarea,.field-group select{
-  width:100%;border:1.5px solid var(--mgray);border-radius:5px;
-  padding:7px 9px;font-family:inherit;font-size:12px;color:var(--dgray);
-  background:#fff;outline:none;transition:border-color .15s;resize:vertical
-}
-.field-group input:focus,.field-group textarea:focus,.field-group select:focus{border-color:var(--blue);background:#f8fcff}
-.field-group textarea{min-height:60px;line-height:1.4}
-.scope-list{display:flex;flex-direction:column;gap:5px}
-.scope-row{display:flex;gap:5px}
-.scope-row input{flex:1}
-.scope-row button{padding:0 8px;border:1px solid var(--mgray);border-radius:4px;background:none;cursor:pointer;color:#999;font-size:14px}
-.scope-row button:hover{color:var(--red);border-color:var(--red)}
-.add-item-btn{margin-top:6px;background:none;border:1.5px dashed var(--blue);border-radius:5px;padding:5px;width:100%;color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
-.add-item-btn:hover{background:#f0f9ff}
+/* LEFT */
+.left{width:400px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--mgray);background:#fff}
+.left-scroll{flex:1;overflow-y:auto}
+.fsec{padding:14px 16px;border-bottom:1px solid var(--lgray)}
+.fsec:last-child{border-bottom:none}
+.fsec-label{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#bbb;margin-bottom:10px}
+.fg{margin-bottom:10px}
+.fg label{display:block;font-size:11px;font-weight:700;color:var(--gray);margin-bottom:3px}
+.fg input,.fg textarea,.fg select{width:100%;border:1.5px solid var(--mgray);border-radius:5px;padding:7px 9px;font-family:inherit;font-size:12px;color:var(--dgray);background:#fff;outline:none;transition:border .15s;resize:vertical}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:var(--blue);background:#f8fcff}
+.fg textarea{min-height:56px;line-height:1.45}
+.list-row{display:flex;gap:5px;margin-bottom:5px}
+.list-row input{flex:1}
+.list-row button{border:1px solid #ddd;border-radius:4px;background:none;cursor:pointer;color:#bbb;padding:0 8px;font-size:14px;flex-shrink:0}
+.list-row button:hover{color:var(--red);border-color:var(--red)}
+.add-btn{width:100%;background:none;border:1.5px dashed var(--blue);border-radius:5px;padding:6px;color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;margin-top:4px;font-family:inherit}
+.add-btn:hover{background:#f0f8ff}
+.left-actions{padding:12px 16px;border-top:1px solid var(--mgray);display:flex;flex-direction:column;gap:6px;flex-shrink:0;background:#fff}
 
-/* ── BOTTOM ACTIONS ── */
-.panel-actions{padding:12px 16px;border-top:1px solid var(--mgray);background:#fff;flex-shrink:0;display:flex;flex-direction:column;gap:8px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border:none;border-radius:6px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;width:100%}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border:none;border-radius:6px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;width:100%}
+.btn-navy{background:var(--navy);color:#fff}
 .btn-blue{background:var(--blue);color:#fff}
 .btn-gold{background:var(--gold);color:var(--gray)}
-.btn-gray{background:none;border:1.5px solid var(--mgray);color:var(--gray)}
+.btn-outline{background:none;border:1.5px solid var(--mgray);color:var(--gray)}
 .btn-green{background:var(--green);color:#fff}
-.btn-sm{width:auto;padding:6px 12px;font-size:11px}
-.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-red{background:var(--red);color:#fff}
+.btn-sm{width:auto;padding:5px 12px;font-size:11px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-row{display:flex;gap:6px}
+.btn-row .btn{flex:1}
 
-/* ── RIGHT PANEL: PREVIEW ── */
-.preview-card{background:#fff;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.08);padding:32px 36px;max-width:780px;margin:0 auto}
-.preview-empty{text-align:center;padding:60px 20px;color:#aaa}
-.preview-empty .icon{font-size:48px;margin-bottom:16px}
-.preview-empty p{font-size:14px}
+/* RIGHT - PREVIEW */
+.right{flex:1;overflow-y:auto;background:#dee2e6;padding:20px}
+.preview{background:#fff;max-width:800px;margin:0 auto;box-shadow:0 4px 24px rgba(0,0,0,.15);min-height:600px}
 
-/* ── BRD PREVIEW STYLES ── */
-.brd-cover{background:var(--navy);padding:28px;border-radius:4px;margin-bottom:20px;text-align:center}
-.brd-cover h1{color:var(--gold);font-size:22px;font-weight:800;letter-spacing:1px}
-.brd-cover h2{color:var(--gold);font-size:16px;font-weight:600;margin-top:4px}
-.brd-cover p{color:#ccc;font-size:12px;margin-top:8px}
-.brd-section{margin-bottom:24px}
-.brd-section-hdr{display:flex;gap:0;margin-bottom:12px;border-radius:3px;overflow:hidden}
-.brd-section-num{background:var(--navy);color:#fff;font-weight:800;font-size:14px;padding:8px 14px;min-width:36px;text-align:center}
-.brd-section-title{background:#D6E4F0;color:var(--navy);font-weight:700;font-size:13px;padding:8px 14px;letter-spacing:1px;flex:1}
-.brd-subhdr{color:var(--blue);font-weight:700;font-size:13px;margin:12px 0 6px;border-bottom:2px solid var(--blue);padding-bottom:3px}
-.brd-table{width:100%;border-collapse:collapse;margin-bottom:8px;font-size:12px}
-.brd-table th{background:var(--navy);color:#fff;padding:7px 10px;text-align:left;font-weight:700;border:1px solid var(--mgray)}
-.brd-table td{padding:7px 10px;border:1px solid var(--mgray);vertical-align:top}
-.brd-table tr:nth-child(even) td{background:#f8f8f8}
-.brd-table .label{background:#f2f2f2;font-weight:700;width:28%;color:var(--gray)}
-.brd-context{background:#f0fff4;border-left:3px solid var(--green);padding:8px;margin-top:6px;font-size:11px;border-radius:2px}
-.brd-context strong{color:var(--green)}
-.brd-bullet{padding-left:20px;font-size:12px;line-height:1.6;color:#444}
-.brd-bullet li{margin-bottom:3px}
-.empty-val{color:#bbb;font-style:italic}
-.req-block{border:1px solid var(--mgray);border-radius:5px;overflow:hidden;margin-bottom:10px}
-.req-block-hdr{background:var(--gray);color:#fff;font-weight:700;font-size:12px;padding:6px 10px}
+/* BRD preview styles */
+.brd-cover{background:var(--navy);padding:32px 40px;text-align:center}
+.brd-cover h1{color:var(--gold);font-size:26px;font-weight:800;letter-spacing:.5px}
+.brd-cover h2{color:var(--gold);font-size:18px;font-weight:400;margin-top:4px}
+.brd-cover p{color:#8899bb;font-size:12px;margin-top:10px}
+.brd-body{padding:28px 36px}
+.brd-sec{margin-bottom:28px}
+.brd-sec-hdr{display:flex;margin-bottom:12px;border-radius:2px;overflow:hidden}
+.brd-sec-num{background:var(--navy);color:#fff;font-weight:800;font-size:15px;padding:7px 14px;min-width:38px;text-align:center}
+.brd-sec-title{background:var(--ltblue);color:var(--navy);font-weight:700;font-size:12px;padding:7px 14px;letter-spacing:1.5px;flex:1;display:flex;align-items:center}
+.brd-sub{color:var(--blue);font-weight:700;font-size:13px;margin:12px 0 6px;padding-bottom:3px;border-bottom:2px solid var(--blue)}
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{background:var(--navy);color:#fff;padding:7px 10px;text-align:left;font-weight:700;font-size:11px}
+.tbl td{padding:7px 10px;border:1px solid #e0e0e0;vertical-align:top}
+.tbl tr:nth-child(even) td{background:#f9f9f9}
+.tbl .lbl{background:#f3f3f3;font-weight:700;color:var(--gray);width:26%}
+.brd-bullets{margin:0;padding-left:22px;font-size:12px;line-height:1.7;color:#444}
+.brd-bullets li{margin-bottom:2px}
+.empty{color:#ccc;font-style:italic}
+.ctx-badge{background:#f0fff4;border-left:3px solid var(--green);padding:6px 10px;margin-top:6px;font-size:11px;border-radius:2px}
+.ctx-badge strong{color:var(--green);font-size:10px}
+.req-blk{border:1px solid #e0e0e0;border-radius:4px;overflow:hidden;margin-bottom:10px}
+.req-blk-hdr{background:var(--gray);color:#fff;padding:6px 12px;font-size:12px;font-weight:700}
 
-/* ── DOCUMENT TAB (upload/paste) ── */
-.doc-item{border:1px solid var(--mgray);border-radius:5px;padding:8px;margin-bottom:6px;background:var(--lgray);display:flex;gap:8px;align-items:flex-start}
-.doc-item-name{font-size:12px;font-weight:700;flex:1}
-.doc-item-meta{font-size:10px;color:#999}
-.doc-item-remove{background:none;border:none;cursor:pointer;color:#bbb;font-size:14px;padding:0 2px}
-.doc-item-remove:hover{color:var(--red)}
-.drop-zone{border:2px dashed var(--blue);border-radius:8px;padding:20px;text-align:center;background:#f8fcff;cursor:pointer;transition:all .15s}
-.drop-zone:hover{background:#f0f6ff}
-.drop-zone p{font-size:12px;color:#888;margin-top:6px}
-.integrate-notice{background:#f0fff4;border-left:3px solid var(--green);border-radius:4px;padding:8px 10px;font-size:11px;color:#3a4200;margin-top:8px}
+/* AI STATUS */
+.ai-status{padding:10px 14px;border-radius:6px;font-size:12px;margin:8px 0;display:flex;align-items:center;gap:8px}
+.ai-status.thinking{background:#e8f4fd;border-left:3px solid var(--blue);color:var(--navy)}
+.ai-status.done{background:#f0fff4;border-left:3px solid var(--green);color:#1a4a1a}
+.ai-status.error{background:#fff0f0;border-left:3px solid var(--red);color:#5a0000}
+.spinner{width:14px;height:14px;border:2px solid #cce4f7;border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── REQ / NFR sub-tabs ── */
-.subtabs{display:flex;gap:4px;margin-bottom:12px}
-.subtab{padding:5px 12px;border-radius:16px;border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;background:#eee;color:#888;transition:all .15s}
-.subtab.active{background:var(--blue);color:#fff}
-
-/* ── SAVED LIST ── */
-.saved-item{border:1px solid var(--mgray);border-radius:5px;padding:9px 12px;margin-bottom:6px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:#fff;transition:all .15s}
+/* SAVED LIST */
+.saved-item{border:1px solid var(--mgray);border-radius:6px;padding:10px 14px;margin-bottom:7px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:#fff;transition:all .15s}
 .saved-item:hover{border-color:var(--blue);background:#f8fcff}
-.saved-item-name{font-size:13px;font-weight:700;color:var(--dgray)}
-.saved-item-meta{font-size:11px;color:#999}
+.saved-item-title{font-size:13px;font-weight:700}
+.saved-item-meta{font-size:10px;color:#999;margin-top:2px}
+.subtabs{display:flex;gap:4px;margin-bottom:12px}
+.stab{padding:5px 12px;border-radius:16px;border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;background:#eee;color:#888;transition:all .15s}
+.stab.on{background:var(--blue);color:#fff}
+.req-card{border:1.5px solid var(--mgray);border-radius:6px;padding:12px;margin-bottom:10px;background:#fafafa}
+.req-card-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.tb-save-ind{color:var(--gold);font-size:11px;opacity:0;transition:opacity .4s}
+.tb-save-ind.show{opacity:1}
+.doc-item{border:1px solid var(--mgray);border-radius:5px;padding:8px 10px;margin-bottom:6px;background:var(--lgray);display:flex;gap:8px;align-items:flex-start}
+.doc-preview{font-size:10px;color:#999;margin-top:3px;white-space:pre-line;max-height:36px;overflow:hidden}
 </style>
 </head>
 <body>
 
 <!-- TOP BAR -->
 <div class="topbar">
-  <div class="tb-left">
+  <div style="display:flex;align-items:center">
     <span class="tb-logo">PORTICO</span>
-    <span class="tb-title">Business Requirements Document Tool v1.8</span>
+    <span class="tb-sub">Business Requirements Document Tool v1.9</span>
   </div>
   <div class="tb-right">
-    <span class="tb-saved tb-badge" id="save-ind">✓ Saved</span>
-    <button class="btn btn-gray btn-sm" onclick="newDocument()">+ New BRD</button>
-    <button class="btn btn-gold btn-sm" onclick="generateAndDownload()">⬇ Download BRD</button>
+    <span class="tb-save-ind" id="save-ind">✓ Saved</span>
+    <button class="btn btn-outline btn-sm" onclick="newBRD()">+ New</button>
+    <button class="btn btn-outline btn-sm" onclick="saveBRD()">💾 Save</button>
+    <button class="btn btn-gold btn-sm" onclick="downloadBRD()">⬇ Download BRD</button>
   </div>
 </div>
 
 <!-- STEP BAR -->
 <div class="stepbar">
-  <div class="step-item active" id="step-1" onclick="gotoStep(1)">
-    <div class="dot">1</div>Canvas Data
-  </div>
-  <div class="step-div"></div>
-  <div class="step-item" id="step-2" onclick="gotoStep(2)">
-    <div class="dot">2</div>Scope & Stakeholders
-  </div>
-  <div class="step-div"></div>
-  <div class="step-item" id="step-3" onclick="gotoStep(3)">
-    <div class="dot">3</div>Requirements
-  </div>
-  <div class="step-div"></div>
-  <div class="step-item" id="step-4" onclick="gotoStep(4)">
-    <div class="dot">4</div>Business Documents
-  </div>
-  <div class="step-div"></div>
-  <div class="step-item" id="step-5" onclick="gotoStep(5)">
-    <div class="dot">5</div>Saved BRDs
-  </div>
+  <div class="step active" id="s1" onclick="goto(1)"><div class="step-num">1</div>Canvas Data</div>
+  <div class="step-sep"></div>
+  <div class="step" id="s2" onclick="goto(2)"><div class="step-num">2</div>Scope & Stakeholders</div>
+  <div class="step-sep"></div>
+  <div class="step" id="s3" onclick="goto(3)"><div class="step-num">3</div>Requirements</div>
+  <div class="step-sep"></div>
+  <div class="step" id="s4" onclick="goto(4)"><div class="step-num">4</div>Source Documents</div>
+  <div class="step-sep"></div>
+  <div class="step" id="s5" onclick="goto(5)"><div class="step-num">5</div>Saved BRDs</div>
 </div>
 
-<!-- WORKSPACE -->
 <div class="workspace">
-
-  <!-- LEFT PANEL -->
-  <div class="left-panel">
-    <div id="left-content" style="flex:1;overflow-y:auto"></div>
-    <div class="panel-actions" id="panel-actions"></div>
+  <div class="left">
+    <div class="left-scroll" id="left-body"></div>
+    <div class="left-actions" id="left-actions"></div>
   </div>
-
-  <!-- RIGHT PANEL: LIVE PREVIEW -->
-  <div class="right-panel">
-    <div id="preview-area">
-      <div class="preview-empty">
-        <div class="icon">📋</div>
-        <p>Fill in the fields and click<br><strong>Generate Document</strong></p>
-        <p style="margin-top:8px;font-size:12px">The requirements document will appear here, ready to download.</p>
+  <div class="right">
+    <div class="preview" id="preview">
+      <div class="brd-cover"><h1>Business Requirements Document</h1><h2>(BRD)</h2><p>Fill in the fields or paste Smartsheet data to begin</p></div>
+      <div class="brd-body" style="text-align:center;padding-top:60px;color:#ccc">
+        <div style="font-size:48px;margin-bottom:16px">📋</div>
+        <p style="font-size:14px">Fill in the fields and click <strong>Generate Preview</strong></p>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-// ══════════════════════════════════════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════════════════════════════════════
-let S = {
-  title:'', sponsor:'', docOwner:'', businessUnit:'', version:'1.0 DRAFT',
-  objective:'', problem:'', audience:'', userCount:'', roiValue:'', successMetrics:'',
-  moscow:'', targetDate:'', dependencies:'', vision:'', strategy:'',
-  inScope:['','',''], outScope:['',''],
-  stakeholders:[{name:'',type:'Sponsor',involvement:'Approver',commsNeeds:'Executive summary updates'}],
-  requirements:[{id:'BRD-001',title:'',priority:'High',description:'',businessValue:'',acceptanceCriteria:'',actors:'',stakeholder:'',businessContext:[]}],
-  nfrs:[{category:'Availability',requirement:'',priority:'High'},{category:'Security',requirement:'',priority:'High'},{category:'Performance',requirement:'',priority:'Medium'}],
-  constraints:['',''],
-  businessDocuments:[],
-  glossary:[{term:'SME',definition:'Subject Matter Expert'},{term:'UAT',definition:'User Acceptance Testing'},{term:'BRD',definition:'Business Requirements Document'}]
-};
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let D = blankState();
 
-let currentStep = 1;
-const STORE_KEY = 'portico-brd-v18';
-const SAVED_KEY = 'portico-brd-saved-v18';
+function blankState(){
+  return {
+    title:'', sponsor:'', docOwner:'', businessUnit:'', version:'1.0 DRAFT',
+    targetDate:'', moscow:'Must Have',
+    objective:'', problem:'', audience:'', userCount:'',
+    vision:'', roiValue:'', successMetrics:'', dependencies:'', strategy:'',
+    inScope:['',''], outScope:[''],
+    constraints:[''],
+    stakeholders:[{name:'',type:'Sponsor',involvement:'Approver',commsNeeds:'Executive summary updates'}],
+    requirements:[{id:'BRD-001',title:'',priority:'High',description:'',businessValue:'',acceptanceCriteria:'',actors:'',stakeholder:'',context:[]}],
+    nfrs:[{cat:'Availability',req:'',pri:'High'},{cat:'Security',req:'',pri:'High'},{cat:'Performance',req:'',pri:'Medium'}],
+    documents:[],
+    timelines:[],
+    risks:[]
+  };
+}
 
-function saveState(){
-  localStorage.setItem(STORE_KEY, JSON.stringify(S));
+const SESS = 'portico-brd-v19';
+const SAVED = 'portico-brd-saved-v19';
+let step = 1;
+
+function persist(){
+  localStorage.setItem(SESS, JSON.stringify(D));
   const el = document.getElementById('save-ind');
   el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'), 1600);
+  setTimeout(()=>el.classList.remove('show'), 1500);
 }
 
-function loadState(){
-  try{
-    const d = localStorage.getItem(STORE_KEY);
-    if(d) S = {...S, ...JSON.parse(d)};
-  }catch(e){}
+function load(){
+  try{ const d=localStorage.getItem(SESS); if(d) D={...blankState(),...JSON.parse(d)}; }catch(e){}
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// SMARTSHEET PASTE EXTRACTION
-// ══════════════════════════════════════════════════════════════════════════════
-function extractFromPaste(){
+// ─── STEP NAV ─────────────────────────────────────────────────────────────────
+function goto(n){
+  step = n;
+  [1,2,3,4,5].forEach(i=>{
+    const el = document.getElementById('s'+i);
+    el.classList.toggle('active', i===n);
+    el.classList.toggle('done', i<n);
+    el.querySelector('.step-num').textContent = i < n ? '✓' : i;
+  });
+  render();
+}
+
+function render(){
+  const lb = document.getElementById('left-body');
+  const la = document.getElementById('left-actions');
+  lb.innerHTML = steps[step].form();
+  la.innerHTML = steps[step].actions();
+  renderPreview();
+}
+
+// ─── STEP 1: CANVAS DATA ──────────────────────────────────────────────────────
+const steps = {
+  1: {
+    form(){
+      return `
+      <div class="fsec">
+        <div class="fsec-label">📥 Import from Smartsheet</div>
+        <div class="fg"><label>Paste Smartsheet row (tab-separated or any format)</label>
+          <textarea id="ss-paste" rows="5" placeholder="Paste Smartsheet headers + data row here..."></textarea></div>
+        <button class="btn btn-navy" onclick="extractSmartsheet()">⚡ Extract Fields Automatically</button>
+      </div>
+      <div class="fsec">
+        <div class="fsec-label">Project Header</div>
+        <div class="fg"><label>Opportunity / Project Title</label>
+          <input value="${x(D.title)}" oninput="D.title=this.value;rp()"></div>
+        <div class="fg"><label>Sponsor(s)</label>
+          <input value="${x(D.sponsor)}" oninput="D.sponsor=this.value;rp()"></div>
+        <div class="fg"><label>Document Owner (BA/PM)</label>
+          <input value="${x(D.docOwner)}" oninput="D.docOwner=this.value;rp()"></div>
+        <div class="fg"><label>Business Unit</label>
+          <input value="${x(D.businessUnit)}" oninput="D.businessUnit=this.value;rp()"></div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div><label>Target Date</label><input value="${x(D.targetDate)}" oninput="D.targetDate=this.value;rp()"></div>
+          <div><label>MoSCoW</label><select onchange="D.moscow=this.value;rp()">
+            ${['Must Have','Should Have','Could Have',"Won't Have"].map(v=>`<option ${D.moscow===v?'selected':''}>${v}</option>`).join('')}
+          </select></div>
+        </div>
+        <div class="fg"><label>Version</label><input value="${x(D.version)}" oninput="D.version=this.value;rp()"></div>
+      </div>
+      <div class="fsec">
+        <div class="fsec-label">Problem & Objective</div>
+        <div class="fg"><label>Business Objective</label>
+          <textarea oninput="D.objective=this.value;rp()">${x(D.objective)}</textarea></div>
+        <div class="fg"><label>Problem to Solve</label>
+          <textarea oninput="D.problem=this.value;rp()">${x(D.problem)}</textarea></div>
+        <div class="fg"><label>Who Are We Solving For?</label>
+          <textarea rows="2" oninput="D.audience=this.value;rp()">${x(D.audience)}</textarea></div>
+        <div class="fg"><label>Number of Users / Groups Affected</label>
+          <input value="${x(D.userCount)}" oninput="D.userCount=this.value;rp()"></div>
+        <div class="fg"><label>Future State Vision</label>
+          <textarea oninput="D.vision=this.value;rp()">${x(D.vision)}</textarea></div>
+        <div class="fg"><label>Targeted Value / ROI</label>
+          <textarea rows="2" oninput="D.roiValue=this.value;rp()">${x(D.roiValue)}</textarea></div>
+        <div class="fg"><label>Success Metrics</label>
+          <textarea rows="2" oninput="D.successMetrics=this.value;rp()">${x(D.successMetrics)}</textarea></div>
+        <div class="fg"><label>Known Dependencies</label>
+          <textarea rows="2" oninput="D.dependencies=this.value;rp()">${x(D.dependencies)}</textarea></div>
+      </div>`;
+    },
+    actions(){ return `<button class="btn btn-blue" onclick="goto(2)">Next: Scope & Stakeholders →</button>`; }
+  },
+
+  2: {
+    form(){
+      const inRows  = D.inScope.map((v,i)=>`<div class="list-row"><input value="${x(v)}" oninput="D.inScope[${i}]=this.value;rp()" placeholder="In-scope item"><button onclick="D.inScope.splice(${i},1);render()">×</button></div>`).join('');
+      const outRows = D.outScope.map((v,i)=>`<div class="list-row"><input value="${x(v)}" oninput="D.outScope[${i}]=this.value;rp()" placeholder="Out-of-scope item"><button onclick="D.outScope.splice(${i},1);render()">×</button></div>`).join('');
+      const conRows = D.constraints.map((v,i)=>`<div class="list-row"><input value="${x(v)}" oninput="D.constraints[${i}]=this.value;rp()" placeholder="Constraint or assumption"><button onclick="D.constraints.splice(${i},1);render()">×</button></div>`).join('');
+      const stHTML  = D.stakeholders.map((s,i)=>`
+        <div class="req-card">
+          <div class="req-card-hdr"><strong style="font-size:11px">Stakeholder ${i+1}</strong>${i>0?`<button class="btn btn-sm" style="color:var(--red);border:1px solid var(--red);padding:2px 8px;border-radius:3px;background:none;cursor:pointer;font-size:10px" onclick="D.stakeholders.splice(${i},1);render()">Remove</button>`:''}</div>
+          <div class="fg"><label>Name / Role</label><input value="${x(s.name)}" oninput="D.stakeholders[${i}].name=this.value;rp()"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div class="fg"><label>Type</label><select onchange="D.stakeholders[${i}].type=this.value;rp()">
+              ${['Sponsor','Business Owner','BA/PM','Developer','SME','End User'].map(t=>`<option ${s.type===t?'selected':''}>${t}</option>`).join('')}
+            </select></div>
+            <div class="fg"><label>Involvement</label><select onchange="D.stakeholders[${i}].involvement=this.value;rp()">
+              ${['Approver','Owner','Contributor','Informed'].map(t=>`<option ${s.involvement===t?'selected':''}>${t}</option>`).join('')}
+            </select></div>
+          </div>
+          <div class="fg"><label>Communication Needs</label><input value="${x(s.commsNeeds)}" oninput="D.stakeholders[${i}].commsNeeds=this.value;rp()"></div>
+        </div>`).join('');
+      return `
+      <div class="fsec">
+        <div class="fsec-label">Project Scope</div>
+        <div class="fg"><label>✅ In-Scope</label>${inRows}<button class="add-btn" onclick="D.inScope.push('');render()">+ Add Item</button></div>
+        <div class="fg"><label>🚫 Out-of-Scope</label>${outRows}<button class="add-btn" onclick="D.outScope.push('');render()">+ Add Item</button></div>
+      </div>
+      <div class="fsec">
+        <div class="fsec-label">Constraints & Assumptions</div>
+        ${conRows}<button class="add-btn" onclick="D.constraints.push('');render()">+ Add Constraint</button>
+      </div>
+      <div class="fsec">
+        <div class="fsec-label">Stakeholders</div>
+        ${stHTML}
+        <button class="add-btn" onclick="D.stakeholders.push({name:'',type:'SME',involvement:'Contributor',commsNeeds:''});render()">+ Add Stakeholder</button>
+      </div>`;
+    },
+    actions(){ return `<div class="btn-row"><button class="btn btn-outline" onclick="goto(1)">← Back</button><button class="btn btn-blue" onclick="goto(3)">Next: Requirements →</button></div>`; }
+  },
+
+  3: {
+    form(){
+      const reqHTML = D.requirements.map((r,i)=>`
+        <div class="req-card">
+          <div class="req-card-hdr">
+            <strong style="font-size:11px;color:var(--navy)">${x(r.id||'BRD-00'+(i+1))}</strong>
+            ${i>0?`<button class="btn btn-sm" style="color:var(--red);border:1px solid var(--red);padding:2px 8px;border-radius:3px;background:none;cursor:pointer;font-size:10px" onclick="D.requirements.splice(${i},1);render()">Remove</button>`:''}
+          </div>
+          <div class="fg"><label>Title</label><input value="${x(r.title)}" oninput="D.requirements[${i}].title=this.value;rp()" placeholder="Requirement title"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div class="fg"><label>Priority</label><select onchange="D.requirements[${i}].priority=this.value;rp()">
+              ${['High','Medium','Low','Critical'].map(p=>`<option ${r.priority===p?'selected':''}>${p}</option>`).join('')}
+            </select></div>
+            <div class="fg"><label>Stakeholder</label><input value="${x(r.stakeholder)}" oninput="D.requirements[${i}].stakeholder=this.value;rp()" placeholder="e.g. Finance"></div>
+          </div>
+          <div class="fg"><label>Description</label><textarea rows="2" oninput="D.requirements[${i}].description=this.value;rp()">${x(r.description)}</textarea></div>
+          <div class="fg"><label>Business Value</label><textarea rows="2" oninput="D.requirements[${i}].businessValue=this.value;rp()">${x(r.businessValue||'')}</textarea></div>
+          <div class="fg"><label>Acceptance Criteria</label><textarea rows="2" oninput="D.requirements[${i}].acceptanceCriteria=this.value;rp()">${x(r.acceptanceCriteria||'')}</textarea></div>
+          <div class="fg"><label>Primary Actors</label><input value="${x(r.actors||'')}" oninput="D.requirements[${i}].actors=this.value;rp()"></div>
+          ${r.context&&r.context.length?`<div class="ctx-badge"><strong>📄 From source documents:</strong><br>${r.context.map(c=>`<em>[${x(c.src)}]</em> ${x(c.text)}`).join('<br>')}</div>`:''}
+        </div>`).join('');
+
+      const nfrHTML = D.nfrs.map((n,i)=>`
+        <div style="display:grid;grid-template-columns:1fr 2fr auto;gap:6px;align-items:end;margin-bottom:6px;padding:8px;background:#fafafa;border:1px solid var(--mgray);border-radius:5px">
+          <div class="fg" style="margin:0"><label>Category</label><select onchange="D.nfrs[${i}].cat=this.value;rp()">
+            ${['Availability','Security','Performance','Scalability','Usability','Compliance','Audit Logging'].map(c=>`<option ${n.cat===c?'selected':''}>${c}</option>`).join('')}
+          </select></div>
+          <div class="fg" style="margin:0"><label>Requirement</label><input value="${x(n.req)}" oninput="D.nfrs[${i}].req=this.value;rp()" placeholder="Describe requirement"></div>
+          ${i>0?`<button onclick="D.nfrs.splice(${i},1);render()" style="height:32px;margin-top:18px;border:1px solid var(--red);border-radius:4px;background:none;color:var(--red);cursor:pointer;padding:0 8px">✕</button>`:'<div></div>'}
+        </div>`).join('');
+
+      return `
+      <div class="fsec">
+        <div class="subtabs">
+          <button class="stab on" onclick="showPane('reqs-pane','nfr-pane',this)">📋 Functional Reqs</button>
+          <button class="stab" onclick="showPane('nfr-pane','reqs-pane',this)">⚙️ Non-Functional</button>
+        </div>
+        <div id="reqs-pane">${reqHTML}<button class="add-btn" onclick="addReq()">+ Add Requirement</button></div>
+        <div id="nfr-pane" style="display:none">${nfrHTML}<button class="add-btn" onclick="D.nfrs.push({cat:'Availability',req:'',pri:'High'});render()">+ Add NFR</button></div>
+      </div>`;
+    },
+    actions(){ return `<div class="btn-row"><button class="btn btn-outline" onclick="goto(2)">← Back</button><button class="btn btn-blue" onclick="goto(4)">Next: Documents →</button></div>`; }
+  },
+
+  4: {
+    form(){
+      const docList = D.documents.length
+        ? D.documents.map((d,i)=>`
+          <div class="doc-item">
+            <div style="flex:1">
+              <div style="font-size:12px;font-weight:700">📄 ${x(d.name)}</div>
+              <div style="font-size:10px;color:#999">${d.content.length.toLocaleString()} chars · ${new Date(d.added).toLocaleDateString()}</div>
+              <div class="doc-preview">${x(d.content.substring(0,120))}${d.content.length>120?'…':''}</div>
+            </div>
+            <button style="background:none;border:none;cursor:pointer;color:#bbb;font-size:16px" onclick="removeDoc(${i})">✕</button>
+          </div>`).join('')
+        : `<div style="padding:10px;color:#bbb;font-size:12px;text-align:center">No documents added yet</div>`;
+
+      return `
+      <div class="fsec">
+        <div class="fsec-label">🤖 AI-Powered Document Integration</div>
+        <p style="font-size:11px;color:#666;margin-bottom:10px;line-height:1.55">Paste any meeting transcript, interview recording, email thread, or specification. The AI will <strong>automatically remove timestamps</strong>, extract decisions, requirements, timelines, constraints, and scope items — then populate each BRD section intelligently.</p>
+        <div class="fg"><label>Document Name</label><input id="dname" placeholder="e.g. Meeting Transcript 4/16, Requirements Spec v2"></div>
+        <div class="fg"><label>Paste Document Content</label>
+          <textarea id="dtext" rows="7" placeholder="Paste meeting transcript (with or without timestamps), interview notes, email threads, requirements specs...&#10;&#10;Timestamps like '0:16', '48:14' will be automatically stripped."></textarea></div>
+        <div class="btn-row" style="margin-bottom:8px">
+          <button class="btn btn-navy" onclick="addAndParseDoc()">🤖 Add & AI-Parse</button>
+          <button class="btn btn-outline" onclick="addRawDoc()">+ Add Raw</button>
+        </div>
+        <div style="border-top:1px solid var(--lgray);padding-top:8px;margin-top:4px">
+          <label style="font-size:11px;font-weight:700;color:var(--gray);display:block;margin-bottom:4px">Or upload file (.txt, .rtf, .pdf)</label>
+          <input type="file" id="docfile" accept=".txt,.rtf,.pdf,.docx" onchange="uploadDoc(this)" style="font-size:11px;width:100%">
+        </div>
+        <div id="ai-status-area"></div>
+      </div>
+      <div class="fsec">
+        <div class="fsec-label">Added Documents (${D.documents.length})</div>
+        ${docList}
+        ${D.documents.length?`<button class="btn btn-green" style="margin-top:8px" onclick="reIntegrate()">🔄 Re-integrate All Documents</button>`:''}
+      </div>`;
+    },
+    actions(){ return `<div class="btn-row"><button class="btn btn-outline" onclick="goto(3)">← Back</button><button class="btn btn-gold" onclick="downloadBRD()">⬇ Download BRD</button></div>`; }
+  },
+
+  5: {
+    form(){
+      let saved = getSaved();
+      const list = saved.length ? saved.map((s,i)=>`
+        <div class="saved-item">
+          <div onclick="loadSaved(${i})" style="flex:1">
+            <div class="saved-item-title">${x(s.title||'Untitled BRD')}</div>
+            <div class="saved-item-meta">${new Date(s.savedAt).toLocaleString()} · ${(s.requirements||[]).length} req(s) · ${(s.documents||[]).length} doc(s)</div>
+          </div>
+          <div style="display:flex;gap:5px">
+            <button class="btn btn-gold btn-sm" onclick="event.stopPropagation();loadAndDownload(${i})">⬇</button>
+            <button class="btn btn-sm" style="border:1px solid var(--red);color:var(--red);background:none;cursor:pointer;border-radius:4px;padding:4px 8px;font-size:10px" onclick="event.stopPropagation();deleteSaved(${i})">✕</button>
+          </div>
+        </div>`).join('')
+        : `<div style="padding:20px;text-align:center;color:#bbb">No saved BRDs yet</div>`;
+      return `<div class="fsec"><div class="fsec-label">Previously Saved BRDs</div>${list}</div>`;
+    },
+    actions(){ return `<button class="btn btn-blue" onclick="goto(1)">← Return to Editor</button>`; }
+  }
+};
+
+// ─── SMARTSHEET EXTRACTION ────────────────────────────────────────────────────
+function extractSmartsheet(){
   const text = document.getElementById('ss-paste').value.trim();
-  if(!text){ alert('Paste your Smartsheet data first'); return; }
+  if(!text){ alert('Paste Smartsheet data first'); return; }
 
-  const lines = text.split('\n');
+  // Try tab-separated headers/values
+  const lines = text.split('\n').filter(l=>l.trim());
   const pairs = {};
-  const headers = lines[0]?.split('\t');
-  const values  = lines[1]?.split('\t');
 
-  if(headers && values && headers.length === values.length){
-    headers.forEach((h,i) => { pairs[h.trim().toLowerCase()] = values[i]?.trim() || ''; });
-  } else {
-    lines.forEach(line => {
-      const [k,...rest] = line.split(/:\t|\t/);
-      if(k && rest.length) pairs[k.trim().toLowerCase()] = rest.join('\t').trim();
-    });
-    // also try to match anything
-    lines.forEach(line => {
-      const m = line.match(/^(.+?)\s{2,}(.+)$/);
-      if(m) pairs[m[1].trim().toLowerCase()] = m[2].trim();
-    });
+  if(lines.length >= 2){
+    const hdrs = lines[0].split('\t');
+    const vals = lines[1].split('\t');
+    if(hdrs.length === vals.length && hdrs.length > 2){
+      hdrs.forEach((h,i) => { pairs[h.trim().toLowerCase()] = vals[i]?.trim()||''; });
+    }
   }
 
+  // Also try key:value or key\tvalue on same line
+  lines.forEach(line => {
+    const m = line.match(/^([^:\t]{3,50})[\t:]\s*(.+)$/);
+    if(m) pairs[m[1].trim().toLowerCase()] = m[2].trim();
+  });
+
   const get = (...keys) => {
-    for(const k of keys){
-      for(const pk of Object.keys(pairs)){
-        if(pk.includes(k) || k.includes(pk)) return pairs[pk];
-      }
-    }
+    for(const k of keys)
+      for(const pk of Object.keys(pairs))
+        if(pk.includes(k)||k.includes(pk)) return pairs[pk];
     return '';
   };
 
-  S.title         = get('title','opportunity','name') || S.title;
-  S.sponsor       = get('sponsor') || S.sponsor;
-  S.targetDate    = get('date','deadline','due') || S.targetDate;
-  S.objective     = get('objective','business obj') || S.objective;
-  S.problem       = get('problem','problem to solve','solving') || S.problem;
-  S.audience      = get('who','audience','solving for') || S.audience;
-  S.userCount     = get('user count','how many','number of') || S.userCount;
-  S.roiValue      = get('roi','value','targeted value','cost') || S.roiValue;
-  S.successMetrics= get('success','metric','measure') || S.successMetrics;
-  S.moscow        = get('moscow','priority','must') || S.moscow;
-  S.vision        = get('vision','future state','future') || S.vision;
-  S.dependencies  = get('depend') || S.dependencies;
-  S.strategy      = get('strategy') || S.strategy;
+  const assign = (field, ...keys) => { const v=get(...keys); if(v) D[field]=v; };
 
-  renderStep(1);
-  refreshPreview();
-  saveState();
-  alert('✓ Data extracted! Review and edit the fields on the left.');
+  assign('title',         'title','opportunity','project name','name');
+  assign('sponsor',       'sponsor');
+  assign('docOwner',      'owner','analyst','ba','pm');
+  assign('businessUnit',  'business unit','unit','team');
+  assign('targetDate',    'target date','deadline','due date','date');
+  assign('objective',     'objective','business obj','alignment','align');
+  assign('problem',       'problem','problem to solve','issue','challenge');
+  assign('audience',      'who','audience','solving for','users','members');
+  assign('userCount',     'user count','how many','number','groups affected');
+  assign('roiValue',      'roi','value','savings','cost','targeted value');
+  assign('successMetrics','success','metric','measure','kpi');
+  assign('moscow',        'moscow','priority','must');
+  assign('vision',        'vision','future state','future');
+  assign('dependencies',  'depend','dependency');
+  assign('strategy',      'strategy','initiative');
+
+  render();
+  persist();
+  alert('✓ Fields extracted! Review and edit in the form.');
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// STEP RENDERING
-// ══════════════════════════════════════════════════════════════════════════════
-function gotoStep(n){
-  currentStep = n;
-  document.querySelectorAll('.step-item').forEach((el,i)=>{
-    el.classList.toggle('active', i+1 === n);
-    el.classList.toggle('done', i+1 < n);
-  });
-  renderStep(n);
-}
+// ─── AI DOCUMENT PARSING ─────────────────────────────────────────────────────
+async function addAndParseDoc(){
+  const name    = document.getElementById('dname').value.trim();
+  const content = document.getElementById('dtext').value.trim();
+  if(!name||!content){ alert('Enter a document name and content'); return; }
 
-function renderStep(n){
-  const lc = document.getElementById('left-content');
-  const pa = document.getElementById('panel-actions');
+  const statusEl = document.getElementById('ai-status-area');
+  statusEl.innerHTML = `<div class="ai-status thinking"><div class="spinner"></div>AI is reading the document and extracting BRD content…</div>`;
 
-  switch(n){
-    case 1: lc.innerHTML = step1HTML(); pa.innerHTML = step1Actions(); break;
-    case 2: lc.innerHTML = step2HTML(); pa.innerHTML = step2Actions(); break;
-    case 3: lc.innerHTML = step3HTML(); pa.innerHTML = step3Actions(); break;
-    case 4: lc.innerHTML = step4HTML(); pa.innerHTML = step4Actions(); break;
-    case 5: lc.innerHTML = step5HTML(); pa.innerHTML = step5Actions(); break;
+  // Store raw doc first
+  D.documents.push({ name, content, added: new Date().toISOString() });
+
+  try {
+    await aiParseDocument(name, content, statusEl);
+    document.getElementById('dname').value = '';
+    document.getElementById('dtext').value = '';
+    persist();
+    render();
+  } catch(e) {
+    statusEl.innerHTML = `<div class="ai-status error">⚠ AI parse failed: ${e.message}. Document saved as raw reference.</div>`;
+    persist();
+    render();
   }
-  refreshPreview();
 }
 
-// ── STEP 1: Canvas Data ───────────────────────────────────────────────────────
-function step1HTML(){
-  return `
-  <div class="form-section">
-    <div class="section-label">Import from Smartsheet</div>
-    <div class="field-group">
-      <label>Paste Smartsheet row (headers + data, or any key:value format)</label>
-      <textarea id="ss-paste" rows="5" placeholder="Paste Smartsheet data here..."></textarea>
-    </div>
-    <button class="btn btn-blue" onclick="extractFromPaste()">⚡ Extract Fields</button>
-  </div>
+async function aiParseDocument(docName, rawContent, statusEl){
+  const prompt = `You are a Business Analyst AI. You will receive a business document (meeting transcript, spec, interview notes, etc.) that may contain timestamps like "0:16", "48:14", "1 minute 30 seconds" — IGNORE AND STRIP all timestamps and speaker label formatting artifacts.
 
-  <div class="form-section">
-    <div class="section-label">Project Header</div>
-    <div class="field-group"><label>Opportunity / Project Title</label>
-      <input value="${esc(S.title)}" oninput="S.title=this.value;refresh()" placeholder="e.g. Contribution Share Digitization"></div>
-    <div class="field-group"><label>Sponsor(s)</label>
-      <input value="${esc(S.sponsor)}" oninput="S.sponsor=this.value;refresh()" placeholder="e.g. Jeff Ryan"></div>
-    <div class="field-group"><label>Document Owner (BA/PM)</label>
-      <input value="${esc(S.docOwner)}" oninput="S.docOwner=this.value;refresh()" placeholder="Your name"></div>
-    <div class="field-group"><label>Business Unit</label>
-      <input value="${esc(S.businessUnit)}" oninput="S.businessUnit=this.value;refresh()" placeholder="e.g. Service Delivery Operations"></div>
-    <div class="field-group"><label>Target Date / Deadline</label>
-      <input value="${esc(S.targetDate)}" oninput="S.targetDate=this.value;refresh()" placeholder="e.g. 10/01/2026"></div>
-    <div class="field-group"><label>MoSCoW Priority</label>
-      <select oninput="S.moscow=this.value;refresh()">
-        ${['Must Have','Should Have','Could Have','Won\'t Have'].map(v=>`<option ${S.moscow===v?'selected':''}>${v}</option>`).join('')}
-      </select></div>
-    <div class="field-group"><label>Version</label>
-      <input value="${esc(S.version)}" oninput="S.version=this.value;refresh()" placeholder="1.0 DRAFT"></div>
-  </div>
+Read the document carefully and extract structured information for a Business Requirements Document (BRD). Return ONLY a valid JSON object with this exact shape (omit any key where no relevant info exists):
 
-  <div class="form-section">
-    <div class="section-label">Problem & Objective</div>
-    <div class="field-group"><label>Business Objective</label>
-      <textarea oninput="S.objective=this.value;refresh()" placeholder="What business goal does this support?">${esc(S.objective)}</textarea></div>
-    <div class="field-group"><label>Problem to Solve</label>
-      <textarea oninput="S.problem=this.value;refresh()" placeholder="What problem are we solving?">${esc(S.problem)}</textarea></div>
-    <div class="field-group"><label>Who We're Solving For</label>
-      <textarea rows="2" oninput="S.audience=this.value;refresh()" placeholder="e.g. Large & Small Flex employers...">${esc(S.audience)}</textarea></div>
-    <div class="field-group"><label>Number of Users / Groups Affected</label>
-      <input value="${esc(S.userCount)}" oninput="S.userCount=this.value;refresh()" placeholder="e.g. ~500 employers annually"></div>
-    <div class="field-group"><label>Future State Vision</label>
-      <textarea oninput="S.vision=this.value;refresh()" placeholder="What does success look like?">${esc(S.vision)}</textarea></div>
-    <div class="field-group"><label>Targeted Value / ROI</label>
-      <textarea rows="2" oninput="S.roiValue=this.value;refresh()" placeholder="Expected cost savings, efficiency gains...">${esc(S.roiValue)}</textarea></div>
-    <div class="field-group"><label>Success Metrics</label>
-      <textarea rows="2" oninput="S.successMetrics=this.value;refresh()" placeholder="How will we measure success?">${esc(S.successMetrics)}</textarea></div>
-    <div class="field-group"><label>Known Dependencies</label>
-      <textarea rows="2" oninput="S.dependencies=this.value;refresh()" placeholder="Systems, teams, timelines...">${esc(S.dependencies)}</textarea></div>
-  </div>`;
-}
-function step1Actions(){ return `<button class="btn btn-blue" onclick="gotoStep(2)">Next: Scope & Stakeholders →</button>`; }
-
-// ── STEP 2: Scope & Stakeholders ──────────────────────────────────────────────
-function step2HTML(){
-  const inRows  = S.inScope.map((v,i)=>`<div class="scope-row"><input value="${esc(v)}" oninput="S.inScope[${i}]=this.value;refresh()" placeholder="In-scope item ${i+1}"><button onclick="removeScope('in',${i})">×</button></div>`).join('');
-  const outRows = S.outScope.map((v,i)=>`<div class="scope-row"><input value="${esc(v)}" oninput="S.outScope[${i}]=this.value;refresh()" placeholder="Out-of-scope item ${i+1}"><button onclick="removeScope('out',${i})">×</button></div>`).join('');
-
-  const stRows = S.stakeholders.map((s,i)=>`
-    <div style="border:1px solid var(--mgray);border-radius:5px;padding:10px;margin-bottom:8px;background:#fafafa">
-      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-        <strong style="font-size:11px;color:var(--gray)">Stakeholder ${i+1}</strong>
-        ${i>0?`<button onclick="removeStakeholder(${i})" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:12px">Remove</button>`:''}
-      </div>
-      <div class="field-group"><label>Name / Role</label><input value="${esc(s.name)}" oninput="S.stakeholders[${i}].name=this.value;refresh()"></div>
-      <div class="field-group"><label>Type</label>
-        <select onchange="S.stakeholders[${i}].type=this.value;refresh()">
-          ${['Sponsor','Business Owner','BA/PM','Developer','SME','End User'].map(t=>`<option ${s.type===t?'selected':''}>${t}</option>`).join('')}
-        </select></div>
-      <div class="field-group"><label>Involvement</label>
-        <select onchange="S.stakeholders[${i}].involvement=this.value;refresh()">
-          ${['Approver','Owner','Contributor','Informed'].map(t=>`<option ${s.involvement===t?'selected':''}>${t}</option>`).join('')}
-        </select></div>
-      <div class="field-group"><label>Communication Needs</label><input value="${esc(s.commsNeeds)}" oninput="S.stakeholders[${i}].commsNeeds=this.value;refresh()"></div>
-    </div>`).join('');
-
-  return `
-  <div class="form-section">
-    <div class="section-label">Project Scope</div>
-    <div class="field-group">
-      <label>✅ In-Scope Items</label>
-      <div class="scope-list">${inRows}</div>
-      <button class="add-item-btn" onclick="addScope('in')">+ Add In-Scope Item</button>
-    </div>
-    <div class="field-group">
-      <label>🚫 Out-of-Scope Items</label>
-      <div class="scope-list">${outRows}</div>
-      <button class="add-item-btn" onclick="addScope('out')">+ Add Out-of-Scope Item</button>
-    </div>
-  </div>
-  <div class="form-section">
-    <div class="section-label">Constraints & Assumptions</div>
-    ${S.constraints.map((c,i)=>`<div class="scope-row" style="margin-bottom:6px"><input value="${esc(c)}" oninput="S.constraints[${i}]=this.value;refresh()" placeholder="Constraint or assumption ${i+1}"><button onclick="S.constraints.splice(${i},1);renderStep(2)" style="background:none;border:1px solid var(--mgray);border-radius:4px;cursor:pointer;color:#999;font-size:14px">×</button></div>`).join('')}
-    <button class="add-item-btn" onclick="S.constraints.push('');renderStep(2)">+ Add Constraint</button>
-  </div>
-  <div class="form-section">
-    <div class="section-label">Stakeholders & Roles</div>
-    ${stRows}
-    <button class="add-item-btn" onclick="addStakeholder()">+ Add Stakeholder</button>
-  </div>`;
-}
-function step2Actions(){ return `<div style="display:flex;gap:8px"><button class="btn btn-gray" style="flex:1" onclick="gotoStep(1)">← Back</button><button class="btn btn-blue" style="flex:2" onclick="gotoStep(3)">Next: Requirements →</button></div>`; }
-
-// ── STEP 3: Requirements & NFRs ───────────────────────────────────────────────
-function step3HTML(){
-  const reqHTML = S.requirements.map((r,i)=>`
-    <div style="border:1px solid var(--mgray);border-radius:6px;overflow:hidden;margin-bottom:10px">
-      <div style="background:var(--gray);color:#fff;padding:7px 10px;display:flex;justify-content:space-between;align-items:center">
-        <strong style="font-size:12px">${r.id || 'BRD-00'+(i+1)}</strong>
-        ${i>0?`<button onclick="S.requirements.splice(${i},1);renderStep(3)" style="background:none;border:1px solid rgba(255,255,255,.4);border-radius:3px;color:#fff;cursor:pointer;font-size:11px;padding:2px 7px">Remove</button>`:''}
-      </div>
-      <div style="padding:10px;background:#fafafa">
-        <div class="field-group"><label>Title</label><input value="${esc(r.title)}" oninput="S.requirements[${i}].title=this.value;refresh()" placeholder="Requirement title"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="field-group"><label>Priority</label>
-            <select onchange="S.requirements[${i}].priority=this.value;refresh()">
-              ${['High','Medium','Low','Critical'].map(p=>`<option ${r.priority===p?'selected':''}>${p}</option>`).join('')}
-            </select></div>
-          <div class="field-group"><label>Stakeholder</label><input value="${esc(r.stakeholder)}" oninput="S.requirements[${i}].stakeholder=this.value;refresh()" placeholder="e.g. Finance"></div>
-        </div>
-        <div class="field-group"><label>Description</label><textarea rows="2" oninput="S.requirements[${i}].description=this.value;refresh()" placeholder="Specific, measurable requirement...">${esc(r.description)}</textarea></div>
-        <div class="field-group"><label>Business Value</label><textarea rows="2" oninput="S.requirements[${i}].businessValue=this.value;refresh()" placeholder="Why does this matter?">${esc(r.businessValue||'')}</textarea></div>
-        <div class="field-group"><label>Acceptance Criteria</label><textarea rows="2" oninput="S.requirements[${i}].acceptanceCriteria=this.value;refresh()" placeholder="How do we know this is done?">${esc(r.acceptanceCriteria||'')}</textarea></div>
-        <div class="field-group"><label>Primary Actors</label><input value="${esc(r.actors||'')}" oninput="S.requirements[${i}].actors=this.value;refresh()" placeholder="e.g. Benefits Administrator, HR"></div>
-        ${r.businessContext && r.businessContext.length > 0 ? `<div style="background:#f0fff4;border-left:3px solid var(--green);padding:7px;font-size:11px;border-radius:2px;margin-top:4px"><strong style="color:var(--green)">📄 From documents:</strong><br>${r.businessContext.map(c=>`<em>${c.doc}:</em> "${c.text}"`).join('<br>')}</div>` : ''}
-      </div>
-    </div>`).join('');
-
-  const nfrHTML = S.nfrs.map((n,i)=>`
-    <div style="display:grid;grid-template-columns:1fr 2fr auto;gap:6px;align-items:end;margin-bottom:6px;padding:8px;background:#fafafa;border-radius:5px;border:1px solid var(--mgray)">
-      <div class="field-group" style="margin-bottom:0"><label>Category</label>
-        <select onchange="S.nfrs[${i}].category=this.value;refresh()">
-          ${['Availability','Security','Performance','Scalability','Usability','Compliance','Audit Logging'].map(c=>`<option ${n.category===c?'selected':''}>${c}</option>`).join('')}
-        </select></div>
-      <div class="field-group" style="margin-bottom:0"><label>Requirement</label>
-        <input value="${esc(n.requirement)}" oninput="S.nfrs[${i}].requirement=this.value;refresh()" placeholder="Describe the non-functional requirement"></div>
-      ${i>0?`<button onclick="S.nfrs.splice(${i},1);renderStep(3)" style="height:34px;margin-top:18px;background:none;border:1px solid var(--red);border-radius:4px;color:var(--red);cursor:pointer;padding:0 8px">✕</button>`:'<div></div>'}
-    </div>`).join('');
-
-  return `
-  <div class="form-section">
-    <div class="subtabs">
-      <button class="subtab active" onclick="this.parentElement.querySelectorAll('.subtab').forEach(b=>b.classList.remove('active'));this.classList.add('active');document.getElementById('req-pane').style.display='block';document.getElementById('nfr-pane').style.display='none'">📋 Functional Reqs</button>
-      <button class="subtab" onclick="this.parentElement.querySelectorAll('.subtab').forEach(b=>b.classList.remove('active'));this.classList.add('active');document.getElementById('req-pane').style.display='none';document.getElementById('nfr-pane').style.display='block'">⚙️ Non-Functional</button>
-    </div>
-    <div id="req-pane">
-      ${reqHTML}
-      <button class="add-item-btn" onclick="addRequirement()">+ Add Requirement</button>
-    </div>
-    <div id="nfr-pane" style="display:none">
-      ${nfrHTML}
-      <button class="add-item-btn" onclick="S.nfrs.push({category:'Availability',requirement:'',priority:'High'});renderStep(3)">+ Add Non-Functional Requirement</button>
-    </div>
-  </div>`;
-}
-function step3Actions(){ return `<div style="display:flex;gap:8px"><button class="btn btn-gray" style="flex:1" onclick="gotoStep(2)">← Back</button><button class="btn btn-blue" style="flex:2" onclick="gotoStep(4)">Next: Documents →</button></div>`; }
-
-// ── STEP 4: Business Documents ────────────────────────────────────────────────
-function step4HTML(){
-  const docList = S.businessDocuments.length > 0
-    ? S.businessDocuments.map((d,i)=>`
-      <div class="doc-item">
-        <div style="flex:1">
-          <div class="doc-item-name">📄 ${esc(d.name)}</div>
-          <div class="doc-item-meta">${d.content.length.toLocaleString()} chars · ${new Date(d.addedDate).toLocaleDateString()}</div>
-          <div style="font-size:10px;color:#aaa;margin-top:3px;white-space:pre-line;overflow:hidden;max-height:40px">${esc(d.content.substring(0,120))}${d.content.length>120?'…':''}</div>
-        </div>
-        <button class="doc-item-remove" onclick="removeDoc(${i})">✕</button>
-      </div>`).join('')
-    : `<div style="padding:10px;color:#999;font-size:12px;text-align:center">No documents added yet</div>`;
-
-  return `
-  <div class="form-section">
-    <div class="section-label">Add Business Documents</div>
-    <p style="font-size:11px;color:#888;margin-bottom:10px;line-height:1.5">Upload or paste meeting transcripts, specs, interview notes, email threads, or any business document. The tool will extract relevant content and integrate it into each requirement.</p>
-
-    <div class="field-group">
-      <label>Document Name</label>
-      <input id="doc-name" placeholder="e.g. Meeting Notes 4/30, Requirements Spec v2">
-    </div>
-    <div class="field-group">
-      <label>Paste Content</label>
-      <textarea id="doc-text" rows="5" placeholder="Paste meeting transcript, spec, interview notes, email..."></textarea>
-    </div>
-    <button class="btn btn-blue" style="margin-bottom:12px" onclick="addDocFromPaste()">➕ Add Document</button>
-
-    <div style="border-top:1px solid var(--mgray);padding-top:10px;margin-top:4px">
-      <label class="field-group" style="display:block">
-        <span style="font-size:11px;font-weight:700;color:var(--gray);display:block;margin-bottom:4px">Upload File (.txt, .pdf, .docx)</span>
-        <div class="drop-zone" onclick="document.getElementById('doc-file-input').click()">
-          <div>📁 Click to upload file</div>
-          <p>Supports .txt, .pdf, .docx</p>
-        </div>
-        <input type="file" id="doc-file-input" accept=".txt,.pdf,.docx" style="display:none" onchange="addDocFromFile(this)">
-      </label>
-    </div>
-  </div>
-
-  <div class="form-section">
-    <div class="section-label">Added Documents (${S.businessDocuments.length})</div>
-    ${docList}
-    ${S.businessDocuments.length > 0 ? `
-    <div class="integrate-notice">✓ Documents will be <strong>intelligently integrated</strong> into requirements when you generate the BRD.</div>
-    <button class="btn btn-green" style="margin-top:8px" onclick="integrateDocuments()">🔗 Integrate Now into Requirements</button>` : ''}
-  </div>`;
-}
-function step4Actions(){ return `<div style="display:flex;gap:8px"><button class="btn btn-gray" style="flex:1" onclick="gotoStep(3)">← Back</button><button class="btn btn-gold" style="flex:2" onclick="generateAndDownload()">⬇ Download BRD</button></div>`; }
-
-// ── STEP 5: Saved BRDs ────────────────────────────────────────────────────────
-function step5HTML(){
-  const saved = getSavedList();
-  const list = saved.length > 0
-    ? saved.map((s,i)=>`
-      <div class="saved-item" onclick="loadSaved(${i})">
-        <div>
-          <div class="saved-item-name">${esc(s.title || 'Untitled BRD')}</div>
-          <div class="saved-item-meta">Saved: ${new Date(s.savedDate).toLocaleString()} · ${s.requirements.length} req(s) · ${s.businessDocuments.length} doc(s)</div>
-        </div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-gold btn-sm" onclick="event.stopPropagation();downloadSaved(${i})">⬇</button>
-          <button class="btn btn-gray btn-sm" style="color:var(--red);border-color:var(--red)" onclick="event.stopPropagation();deleteSaved(${i})">✕</button>
-        </div>
-      </div>`).join('')
-    : `<div style="padding:20px;text-align:center;color:#bbb;font-size:13px">No saved BRDs yet.<br>Use the Save button to keep your work.</div>`;
-
-  return `<div class="form-section"><div class="section-label">Previously Saved BRDs</div>${list}</div>`;
-}
-function step5Actions(){ return `<button class="btn btn-blue" onclick="gotoStep(1)">← Return to Editor</button>`; }
-
-// ══════════════════════════════════════════════════════════════════════════════
-// LIVE PREVIEW
-// ══════════════════════════════════════════════════════════════════════════════
-function refreshPreview(){
-  saveState();
-
-  const ev = (v) => v ? `<span>${esc(v)}</span>` : `<span class="empty-val">[ to be completed ]</span>`;
-  const listHTML = (arr) => arr.filter(Boolean).length > 0
-    ? `<ul class="brd-bullet">${arr.filter(Boolean).map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`
-    : `<ul class="brd-bullet"><li class="empty-val">[ to be defined ]</li></ul>`;
-
-  const reqRows = S.requirements.map(r=>`
-    <div class="req-block">
-      <div class="req-block-hdr">${esc(r.id||'BRD-001')}: ${esc(r.title||'[ title ]')}</div>
-      <table class="brd-table">
-        <tr><td class="label">Priority</td><td>${ev(r.priority)}</td></tr>
-        <tr><td class="label">Description</td><td>${ev(r.description)}</td></tr>
-        <tr><td class="label">Business Value</td><td>${ev(r.businessValue)}</td></tr>
-        <tr><td class="label">Acceptance Criteria</td><td>${ev(r.acceptanceCriteria)}</td></tr>
-        <tr><td class="label">Primary Actors</td><td>${ev(r.actors)}</td></tr>
-        ${r.businessContext && r.businessContext.length>0 ? `<tr><td class="label">Business Context</td><td><div class="brd-context">${r.businessContext.map(c=>`<strong>${esc(c.doc)}:</strong> ${esc(c.text)}`).join('<br>')}</div></td></tr>` : ''}
-      </table>
-    </div>`).join('');
-
-  const stRows = S.stakeholders.map((s,i)=>`
-    <tr>
-      <td>${ev(s.name)}</td><td>${ev(s.type)}</td>
-      <td>${ev(s.involvement)}</td><td>${ev(s.commsNeeds)}</td>
-    </tr>`).join('');
-
-  const docSection = S.businessDocuments.length > 0 ? `
-    <div class="brd-section">
-      <div class="brd-section-hdr"><div class="brd-section-num">9</div><div class="brd-section-title">Appendix: Source Documents & Interviews</div></div>
-      ${S.businessDocuments.map(d=>`
-        <div class="brd-subhdr">${esc(d.name)}</div>
-        <p style="font-size:11px;color:#555;white-space:pre-line">${esc(d.content)}</p>
-      `).join('')}
-    </div>` : '';
-
-  document.getElementById('preview-area').innerHTML = `
-  <div class="preview-card">
-    <div class="brd-cover">
-      <h1>Business Requirements Document</h1>
-      <h2>(BRD)</h2>
-      <p>Project Name: ${esc(S.title||'[Insert Project Name]')}</p>
-      <p>Date: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})} | Version: ${esc(S.version||'1.0 DRAFT')}</p>
-    </div>
-
-    <div class="brd-section">
-      <div class="brd-section-hdr"><div class="brd-section-num">1</div><div class="brd-section-title">Document Control</div></div>
-      <table class="brd-table">
-        <tr><th>Role</th><th>Name</th><th>Signature / Approval</th><th>Date</th></tr>
-        <tr><td>Project Sponsor</td><td>${ev(S.sponsor)}</td><td></td><td></td></tr>
-        <tr><td>Business Analyst</td><td>${ev(S.docOwner)}</td><td></td><td></td></tr>
-        <tr><td>Technical Lead</td><td></td><td></td><td></td></tr>
-      </table>
-    </div>
-
-    <div class="brd-section">
-      <div class="brd-section-hdr"><div class="brd-section-num">2</div><div class="brd-section-title">Executive Summary</div></div>
-      <p style="font-size:12px;color:#555;font-style:italic;padding:8px;background:#fff8e7;border-radius:4px">${ev([S.objective, S.problem].filter(Boolean).join(' '))}</p>
-    </div>
-
-    <div class="brd-section">
-      <div class="brd-section-hdr"><div class="brd-section-num">3</div><div class="brd-section-title">Project Scope</div></div>
-      <div class="brd-subhdr">3.1 In-Scope</div>${listHTML(S.inScope)}
-      <div class="brd-subhdr">3.2 Out-of-Scope</div>${listHTML(S.outScope)}
-    </div>
-
-    <div class="brd-section">
-      <div class="brd-section-hdr"><div class="brd-section-num">4</div><div class="brd-section-title">Business Requirements Summary</div></div>
-      <table class="brd-table">
-        <tr><th>Req ID</th><th>Description</th><th>Priority</th><th>Stakeholder</th></tr>
-        ${S.requirements.map((r,i)=>`<tr><td>${esc(r.id||'BRD-00'+(i+1))}</td><td>${ev(r.description||r.title)}</td><td><strong>${ev(r.priority)}</strong></td><td>${ev(r.stakeholder)}</td></tr>`).join('')}
-      </table>
-    </div>
-
-    <div class="brd-section">
-      <div class="brd-section-hdr"><div class="brd-section-num">5</div><div class="brd-section-title">Functional Requirements (Detail)</div></div>
-      ${reqRows}
-    </div>
-
-    <div class="brd-section">
-      <div class="brd-section-hdr"><div class="brd-section-num">6</div><div class="brd-section-title">Non-Functional Requirements</div></div>
-      <ul class="brd-bullet">${S.nfrs.map(n=>`<li><strong>${esc(n.category)}:</strong> ${ev(n.requirement)}</li>`).join('')}</ul>
-    </div>
-
-    <div class="brd-section">
-      <div class="brd-section-hdr"><div class="brd-section-num">7</div><div class="brd-section-title">Constraints and Assumptions</div></div>
-      ${listHTML(S.constraints)}
-    </div>
-
-    <div class="brd-section">
-      <div class="brd-section-hdr"><div class="brd-section-num">8</div><div class="brd-section-title">Stakeholders & Roles</div></div>
-      <table class="brd-table">
-        <tr><th>Name / Role</th><th>Type</th><th>Involvement</th><th>Communication Needs</th></tr>
-        ${stRows}
-      </table>
-    </div>
-
-    ${docSection}
-  </div>`;
+{
+  "title": "project name if mentioned",
+  "sponsor": "sponsor names if mentioned",
+  "objective": "business objective extracted from the document",
+  "problem": "problem being solved, described clearly",
+  "audience": "who is affected / who are users",
+  "vision": "future state or goal",
+  "roiValue": "business value or ROI if mentioned",
+  "successMetrics": "how success will be measured",
+  "dependencies": "dependencies mentioned",
+  "inScope": ["scope item 1", "scope item 2"],
+  "outScope": ["out of scope item 1"],
+  "constraints": ["constraint or assumption 1", "constraint 2"],
+  "timelines": ["timeline item 1", "timeline item 2"],
+  "risks": ["risk 1", "risk 2"],
+  "requirements": [
+    {
+      "title": "requirement title",
+      "description": "clear requirement description",
+      "businessValue": "why this matters",
+      "acceptanceCriteria": "how we know it is done",
+      "priority": "High",
+      "stakeholder": "who owns this"
+    }
+  ],
+  "nfrs": [
+    { "cat": "Availability", "req": "specific NFR extracted from document" }
+  ],
+  "stakeholders": [
+    { "name": "Person Name", "type": "Sponsor", "involvement": "Approver", "commsNeeds": "what they need" }
+  ],
+  "docSummary": "2-3 sentence summary of this document for the executive summary"
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// DOCUMENT ACTIONS
-// ══════════════════════════════════════════════════════════════════════════════
-function addDocFromPaste(){
-  const name    = document.getElementById('doc-name').value.trim();
-  const content = document.getElementById('doc-text').value.trim();
-  if(!name||!content){ alert('Please enter a document name and content'); return; }
-  S.businessDocuments.push({ name, content, addedDate: new Date().toISOString() });
-  renderStep(4);
+Rules:
+- Strip ALL timestamps (e.g. "48 minutes 14 seconds", "1:30", "0:52")
+- Strip speaker names from content (keep names only in stakeholders list)
+- Infer BRD sections from context — do not copy verbatim, synthesize into clean business language
+- Only include sections where real information exists
+- Return ONLY the JSON object, no markdown, no explanation
+
+Document: ${rawContent}`;
+
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2000,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if(!resp.ok) throw new Error(`API ${resp.status}`);
+  const data = await resp.json();
+  const text = data.content?.find(b=>b.type==='text')?.text || '';
+
+  // Extract JSON from response
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if(!jsonMatch) throw new Error('No JSON in response');
+  const extracted = JSON.parse(jsonMatch[0]);
+
+  mergeExtracted(extracted, docName);
+
+  statusEl.innerHTML = `<div class="ai-status done">✓ AI successfully extracted and integrated content from "${docName}" into BRD sections.</div>`;
 }
 
-function addDocFromFile(input){
+function mergeExtracted(E, docName){
+  // Merge top-level fields (don't overwrite if already filled)
+  const merge = (field, val) => {
+    if(val && (!D[field] || D[field].length < 5)) D[field] = val;
+    else if(val && D[field] && D[field].length > 4 && !D[field].includes(val.substring(0,30))){
+      D[field] = D[field] + '\n\n[From ' + docName + ':] ' + val;
+    }
+  };
+
+  if(E.title)          merge('title',          E.title);
+  if(E.sponsor)        merge('sponsor',         E.sponsor);
+  if(E.objective)      merge('objective',       E.objective);
+  if(E.problem)        merge('problem',         E.problem);
+  if(E.audience)       merge('audience',        E.audience);
+  if(E.vision)         merge('vision',          E.vision);
+  if(E.roiValue)       merge('roiValue',        E.roiValue);
+  if(E.successMetrics) merge('successMetrics',  E.successMetrics);
+  if(E.dependencies)   merge('dependencies',    E.dependencies);
+
+  // Arrays: append unique items
+  const appendUnique = (field, arr) => {
+    if(!arr||!arr.length) return;
+    const existing = D[field].map(v=>v.trim().toLowerCase());
+    arr.forEach(item => {
+      const trimmed = (item||'').trim();
+      if(trimmed && !existing.includes(trimmed.toLowerCase())){
+        D[field].push(trimmed);
+        existing.push(trimmed.toLowerCase());
+      }
+    });
+    D[field] = D[field].filter(Boolean);
+  };
+
+  appendUnique('inScope',     E.inScope);
+  appendUnique('outScope',    E.outScope);
+  appendUnique('constraints', E.constraints);
+  appendUnique('timelines',   E.timelines||[]);
+  appendUnique('risks',       E.risks||[]);
+
+  // Requirements: merge or add
+  if(E.requirements && E.requirements.length){
+    E.requirements.forEach((er, i) => {
+      const existing = D.requirements.find(r => r.title && er.title &&
+        r.title.toLowerCase().includes(er.title.toLowerCase().substring(0,12)));
+      if(existing){
+        // Enrich existing requirement with extracted context
+        if(er.description && !existing.description) existing.description = er.description;
+        if(er.businessValue && !existing.businessValue) existing.businessValue = er.businessValue;
+        if(er.acceptanceCriteria && !existing.acceptanceCriteria) existing.acceptanceCriteria = er.acceptanceCriteria;
+        existing.context = existing.context || [];
+        if(er.description) existing.context.push({ src: docName, text: er.description.substring(0,200) });
+      } else {
+        const n = D.requirements.length + 1;
+        D.requirements.push({
+          id: `BRD-00${n}`,
+          title: er.title||'',
+          priority: er.priority||'High',
+          description: er.description||'',
+          businessValue: er.businessValue||'',
+          acceptanceCriteria: er.acceptanceCriteria||'',
+          actors: er.actors||'',
+          stakeholder: er.stakeholder||'',
+          context: [{ src: docName, text: (er.description||'').substring(0,200) }]
+        });
+      }
+    });
+    // Re-number
+    D.requirements.forEach((r,i) => { if(!r.id||r.id==='BRD-001'&&i>0) r.id=`BRD-00${i+1}`; });
+  }
+
+  // NFRs: add if not duplicated
+  if(E.nfrs && E.nfrs.length){
+    E.nfrs.forEach(en => {
+      if(!D.nfrs.find(n=>n.cat===en.cat&&n.req)) D.nfrs.push({cat:en.cat||'Performance', req:en.req||'', pri:en.pri||'High'});
+      else {
+        const existing = D.nfrs.find(n=>n.cat===en.cat);
+        if(existing && !existing.req) existing.req = en.req;
+      }
+    });
+  }
+
+  // Stakeholders: merge
+  if(E.stakeholders && E.stakeholders.length){
+    E.stakeholders.forEach(es => {
+      if(!D.stakeholders.find(s=>s.name&&es.name&&s.name.toLowerCase().includes(es.name.toLowerCase().substring(0,8)))){
+        D.stakeholders.push({ name:es.name||'', type:es.type||'SME', involvement:es.involvement||'Contributor', commsNeeds:es.commsNeeds||'' });
+      }
+    });
+  }
+
+  // Timelines → constraints if not separate field
+  if(E.timelines && E.timelines.length){
+    appendUnique('constraints', E.timelines.map(t=>`Timeline: ${t}`));
+  }
+}
+
+async function reIntegrate(){
+  if(!D.documents.length){ alert('No documents to integrate'); return; }
+  const statusEl = document.getElementById('ai-status-area');
+  if(!statusEl) return;
+
+  // Reset context
+  D.requirements.forEach(r=>r.context=[]);
+
+  for(const doc of D.documents){
+    statusEl.innerHTML = `<div class="ai-status thinking"><div class="spinner"></div>Re-integrating "${doc.name}"…</div>`;
+    try{
+      await aiParseDocument(doc.name, doc.content, statusEl);
+    }catch(e){
+      statusEl.innerHTML = `<div class="ai-status error">⚠ Failed for "${doc.name}": ${e.message}</div>`;
+    }
+  }
+  persist();
+  render();
+}
+
+function addRawDoc(){
+  const name    = document.getElementById('dname').value.trim();
+  const content = document.getElementById('dtext').value.trim();
+  if(!name||!content){ alert('Enter a document name and content'); return; }
+  D.documents.push({ name, content, added: new Date().toISOString() });
+  document.getElementById('dname').value = '';
+  document.getElementById('dtext').value = '';
+  persist();
+  render();
+}
+
+function uploadDoc(input){
   const file = input.files[0];
   if(!file) return;
-  const name = document.getElementById('doc-name').value.trim() || file.name;
+  const name = document.getElementById('dname').value.trim() || file.name;
   const reader = new FileReader();
-  reader.onload = e => {
-    S.businessDocuments.push({ name, content: e.target.result, addedDate: new Date().toISOString() });
-    renderStep(4);
+  reader.onload = async e => {
+    let content = e.target.result;
+    // Strip RTF markup if needed
+    if(file.name.endsWith('.rtf')){
+      content = content.replace(/\{\\[^}]+\}|\\[a-z]+\d*\s?|[{}]/g,' ').replace(/\s+/g,' ').trim();
+    }
+    document.getElementById('dname').value = '';
+    input.value = '';
+    D.documents.push({ name, content, added: new Date().toISOString() });
+    const statusEl = document.getElementById('ai-status-area');
+    statusEl.innerHTML = `<div class="ai-status thinking"><div class="spinner"></div>Uploaded "${name}". Running AI extraction…</div>`;
+    try{
+      await aiParseDocument(name, content, statusEl);
+    }catch(err){
+      statusEl.innerHTML = `<div class="ai-status error">⚠ AI parse failed: ${err.message}. Document saved as raw reference.</div>`;
+    }
+    persist();
+    render();
   };
   reader.readAsText(file);
 }
 
 function removeDoc(i){
-  S.businessDocuments.splice(i,1);
-  S.requirements.forEach(r => r.businessContext = []);
-  renderStep(4);
+  D.documents.splice(i,1);
+  D.requirements.forEach(r=>r.context=[]);
+  persist();
+  render();
 }
 
-function integrateDocuments(){
-  if(S.businessDocuments.length === 0){ alert('Add documents first'); return; }
-  S.requirements.forEach(req => {
-    req.businessContext = [];
-    const keywords = [req.title, req.description, req.businessValue, req.acceptanceCriteria]
-      .filter(Boolean).join(' ').toLowerCase().split(/\s+/).filter(w => w.length > 4);
-    S.businessDocuments.forEach(doc => {
-      const lines = doc.content.split('\n');
-      const scored = lines.filter(l => l.trim().length > 15).map(line => {
-        const ll = line.toLowerCase();
-        const score = keywords.filter(k => ll.includes(k)).length;
-        return { text: line.trim().substring(0,200), score, doc: doc.name };
-      }).filter(l => l.score > 0).sort((a,b) => b.score - a.score);
-      if(scored.length > 0) req.businessContext.push(...scored.slice(0,2));
-    });
-  });
-  renderStep(4);
-  alert('✓ Documents integrated into requirements!');
+// ─── PREVIEW ─────────────────────────────────────────────────────────────────
+function renderPreview(){
+  const now = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const ev = v => v ? `<span>${x(v)}</span>` : `<span class="empty">[ to be completed ]</span>`;
+  const list = arr => {
+    const items = arr.filter(Boolean);
+    return items.length ? `<ul class="brd-bullets">${items.map(i=>`<li>${x(i)}</li>`).join('')}</ul>`
+                        : `<p class="empty" style="font-size:12px">[ to be defined ]</p>`;
+  };
+
+  const reqRows = D.requirements.map(r=>`
+    <div class="req-blk">
+      <div class="req-blk-hdr">${x(r.id||'BRD-001')}: ${x(r.title||'[ title ]')}</div>
+      <table class="tbl">
+        <tr><td class="lbl">Priority</td><td><strong>${x(r.priority)}</strong></td></tr>
+        <tr><td class="lbl">Description</td><td>${ev(r.description)}</td></tr>
+        <tr><td class="lbl">Business Value</td><td>${ev(r.businessValue)}</td></tr>
+        <tr><td class="lbl">Acceptance Criteria</td><td>${ev(r.acceptanceCriteria)}</td></tr>
+        <tr><td class="lbl">Primary Actors</td><td>${ev(r.actors)}</td></tr>
+        ${r.context&&r.context.length?`<tr><td class="lbl">Source Context</td><td><div class="ctx-badge"><strong>📄 From documents</strong><br>${r.context.map(c=>`<em>[${x(c.src)}]</em> ${x(c.text)}`).join('<br>')}</div></td></tr>`:''}
+      </table>
+    </div>`).join('');
+
+  const stRows = D.stakeholders.map((s,i)=>
+    `<tr><td>${ev(s.name)}</td><td>${x(s.type)}</td><td>${x(s.involvement)}</td><td>${ev(s.commsNeeds)}</td></tr>`
+  ).join('');
+
+  const docSec = D.documents.length ? `
+    <div class="brd-sec">
+      <div class="brd-sec-hdr"><div class="brd-sec-num">9</div><div class="brd-sec-title">Appendix: Source Documents & Interviews</div></div>
+      <p style="font-size:11px;color:#666;margin-bottom:10px;font-style:italic">The following documents informed the requirements above.</p>
+      ${D.documents.map(d=>`<div class="brd-sub">${x(d.name)}</div><p style="font-size:11px;color:#555;white-space:pre-line;line-height:1.55">${x(d.content)}</p>`).join('')}
+    </div>` : '';
+
+  document.getElementById('preview').innerHTML = `
+  <div class="brd-cover">
+    <h1>Business Requirements Document</h1><h2>(BRD)</h2>
+    <p>Project Name: ${x(D.title||'[Insert Project Name]')}<br>
+    Date: ${now} | Version: ${x(D.version||'1.0 DRAFT')}</p>
+  </div>
+  <div class="brd-body">
+
+    <div class="brd-sec">
+      <div class="brd-sec-hdr"><div class="brd-sec-num">1</div><div class="brd-sec-title">Document Control</div></div>
+      <table class="tbl">
+        <tr><th>Role</th><th>Name</th><th>Signature / Approval</th><th>Date</th></tr>
+        <tr><td>Project Sponsor</td><td>${ev(D.sponsor)}</td><td></td><td></td></tr>
+        <tr><td>Business Analyst</td><td>${ev(D.docOwner)}</td><td></td><td></td></tr>
+        <tr><td>Technical Lead</td><td></td><td></td><td></td></tr>
+      </table>
+    </div>
+
+    <div class="brd-sec">
+      <div class="brd-sec-hdr"><div class="brd-sec-num">2</div><div class="brd-sec-title">Executive Summary</div></div>
+      <p style="font-size:12px;color:#555;font-style:italic;padding:10px;background:#fff8e7;border-radius:4px;line-height:1.6">${ev([D.objective,D.problem].filter(Boolean).join('. '))}</p>
+    </div>
+
+    <div class="brd-sec">
+      <div class="brd-sec-hdr"><div class="brd-sec-num">3</div><div class="brd-sec-title">Project Scope</div></div>
+      <div class="brd-sub">3.1 In-Scope</div>${list(D.inScope)}
+      <div class="brd-sub">3.2 Out-of-Scope</div>${list(D.outScope)}
+    </div>
+
+    <div class="brd-sec">
+      <div class="brd-sec-hdr"><div class="brd-sec-num">4</div><div class="brd-sec-title">Business Requirements Summary</div></div>
+      <table class="tbl">
+        <tr><th>Req ID</th><th>Description</th><th>Priority</th><th>Stakeholder</th></tr>
+        ${D.requirements.map((r,i)=>`<tr><td>${x(r.id||'BRD-00'+(i+1))}</td><td>${ev(r.description||r.title)}</td><td><strong>${x(r.priority)}</strong></td><td>${ev(r.stakeholder)}</td></tr>`).join('')}
+      </table>
+    </div>
+
+    <div class="brd-sec">
+      <div class="brd-sec-hdr"><div class="brd-sec-num">5</div><div class="brd-sec-title">Functional Requirements (Detail)</div></div>
+      ${reqRows}
+    </div>
+
+    <div class="brd-sec">
+      <div class="brd-sec-hdr"><div class="brd-sec-num">6</div><div class="brd-sec-title">Non-Functional Requirements</div></div>
+      <ul class="brd-bullets">${D.nfrs.map(n=>`<li><strong>${x(n.cat)}:</strong> ${n.req?x(n.req):'<span class="empty">[ to be completed ]</span>'}</li>`).join('')}</ul>
+    </div>
+
+    <div class="brd-sec">
+      <div class="brd-sec-hdr"><div class="brd-sec-num">7</div><div class="brd-sec-title">Constraints and Assumptions</div></div>
+      ${list(D.constraints)}
+    </div>
+
+    <div class="brd-sec">
+      <div class="brd-sec-hdr"><div class="brd-sec-num">8</div><div class="brd-sec-title">Stakeholders & Roles</div></div>
+      <table class="tbl">
+        <tr><th>Name / Role</th><th>Type</th><th>Involvement</th><th>Communication Needs</th></tr>
+        ${stRows}
+      </table>
+    </div>
+
+    ${docSec}
+
+    <div class="brd-sec">
+      <div class="brd-sec-hdr"><div class="brd-sec-num">${D.documents.length?10:9}</div><div class="brd-sec-title">Approvals & Sign-Off</div></div>
+      <table class="tbl">
+        <tr><th>Stakeholder / Role</th><th>Signature</th><th>Date</th></tr>
+        <tr><td>Sponsor — ${ev(D.sponsor)}</td><td></td><td></td></tr>
+        <tr><td>BA/PM — ${ev(D.docOwner)}</td><td></td><td></td></tr>
+        <tr><td>IT Lead — [ name ]</td><td></td><td></td></tr>
+        <tr><td>Testing Lead — [ name ]</td><td></td><td></td></tr>
+      </table>
+    </div>
+
+  </div>`;
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// DOCX GENERATION (calls Node.js via Blob + server)
-// Since we're in a browser, we fall back to a well-structured RTF/DOCX via
-// blob. The real generation happens via a separate Node.js script on SharePoint.
-// We use docx npm built via CDN (docx-browser) as fallback.
-// ══════════════════════════════════════════════════════════════════════════════
+// ─── DOWNLOAD ─────────────────────────────────────────────────────────────────
+function downloadBRD(){
+  const now = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const fname = (D.title||'BRD').replace(/[^a-zA-Z0-9]+/g,'_')+'.rtf';
+  const e2 = s => String(s||'').replace(/\\/g,'\\\\').replace(/\{/g,'\\{').replace(/\}/g,'\\}').replace(/\r?\n/g,'\\line ');
+  const ev2 = v => v || '[ to be completed ]';
 
-async function generateAndDownloadDocx(){
-  // Use the Anthropic API to call our Node.js generator via a temp JSON payload
-  const fname = (S.title || 'BRD').replace(/[^a-zA-Z0-9]+/g,'_') + '.docx';
-  
-  // Signal to Claude to run the node script
-  if(window._claudeGenerate){
-    window._claudeGenerate(JSON.stringify(S), fname);
-    return;
-  }
-  
-  // Browser fallback: generate a clean, structured RTF that Word opens perfectly
-  generateRTF(fname);
-}
+  const sHdr = (num,title) =>
+    `\\trowd\\trkeep\\cellx720\\cellx9360`+
+    `{\\pard\\intbl\\keepn\\b\\f0\\fs26\\cf3 ${num}\\cell}`+
+    `{\\pard\\intbl\\keepn\\b\\f0\\fs22\\cf2\\caps ${e2(title)}\\cell}\\row\n`;
 
-function generateRTF(fname){
-  const now2 = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-  const esc2 = s => (s||'').replace(/\\/g,'\\\\').replace(/\{/g,'\\{').replace(/\}/g,'\\}').replace(/\n/g,'\\par ');
+  const tbl2 = (label, value, alt) =>
+    `\\trowd\\trkeep\\cellx2592\\cellx9360`+
+    `{\\pard\\intbl\\b\\f0\\fs20\\cf4 ${e2(label)}\\cell}`+
+    `{\\pard\\intbl\\f0\\fs20${alt?' \\highlight2':''} ${e2(ev2(value))}\\cell}\\row\n`;
 
-  const hdr = (text) => `{\\pard\\sb240\\sa80\\b\\fs28\\cf3 ${esc2(text)}\\par}`;
-  const sub = (text) => `{\\pard\\sb160\\sa60\\b\\fs24\\cf2 ${esc2(text)}\\par}`;
-  const p   = (text) => `{\\pard\\sa80\\fs22 ${esc2(text||'[ to be completed ]')}\\par}`;
+  const tbl4h = (a,b,c,d) =>
+    `\\trowd\\trkeep\\cellx2160\\cellx5040\\cellx6840\\cellx9360`+
+    `{\\pard\\intbl\\b\\f0\\fs20\\cf3 ${e2(a)}\\cell}`+
+    `{\\pard\\intbl\\b\\f0\\fs20\\cf3 ${e2(b)}\\cell}`+
+    `{\\pard\\intbl\\b\\f0\\fs20\\cf3 ${e2(c)}\\cell}`+
+    `{\\pard\\intbl\\b\\f0\\fs20\\cf3 ${e2(d)}\\cell}\\row\n`;
 
-  const row2 = (l,v) => `\\trowd\\trgaph115\\cellx2016\\cellx8748{\\pard\\intbl\\b\\fs22\\cf4 ${esc2(l)}\\cell}{\\pard\\intbl\\fs22 ${esc2(v||'')}\\cell}\\row`;
-  const row4h = (a,b,c,d) => `\\trowd\\trgaph115\\cellx2016\\cellx4032\\cellx6048\\cellx8748{\\pard\\intbl\\b\\fs22\\cf5 ${esc2(a)}\\cell}{\\pard\\intbl\\b\\fs22\\cf5 ${esc2(b)}\\cell}{\\pard\\intbl\\b\\fs22\\cf5 ${esc2(c)}\\cell}{\\pard\\intbl\\b\\fs22\\cf5 ${esc2(d)}\\cell}\\row`;
-  const row4  = (a,b,c,d) => `\\trowd\\trgaph115\\cellx2016\\cellx4032\\cellx6048\\cellx8748{\\pard\\intbl\\fs22 ${esc2(a)}\\cell}{\\pard\\intbl\\fs22 ${esc2(b)}\\cell}{\\pard\\intbl\\fs22 ${esc2(c)}\\cell}{\\pard\\intbl\\fs22 ${esc2(d)}\\cell}\\row`;
+  const tbl4 = (a,b,c,d) =>
+    `\\trowd\\trkeep\\cellx2160\\cellx5040\\cellx6840\\cellx9360`+
+    `{\\pard\\intbl\\f0\\fs20 ${e2(ev2(a))}\\cell}`+
+    `{\\pard\\intbl\\f0\\fs20 ${e2(ev2(b))}\\cell}`+
+    `{\\pard\\intbl\\f0\\fs20 ${e2(ev2(c))}\\cell}`+
+    `{\\pard\\intbl\\f0\\fs20 ${e2(ev2(d))}\\cell}\\row\n`;
 
-  const sHdr = (num, title) =>
-    `\\trowd\\trgaph115\\cellx540\\cellx8748` +
-    `{\\pard\\intbl\\b\\fs26\\cf5 ${num}\\cell}` +
-    `{\\pard\\intbl\\b\\fs24\\cf3 ${esc2(title.toUpperCase())}\\cell}\\row`;
+  const bullet = item =>
+    `{\\pard\\li360\\fi-360\\f0\\fs20\\bullet  ${e2(item)}\\par}\n`;
 
-  const reqBlocks = S.requirements.map(r => [
-    sub(`${r.id||'BRD-001'}: ${r.title||''}`),
-    row2('Priority', r.priority||'High'),
-    row2('Description', r.description||''),
-    row2('Business Value', r.businessValue||''),
-    row2('Acceptance Criteria', r.acceptanceCriteria||''),
-    row2('Primary Actors', r.actors||''),
-    ...(r.businessContext&&r.businessContext.length>0
-      ? [row2('Business Context', r.businessContext.map(c=>`[${c.doc}]: ${c.text}`).join('\n'))]
-      : []),
-    '{\\pard\\sa60 \\par}',
-  ].join('\n')).join('\n');
+  const reqBlock = (r,i) => {
+    const ctx = r.context&&r.context.length
+      ? tbl2('Source Context', r.context.map(c=>`[${c.src}]: ${c.text}`).join(' | '), true)
+      : '';
+    return `{\\pard\\sb120\\b\\f0\\fs22\\cf2 ${e2(r.id||'BRD-00'+(i+1))}: ${e2(r.title)}\\par}\n`+
+      `\\trowd\\cellx2592\\cellx9360`+
+      `{\\pard\\intbl\\b\\f0\\fs20\\cf4 Priority\\cell}{\\pard\\intbl\\f0\\fs20 ${e2(r.priority)}\\cell}\\row\n`+
+      tbl2('Description',         r.description,        false)+
+      tbl2('Business Value',       r.businessValue,       true)+
+      tbl2('Acceptance Criteria',  r.acceptanceCriteria,  false)+
+      tbl2('Primary Actors',       r.actors,              true)+
+      ctx+
+      `{\\pard\\sa80 \\par}\n`;
+  };
 
-  const stRows = S.stakeholders.map(s => row4(s.name||'', s.type||'', s.involvement||'', s.commsNeeds||'')).join('\n');
-  const inSc  = S.inScope.filter(Boolean).map(i=>`{\\pard\\li360\\fs22\\bullet  ${esc2(i)}\\par}`).join('');
-  const outSc = S.outScope.filter(Boolean).map(i=>`{\\pard\\li360\\fs22\\bullet  ${esc2(i)}\\par}`).join('');
-  const cons  = S.constraints.filter(Boolean).map(i=>`{\\pard\\li360\\fs22\\bullet  ${esc2(i)}\\par}`).join('');
-  const nfrB  = S.nfrs.map(n=>`{\\pard\\li360\\fs22\\bullet  {\\b ${esc2(n.category)}:} ${esc2(n.requirement)}\\par}`).join('');
-  const docSections = S.businessDocuments.map(d => `${sub(d.name)}\n${p(d.content)}`).join('\n');
+  const docSections = D.documents.map(d =>
+    `{\\pard\\sb120\\b\\f0\\fs22\\cf2 ${e2(d.name)}\\par}\n`+
+    `{\\pard\\f0\\fs20 ${e2(d.content)}\\par}\n{\\pard\\sa80 \\par}\n`
+  ).join('');
+
+  const inSc  = D.inScope.filter(Boolean).map(bullet).join('');
+  const outSc = D.outScope.filter(Boolean).map(bullet).join('');
+  const cons  = D.constraints.filter(Boolean).map(bullet).join('');
+  const nfrB  = D.nfrs.map(n=>bullet(`${n.cat}: ${ev2(n.req)}`)).join('');
 
   const rtf = `{\\rtf1\\ansi\\deff0
 {\\fonttbl{\\f0 Calibri;}}
 {\\colortbl ;\\red255\\green255\\blue255;\\red46\\green117\\blue182;\\red46\\green58\\blue78;\\red242\\green242\\blue242;\\red255\\green255\\blue255;}
-\\widowctrl\\hyphauto
-\\paperw12240\\paperh15840\\margl1440\\margr1440\\margt1440\\margb1440
-\\f0
+{\\*\\highlight2\\red240\\green255\\blue244;}
+\\widowctrl\\hyphauto\\f0
+\\paperw12240\\paperh15840\\margl1080\\margr1080\\margt1080\\margb1080
 
-{\\pard\\qc\\sb240\\b\\fs40\\cf3 Business Requirements Document\\par}
-{\\pard\\qc\\b\\fs30\\cf3 (BRD)\\par}
-{\\pard\\qc\\fs22\\cf2 Project Name: ${esc2(S.title||'[Insert Project Name]')}\\par}
-{\\pard\\qc\\fs22\\cf2 Date: ${esc2(now2)} | Version: ${esc2(S.version||'1.0 DRAFT')}\\par}
+{\\pard\\qc\\sb360\\b\\fs40\\cf3 Business Requirements Document\\par}
+{\\pard\\qc\\b\\fs28\\cf3 (BRD)\\par}
+{\\pard\\qc\\fs20\\cf2 Project Name: ${e2(D.title||'[Insert Project Name]')}\\par}
+{\\pard\\qc\\fs20\\cf2 Date: ${e2(now)} | Version: ${e2(D.version||'1.0 DRAFT')}\\par}
 {\\pard\\sa240 \\par}
 
 ${sHdr(1,'Document Control')}
-${row4h('Role','Name','Signature / Approval','Date')}
-${row4('Project Sponsor', S.sponsor||'', '', '')}
-${row4('Business Analyst', S.docOwner||'', '', '')}
-${row4('Technical Lead', '', '', '')}
+${tbl4h('Role','Name','Signature / Approval','Date')}
+${tbl4('Project Sponsor',D.sponsor,'','')}
+${tbl4('Business Analyst',D.docOwner,'','')}
+${tbl4('Technical Lead','','','')}
 {\\pard\\sa120 \\par}
 
 ${sHdr(2,'Executive Summary')}
-${p([S.objective, S.problem].filter(Boolean).join(' '))}
-{\\pard\\sa80 \\par}
+{\\pard\\f0\\fs20\\highlight2 ${e2([D.objective,D.problem].filter(Boolean).join('. '))||'[ Insert high-level summary here ]'}\\par}
+{\\pard\\sa100 \\par}
 
 ${sHdr(3,'Project Scope')}
-${sub('3.1 In-Scope')}
-${inSc||p('[ to be defined ]')}
-${sub('3.2 Out-of-Scope')}
-${outSc||p('[ to be defined ]')}
+{\\pard\\b\\f0\\fs22\\cf2 3.1 In-Scope\\par}
+${inSc||bullet('[ to be defined ]')}
+{\\pard\\b\\f0\\fs22\\cf2 3.2 Out-of-Scope\\par}
+${outSc||bullet('[ to be defined ]')}
 {\\pard\\sa80 \\par}
 
 ${sHdr(4,'Business Requirements Summary')}
-${row4h('Req ID','Description','Priority','Stakeholder')}
-${S.requirements.map((r,i)=>row4(r.id||'BRD-00'+(i+1), r.description||r.title||'', r.priority||'High', r.stakeholder||'')).join('\n')}
+${tbl4h('Req ID','Description','Priority','Stakeholder')}
+${D.requirements.map((r,i)=>tbl4(r.id||'BRD-00'+(i+1),r.description||r.title||'',r.priority||'High',r.stakeholder||'')).join('')}
 {\\pard\\sa80 \\par}
 
 ${sHdr(5,'Functional Requirements (Detail)')}
-${reqBlocks}
+${D.requirements.map((r,i)=>reqBlock(r,i)).join('')}
 
 ${sHdr(6,'Non-Functional Requirements')}
-${nfrB||p('[ to be defined ]')}
+${nfrB||bullet('[ to be defined ]')}
 {\\pard\\sa80 \\par}
 
 ${sHdr(7,'Constraints and Assumptions')}
-${cons||p('[ to be defined ]')}
+${cons||bullet('[ to be defined ]')}
 {\\pard\\sa80 \\par}
 
 ${sHdr(8,'Stakeholders & Roles')}
-${row4h('Name / Role','Type','Involvement','Communication Needs')}
-${stRows}
+${tbl4h('Name / Role','Type','Involvement','Communication Needs')}
+${D.stakeholders.map(s=>tbl4(s.name,s.type,s.involvement,s.commsNeeds)).join('')}
 {\\pard\\sa80 \\par}
 
-${S.businessDocuments.length > 0 ? `
-${sHdr(9,'Appendix: Source Documents & Interviews')}
-${p('The following documents informed the requirements above.')}
-${docSections}
-{\\pard\\sa80 \\par}
-` : ''}
+${D.documents.length ? sHdr(9,'Appendix: Source Documents & Interviews')+
+  `{\\pard\\i\\f0\\fs20 The following documents informed the requirements above.\\par}\n{\\pard\\sa60 \\par}\n`+
+  docSections : ''}
 
-{\\pard\\brdrb\\brdrs\\brdrw10 \\par}
-{\\pard\\qc\\fs18\\cf2 Portico Benefit Services | Business Requirements Document | Confidential – Internal Use Only\\par}
+${sHdr(D.documents.length?10:9,'Approvals & Sign-Off')}
+${tbl4h('Stakeholder / Role','Signature','Date','')}
+${tbl4(`Sponsor — ${D.sponsor||'[ name ]'}`,'','','')}
+${tbl4(`BA/PM — ${D.docOwner||'[ name ]'}`,'','','')}
+${tbl4('IT Lead — [ name ]','','','')}
+${tbl4('Testing Lead — [ name ]','','','')}
+{\\pard\\sa80 \\par}
+
+{\\pard\\brdrb\\brdrs\\brdrw10\\brdrsp60 \\par}
+{\\pard\\qc\\f0\\fs18\\cf2 Portico Benefit Services | Business Requirements Document | Confidential \\emdash  Internal Use Only\\par}
 }`;
 
-  const blob = new Blob([rtf], { type:'application/rtf' });
+  const blob = new Blob([rtf], {type:'application/rtf'});
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
-  a.href = url;
-  a.download = fname.replace('.docx','.rtf');
-  a.click();
+  a.href=url; a.download=fname; a.click();
   URL.revokeObjectURL(url);
 }
 
-function generateAndDownload(){ generateAndDownloadDocx(); }
+// ─── SAVE / LOAD ──────────────────────────────────────────────────────────────
+function getSaved(){ try{ return JSON.parse(localStorage.getItem(SAVED)||'[]'); }catch(e){ return []; } }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// SAVE / LOAD
-// ══════════════════════════════════════════════════════════════════════════════
-function getSavedList(){
-  try{ return JSON.parse(localStorage.getItem(SAVED_KEY)||'[]'); }catch(e){ return []; }
-}
-
-function saveCurrentBRD(){
-  const name = prompt('Save BRD as:', S.title || 'New BRD');
+function saveBRD(){
+  const name = prompt('Save BRD as:', D.title||'New BRD');
   if(!name) return;
-  S.title = S.title || name;
-  const saved = getSavedList();
-  saved.unshift({ ...JSON.parse(JSON.stringify(S)), savedDate: new Date().toISOString() });
-  localStorage.setItem(SAVED_KEY, JSON.stringify(saved.slice(0, 20)));
+  D.title = D.title || name;
+  const saved = getSaved();
+  saved.unshift({...JSON.parse(JSON.stringify(D)), savedAt: new Date().toISOString()});
+  localStorage.setItem(SAVED, JSON.stringify(saved.slice(0,20)));
   alert(`✓ Saved as "${name}"`);
-  gotoStep(5);
+  goto(5);
 }
 
-function loadSaved(i){
-  const saved = getSavedList();
-  if(saved[i]){ S = {...S, ...saved[i]}; gotoStep(1); refreshPreview(); }
-}
+function loadSaved(i){ const s=getSaved(); if(s[i]){ D={...blankState(),...s[i]}; goto(1); } }
+function loadAndDownload(i){ loadSaved(i); setTimeout(downloadBRD, 200); }
+function deleteSaved(i){ if(!confirm('Delete?')) return; const s=getSaved(); s.splice(i,1); localStorage.setItem(SAVED,JSON.stringify(s)); render(); }
+function newBRD(){ if(!confirm('Start new BRD? Unsaved changes will be lost.')) return; D=blankState(); goto(1); }
 
-function downloadSaved(i){
-  const saved = getSavedList();
-  if(saved[i]){ S = {...S, ...saved[i]}; generateAndDownload(); }
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function addReq(){
+  D.requirements.push({id:`BRD-00${D.requirements.length+1}`,title:'',priority:'High',description:'',businessValue:'',acceptanceCriteria:'',actors:'',stakeholder:'',context:[]});
+  render();
 }
+function showPane(showId,hideId,btn){
+  document.getElementById(showId).style.display='block';
+  document.getElementById(hideId).style.display='none';
+  btn.closest('.subtabs').querySelectorAll('.stab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+const x = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const rp = () => { persist(); renderPreview(); };
 
-function deleteSaved(i){
-  if(!confirm('Delete this saved BRD?')) return;
-  const saved = getSavedList();
-  saved.splice(i,1);
-  localStorage.setItem(SAVED_KEY, JSON.stringify(saved));
-  renderStep(5);
-}
-
-function newDocument(){
-  if(!confirm('Start a new blank BRD? Unsaved changes will be lost.')) return;
-  S = {
-    title:'', sponsor:'', docOwner:'', businessUnit:'', version:'1.0 DRAFT',
-    objective:'', problem:'', audience:'', userCount:'', roiValue:'', successMetrics:'',
-    moscow:'Must Have', targetDate:'', dependencies:'', vision:'', strategy:'',
-    inScope:['','',''], outScope:['',''],
-    stakeholders:[{name:'',type:'Sponsor',involvement:'Approver',commsNeeds:'Executive summary updates'}],
-    requirements:[{id:'BRD-001',title:'',priority:'High',description:'',businessValue:'',acceptanceCriteria:'',actors:'',stakeholder:'',businessContext:[]}],
-    nfrs:[{category:'Availability',requirement:'',priority:'High'},{category:'Security',requirement:'',priority:'High'},{category:'Performance',requirement:'',priority:'Medium'}],
-    constraints:['',''],
-    businessDocuments:[],
-    glossary:[{term:'SME',definition:'Subject Matter Expert'},{term:'UAT',definition:'User Acceptance Testing'},{term:'BRD',definition:'Business Requirements Document'}]
-  };
-  gotoStep(1);
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// HELPER MUTATIONS
-// ══════════════════════════════════════════════════════════════════════════════
-function addScope(type){
-  if(type==='in') S.inScope.push(''); else S.outScope.push('');
-  renderStep(2);
-}
-function removeScope(type,i){
-  if(type==='in') S.inScope.splice(i,1); else S.outScope.splice(i,1);
-  renderStep(2);
-}
-function addStakeholder(){
-  S.stakeholders.push({name:'',type:'SME',involvement:'Contributor',commsNeeds:''});
-  renderStep(2);
-}
-function removeStakeholder(i){ S.stakeholders.splice(i,1); renderStep(2); }
-function addRequirement(){
-  const n = S.requirements.length + 1;
-  S.requirements.push({id:`BRD-00${n}`,title:'',priority:'High',description:'',businessValue:'',acceptanceCriteria:'',actors:'',stakeholder:'',businessContext:[]});
-  renderStep(3);
-}
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function refresh(){ refreshPreview(); }
-
-// ══════════════════════════════════════════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════════════════════════════════════════
-window.addEventListener('load', ()=>{
-  loadState();
-  gotoStep(1);
-
-  // Add Save button to topbar dynamically
-  const tbr = document.querySelector('.tb-right');
-  const saveBtn = document.createElement('button');
-  saveBtn.className = 'btn btn-gray btn-sm';
-  saveBtn.textContent = '💾 Save BRD';
-  saveBtn.onclick = saveCurrentBRD;
-  tbr.insertBefore(saveBtn, tbr.children[1]);
-});
+// ─── INIT ────────────────────────────────────────────────────────────────────
+window.addEventListener('load', ()=>{ load(); goto(1); });
 </script>
 </body>
 </html>
