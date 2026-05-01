@@ -442,56 +442,147 @@ const steps = {
 };
 
 // ─── SMARTSHEET EXTRACTION ────────────────────────────────────────────────────
+// Synonym map: each field has multiple aliases so renamed/reordered columns still match
+const FIELD_SYNONYMS = {
+  title:          ['opportunity title','title','opportunity name','project name','opp title','name'],
+  sponsor:        ['sponsor','sponsors','sponsored by','who are the sponsors'],
+  docOwner:       ['owner','document owner','analyst','ba','pm','assigned to','created by'],
+  businessUnit:   ['business unit','unit','department','team','org'],
+  targetDate:     ['target date','deadline','due date','date needed','need by','when','go live','go-live'],
+  moscow:         ['moscow','must have','priority','priority score','moscow score'],
+  objective:      ['business objective','objective','goal','what objective','aligns to','alignment','business obj'],
+  problem:        ['problem statement','problem','what problem','problem to solve','issue','challenge','description','outlines'],
+  audience:       ['who are we solving','audience','segment','who is affected','solving for','who we','members affected'],
+  userCount:      ['how many','user count','users affected','groups affected','number of users','number of','affected users'],
+  roiValue:       ['targeted value','roi','cost savings','return on investment','value','financial impact','cost neutral'],
+  successMetrics: ['success metrics','how will','measured','kpi','metrics','measure impact','success measure'],
+  vision:         ['future state','vision','future state vision','desired end state','to be state'],
+  dependencies:   ['dependencies','dependency','depends on','blockers','known dependencies'],
+  strategy:       ['existing strategy','strategy','connected to','strategic connection','initiative'],
+  confidence:     ['confidence','confidence %','certainty'],
+  impactScore:    ['impact score','impact','score','impact criteria'],
+  severity:       ['severity','impact if not solved','impact if','consequence','severity impact'],
+};
+
+function norm(s){ return (s||'').toLowerCase().replace(/[^a-z0-9\s]/g,'').trim(); }
+
+function scoreMatch(colHeader, aliases){
+  const nh = norm(colHeader);
+  for(const alias of aliases){
+    const na = norm(alias);
+    if(nh === na) return 100;                          // exact match
+    if(nh.includes(na) || na.includes(nh)) return 80; // substring match
+    // word overlap
+    const hw = new Set(nh.split(/\s+/));
+    const aw = na.split(/\s+/);
+    const overlap = aw.filter(w => w.length > 2 && hw.has(w)).length;
+    if(overlap > 0) return 40 + overlap * 10;
+  }
+  return 0;
+}
+
+function buildColMap(headers){
+  const map = {}; // field → column index
+  headers.forEach((h, colIdx) => {
+    let bestField = null, bestScore = 30; // minimum threshold
+    for(const [field, aliases] of Object.entries(FIELD_SYNONYMS)){
+      const score = scoreMatch(h, aliases);
+      if(score > bestScore){ bestScore = score; bestField = field; }
+    }
+    if(bestField) map[bestField] = colIdx;
+  });
+  return map;
+}
+
 function extractSmartsheet(){
-  const text = document.getElementById('ss-paste').value.trim();
-  if(!text){ alert('Paste Smartsheet data first'); return; }
+  const raw = document.getElementById('ss-paste').value;
+  if(!raw.trim()){ alert('Paste your Smartsheet data first'); return; }
 
-  // Try tab-separated headers/values
-  const lines = text.split('\n').filter(l=>l.trim());
-  const pairs = {};
+  const lines = raw.split('\n').map(l => l.trimEnd()).filter(l => l.trim());
+  let matched = 0;
 
+  // ── FORMAT 1: Two rows (headers row + values row, tab-separated) ──────────
+  // This is what you get when you copy a header row then a data row from Smartsheet/Excel
   if(lines.length >= 2){
     const hdrs = lines[0].split('\t');
     const vals = lines[1].split('\t');
-    if(hdrs.length === vals.length && hdrs.length > 2){
-      hdrs.forEach((h,i) => { pairs[h.trim().toLowerCase()] = vals[i]?.trim()||''; });
+    if(hdrs.length >= 2){
+      const colMap = buildColMap(hdrs);
+      for(const [field, colIdx] of Object.entries(colMap)){
+        const val = vals[colIdx]?.trim();
+        if(val && val !== '—' && val !== '-' && val.toLowerCase() !== 'null'){
+          D[field] = val;
+          matched++;
+        }
+      }
     }
   }
 
-  // Also try key:value or key\tvalue on same line
-  lines.forEach(line => {
-    const m = line.match(/^([^:\t]{3,50})[\t:]\s*(.+)$/);
-    if(m) pairs[m[1].trim().toLowerCase()] = m[2].trim();
-  });
+  // ── FORMAT 2: Single row only (values, no headers) — use positional PASTE_MAP ──
+  // This is what you get when you copy just a data row from Smartsheet
+  if(matched === 0 && lines.length === 1){
+    const cols = lines[0].split('\t');
+    const PASTE_MAP = {
+      0:'title', 1:'problem', 2:'targetDate', 3:'moscow',
+      4:'confidence', 5:'impactScore', 6:'roiValue', 7:'severity',
+      8:'strategy', 9:'objective', 10:'audience', 11:'userCount',
+      12:'vision', 13:'successMetrics', 14:'dependencies', 15:'sponsor'
+    };
+    for(const [idx, field] of Object.entries(PASTE_MAP)){
+      const val = cols[parseInt(idx)]?.trim();
+      if(val && val !== '—' && val !== '-') { D[field] = val; matched++; }
+    }
+  }
 
-  const get = (...keys) => {
-    for(const k of keys)
-      for(const pk of Object.keys(pairs))
-        if(pk.includes(k)||k.includes(pk)) return pairs[pk];
-    return '';
-  };
+  // ── FORMAT 3: Key: Value pairs (one per line, e.g. from a form export) ────
+  if(matched === 0){
+    lines.forEach(line => {
+      const tabIdx = line.indexOf('\t');
+      const colonIdx = line.indexOf(':');
+      let key = '', val = '';
+      if(tabIdx > 0 && (colonIdx < 0 || tabIdx < colonIdx)){
+        key = line.substring(0, tabIdx).trim();
+        val = line.substring(tabIdx + 1).trim();
+      } else if(colonIdx > 0){
+        key = line.substring(0, colonIdx).trim();
+        val = line.substring(colonIdx + 1).trim();
+      }
+      if(!key || !val) return;
+      let bestField = null, bestScore = 30;
+      for(const [field, aliases] of Object.entries(FIELD_SYNONYMS)){
+        const score = scoreMatch(key, aliases);
+        if(score > bestScore){ bestScore = score; bestField = field; }
+      }
+      if(bestField){ D[bestField] = val; matched++; }
+    });
+  }
 
-  const assign = (field, ...keys) => { const v=get(...keys); if(v) D[field]=v; };
+  // ── FORMAT 4: Multi-row table (all rows are data, first row might be header) ──
+  // e.g. copying a full Smartsheet table view
+  if(matched === 0 && lines.length > 2){
+    const hdrs = lines[0].split('\t');
+    const colMap = buildColMap(hdrs);
+    // Try last row as the data row
+    const vals = lines[lines.length - 1].split('\t');
+    for(const [field, colIdx] of Object.entries(colMap)){
+      const val = vals[colIdx]?.trim();
+      if(val && val !== '—' && val !== '-'){ D[field] = val; matched++; }
+    }
+  }
 
-  assign('title',         'title','opportunity','project name','name');
-  assign('sponsor',       'sponsor');
-  assign('docOwner',      'owner','analyst','ba','pm');
-  assign('businessUnit',  'business unit','unit','team');
-  assign('targetDate',    'target date','deadline','due date','date');
-  assign('objective',     'objective','business obj','alignment','align');
-  assign('problem',       'problem','problem to solve','issue','challenge');
-  assign('audience',      'who','audience','solving for','users','members');
-  assign('userCount',     'user count','how many','number','groups affected');
-  assign('roiValue',      'roi','value','savings','cost','targeted value');
-  assign('successMetrics','success','metric','measure','kpi');
-  assign('moscow',        'moscow','priority','must');
-  assign('vision',        'vision','future state','future');
-  assign('dependencies',  'depend','dependency');
-  assign('strategy',      'strategy','initiative');
+  if(matched === 0){
+    alert('⚠ No fields could be matched.\n\nTips:\n• Copy the header row AND the data row from Smartsheet (select both rows, Ctrl+C)\n• Or copy a single data row\n• Make sure it\'s tab-separated (standard Smartsheet/Excel copy)');
+    return;
+  }
 
   render();
   persist();
-  alert('✓ Fields extracted! Review and edit in the form.');
+
+  // Show what was extracted
+  const extracted = Object.entries(FIELD_SYNONYMS)
+    .filter(([f]) => D[f] && D[f].trim())
+    .map(([f]) => f);
+  alert(`✓ Extracted ${matched} fields: ${extracted.join(', ')}.\n\nReview the form and edit anything that needs adjusting.`);
 }
 
 // ─── AI DOCUMENT PARSING ─────────────────────────────────────────────────────
