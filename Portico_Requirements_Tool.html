@@ -453,19 +453,26 @@ async function extractSmartsheet(){
 
   const apiKey = localStorage.getItem('portico-api-key');
 
-  // ── If API key available: use Claude to extract intelligently ──
   if(apiKey){
     try{
       await extractWithAI(raw, apiKey);
       btn.disabled = false; btn.innerHTML = origText;
       return;
     } catch(e){
-      // Fall through to local extraction if AI fails
-      console.warn('AI extraction failed, falling back to local:', e.message);
+      btn.disabled = false; btn.innerHTML = origText;
+      const msg = e.message||'';
+      const isCors = msg.includes('fetch')||msg.includes('Network')||msg.includes('CORS');
+      if(isCors){
+        alert('The browser blocked the API call (CORS).\n\nGitHub Pages restricts direct API calls from the browser.\n\nYour data will still be extracted using the local method. Paste your data in this format for best results:\n\nOpportunity Title: Florida Narrow Network\nSponsor: psterling, aalexander\nProblem: [problem statement]\nBusiness Objective: [objective]\nTarget Date: 10/01/2026');
+        extractLocally(raw);
+      } else {
+        alert('AI extraction error: '+msg+'\n\nTrying local extraction...');
+        extractLocally(raw);
+      }
+      return;
     }
   }
 
-  // ── Local fallback: synonym-based header matching ──
   extractLocally(raw);
   btn.disabled = false; btn.innerHTML = origText;
 }
@@ -543,65 +550,81 @@ ${raw}`;
 }
 
 function extractLocally(raw){
-  // Local fallback: works when no API key is set
-  // Handles key\tvalue or key:value pairs on separate lines
-  const lines = raw.split('\n').map(l=>l.trimEnd()).filter(l=>l.trim());
   const SYNONYMS = {
-    title:['opportunity title','title','project name','opportunity name'],
-    sponsor:['sponsor','sponsors'],
-    docOwner:['owner','ba','pm','analyst','document owner','assigned to'],
-    businessUnit:['business unit','unit','department'],
-    targetDate:['target date','deadline','due date','go live','go-live'],
-    moscow:['moscow','priority','must have'],
-    objective:['business objective','objective','goal','alignment'],
-    problem:['problem statement','problem','problem to solve'],
-    audience:['who are we solving','audience','solving for','who is affected'],
-    userCount:['how many','user count','number of users','groups affected'],
-    roiValue:['targeted value','roi','cost savings','value'],
-    successMetrics:['success metrics','kpi','metrics','how will'],
-    vision:['future state','vision','future state vision'],
-    dependencies:['dependencies','dependency','depends on'],
-    strategy:['existing strategy','strategy'],
-    severity:['severity','impact if not solved'],
-    confidence:['confidence'],
-    impactScore:['impact score'],
+    title:         ['opportunity title','title','project name','opportunity name','opp title'],
+    sponsor:       ['sponsor','sponsors','sponsored by'],
+    docOwner:      ['owner','document owner','ba','pm','analyst','assigned to','submitter'],
+    businessUnit:  ['business unit','unit','department','team'],
+    targetDate:    ['target date','deadline','due date','go live','go-live','need by'],
+    moscow:        ['moscow','must have','priority score','priority'],
+    objective:     ['business objective','objective','goal','alignment','what objective','aligns to'],
+    problem:       ['problem statement','problem to solve','problem','what problem','issue','challenge'],
+    audience:      ['who are we solving','audience','solving for','who is affected','who we'],
+    userCount:     ['how many','user count','number of users','groups affected','number of'],
+    roiValue:      ['targeted value','roi','cost savings','return on investment','value'],
+    successMetrics:['success metrics','kpi','metrics','how will','measure impact'],
+    vision:        ['future state','vision','future state vision','desired end state'],
+    dependencies:  ['dependencies','dependency','depends on','blockers','known dependencies'],
+    strategy:      ['existing strategy','strategy','connected to','initiative'],
+    severity:      ['severity','impact if not solved','impact if','consequence'],
+    confidence:    ['confidence','confidence %'],
+    impactScore:   ['impact score','impact','score'],
   };
   const norm = s => (s||'').toLowerCase().replace(/[^a-z0-9\s]/g,'').trim();
-
-  let matched = 0;
-  lines.forEach(line => {
-    // Try tab then colon as delimiter
-    const tIdx = line.indexOf('\t'), cIdx = line.indexOf(':');
-    let key='', val='';
-    if(tIdx>0){ key=line.substring(0,tIdx).trim(); val=line.substring(tIdx+1).trim(); }
-    else if(cIdx>0){ key=line.substring(0,cIdx).trim(); val=line.substring(cIdx+1).trim(); }
-    if(!key||!val||val.length<2) return;
-
+  function bestMatch(key){
     const nk = norm(key);
-    let bestField=null, bestScore=25;
+    let bestField=null, bestScore=28;
     for(const [field,aliases] of Object.entries(SYNONYMS)){
       for(const alias of aliases){
         const na=norm(alias);
         let score=0;
         if(nk===na) score=100;
         else if(nk.includes(na)||na.includes(nk)) score=80;
-        else {
-          const hw=new Set(nk.split(' ')), aw=na.split(' ');
-          score = aw.filter(w=>w.length>2&&hw.has(w)).length * 30;
-        }
-        if(score>bestScore){ bestScore=score; bestField=field; }
+        else{ const hw=new Set(nk.split(/\s+/)),aw=na.split(/\s+/); score=aw.filter(w=>w.length>2&&hw.has(w)).length*30; }
+        if(score>bestScore){bestScore=score;bestField=field;}
       }
     }
-    if(bestField){ D[bestField]=val; matched++; }
-  });
+    return bestField;
+  }
+
+  const lines = raw.split('\n').map(l=>l.trimEnd()).filter(l=>l.trim());
+  let matched=0;
+
+  // FORMAT A: Tab-grid (header row + data row — most common Smartsheet copy)
+  const r0=lines[0]?lines[0].split('\t'):[], r1=lines[1]?lines[1].split('\t'):[];
+  if(r0.length>=3 && r1.length>=3){
+    const colMap={};
+    r0.forEach((hdr,i)=>{ const f=bestMatch(hdr); if(f) colMap[i]=f; });
+    Object.entries(colMap).forEach(([i,field])=>{
+      const val=(r1[+i]||'').trim();
+      if(val&&val.length>1&&val!=='-'&&val!=='\u2014'&&!/^\d{1,4}$/.test(val)&&val.toLowerCase()!=='null'&&val.toLowerCase()!=='n/a'){
+        D[field]=val; matched++;
+      }
+    });
+  }
+
+  // FORMAT B: "Label: value" or "Label\tvalue" lines (one per line)
+  if(matched===0){
+    lines.forEach(line=>{
+      const ti=line.indexOf('\t'), ci=line.indexOf(':');
+      let key='',val='';
+      if(ti>0&&ti<40){key=line.substring(0,ti).trim();val=line.substring(ti+1).trim();}
+      else if(ci>0&&ci<50){key=line.substring(0,ci).trim();val=line.substring(ci+1).trim();}
+      if(!key||!val||val.length<2)return;
+      const field=bestMatch(key);
+      if(field){D[field]=val;matched++;}
+    });
+  }
 
   if(matched===0){
-    alert('⚠ Could not extract fields.\n\nFor best results:\n1. Set your API key (🔑 button top-right) — AI will read any format\n2. Or paste as "Label: Value" lines, one per row\n\nExample:\nOpportunity Title: Florida Narrow Network\nSponsor: psterling\nProblem: Current FL plan uses broad network...');
+    alert('Could not extract fields.\n\nPlease enter your data as:\nOpportunity Title: Florida Narrow Network\nSponsor: psterling, aalexander\nProblem: [your problem statement]\nBusiness Objective: [your objective]\n\nOr set your API key (\uD83D\uDD11 top-right) for automatic extraction from any format.');
     return;
   }
   render(); persist();
-  alert(`✓ Extracted ${matched} fields locally.\n\nTip: Set your API key for more accurate extraction from any paste format.`);
+  const fields=Object.keys(SYNONYMS).filter(f=>D[f]&&D[f].trim());
+  alert('\u2713 Extracted '+matched+' fields: '+fields.join(', ')+'\n\nReview the form and correct anything that looks off.');
 }
+
 
 // ─── AI DOCUMENT PARSING ─────────────────────────────────────────────────────
 async function addAndParseDoc(){
