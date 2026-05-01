@@ -453,6 +453,55 @@ const steps = {
   }
 };
 
+
+// ─── ROBUST JSON PARSER ───────────────────────────────────────────────────────
+function safeParseJSON(text) {
+  // 1. Try direct parse first
+  try { return JSON.parse(text); } catch(e) {}
+
+  // 2. Extract the outermost {...} block
+  const s = text.indexOf('{'), e2 = text.lastIndexOf('}');
+  if(s === -1 || e2 === -1 || e2 <= s) throw new Error('No JSON object found in response');
+  let candidate = text.slice(s, e2 + 1);
+
+  // 3. Try parsing candidate as-is
+  try { return JSON.parse(candidate); } catch(e) {}
+
+  // 4. Attempt repair: truncate at last valid structure boundary
+  // Walk backwards from end to find a valid parse point
+  for(let i = candidate.length - 1; i > candidate.length * 0.3; i--) {
+    const ch = candidate[i];
+    if(ch === '}' || ch === ']' || ch === '"') {
+      try {
+        // Build a repairable candidate
+        let sub = candidate.slice(0, i + 1);
+        // Count unmatched braces/brackets
+        let braces = 0, brackets = 0, inStr = false, escape = false;
+        for(let j = 0; j < sub.length; j++) {
+          const c = sub[j];
+          if(escape) { escape = false; continue; }
+          if(c === '\\') { escape = true; continue; }
+          if(c === '"' && !inStr) inStr = true;
+          else if(c === '"' && inStr) inStr = false;
+          if(!inStr) {
+            if(c === '{') braces++;
+            else if(c === '}') braces--;
+            else if(c === '[') brackets++;
+            else if(c === ']') brackets--;
+          }
+        }
+        // Close any open structures
+        if(brackets > 0) sub += ']'.repeat(brackets);
+        if(braces > 0) sub += '}'.repeat(braces);
+        // Remove trailing commas before closing
+        sub = sub.replace(/,\s*([}\]])/g, '$1');
+        return JSON.parse(sub);
+      } catch(e2) { continue; }
+    }
+  }
+  throw new Error('Could not parse or repair JSON response');
+}
+
 // ─── SMARTSHEET / CANVAS EXTRACTION (AI-powered) ─────────────────────────────
 async function extractSmartsheet(){
   const raw = document.getElementById('ss-paste').value.trim();
@@ -490,38 +539,45 @@ async function extractSmartsheet(){
 }
 
 async function extractWithAI(raw, apiKey){
-  const prompt = `You are a data extraction assistant. I will paste raw data copied from a Smartsheet Opportunity Canvas spreadsheet. It may be tab-separated rows, key-value pairs, or a mix. Your job is to identify and extract the following BRD fields from it.
+  const prompt = `You are a data extraction assistant for Portico Benefit Services. I am pasting raw data copied from a Smartsheet Opportunity Canvas intake form. The data may be:
+- Tab-separated rows where row 1 = column headers (sometimes phrased as questions like "What problem are we solving?") and row 2 = the actual answers
+- Key-value pairs (one per line)
+- Mixed formats
+
+CRITICAL RULE: The column headers are often written as QUESTIONS (e.g. "What Business Objective Does This Problem Align To?", "How many people/users have this problem?"). These question-text headers are column LABELS — not values. The actual data is in the corresponding cell on the same row or the next row. DO NOT put question text into any field value.
 
 Return ONLY a valid JSON object with these exact keys (omit keys where no value is found):
 {
-  "title": "project/opportunity title",
-  "sponsor": "sponsor name(s)",
-  "docOwner": "document owner or BA/PM name",
-  "businessUnit": "business unit or team",
-  "targetDate": "target date or deadline",
-  "moscow": "MoSCoW priority (Must Have / Should Have / Could Have / Won't Have)",
-  "objective": "business objective",
-  "problem": "problem statement",
-  "audience": "who are we solving for / affected users",
-  "userCount": "number of users or groups affected",
-  "roiValue": "targeted value or ROI",
-  "successMetrics": "success metrics or KPIs",
-  "vision": "future state vision",
-  "dependencies": "known dependencies",
-  "strategy": "existing strategy connection",
+  "title": "the opportunity or project name — NOT a question, a real project title",
+  "sponsor": "sponsor name(s) — real person names like 'psterling, aalexander'",
+  "docOwner": "document owner or BA/PM name — a real person name or username",
+  "businessUnit": "business unit or department name",
+  "targetDate": "target date or deadline — a date like '10/01/2026' or 'Q3 2026'",
+  "moscow": "MoSCoW priority: Must Have / Should Have / Could Have / Won't Have",
+  "objective": "the actual business objective text — NOT the question asking for it",
+  "problem": "the actual problem statement — NOT the question asking for it",
+  "audience": "who is affected — actual user groups, not the question text",
+  "userCount": "number of users or groups — a number or description",
+  "roiValue": "targeted value or ROI — actual dollar amounts or descriptions",
+  "successMetrics": "actual success metrics or KPIs",
+  "vision": "actual future state vision text",
+  "dependencies": "actual known dependencies",
+  "strategy": "existing strategy or initiative this connects to",
   "severity": "severity or impact if not solved",
   "confidence": "confidence percentage",
   "impactScore": "impact score"
 }
 
 Rules:
-- Match fields by meaning, not column position — column order may vary
-- If a cell looks like a name (e.g. "Mike Imgrund") it is likely a person's name (owner/sponsor), not a field value like business unit
-- Ignore row numbers, timestamps, system metadata, or anything that is clearly not a business field value
+- Match fields by semantic meaning — column headers may be phrased as questions
+- NEVER put question text (text ending in '?' or starting with 'What/How/Who/When/Why/Describe') as a field value
+- If a cell value looks like a column header question, skip it
+- If a cell looks like a person name (e.g. "Mike Imgrund", "psterling") it belongs in sponsor or docOwner
+- Ignore row numbers, system metadata, blank cells
 - Return ONLY the JSON object, no explanation, no markdown
 
 Raw data:
-${raw}`;
+\${raw}\``;
 
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method:'POST',
@@ -532,7 +588,7 @@ ${raw}`;
       'anthropic-dangerous-direct-browser-access':'true'
     },
     body: JSON.stringify({
-      model:'claude-sonnet-4-20250514',
+      model:'claude-sonnet-4-6',
       max_tokens:1000,
       messages:[{ role:'user', content: prompt }]
     })
@@ -541,10 +597,8 @@ ${raw}`;
   if(!resp.ok) throw new Error(`API ${resp.status}`);
   const data = await resp.json();
   const text = data.content?.find(b=>b.type==='text')?.text || '';
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if(!jsonMatch) throw new Error('No JSON returned');
-
-  const extracted = JSON.parse(jsonMatch[0]);
+  let extracted;
+  try { extracted = safeParseJSON(text); } catch(e) { throw new Error('Could not parse AI response: ' + e.message); }
   let count = 0;
   const brdFields = ['title','sponsor','docOwner','businessUnit','targetDate','moscow',
     'objective','problem','audience','userCount','roiValue','successMetrics',
@@ -562,29 +616,59 @@ ${raw}`;
 }
 
 function extractLocally(raw){
+
+  // ── Canonical synonyms for each BRD field ───────────────────────────────────
+  // Includes the full question-style headers used by the Portico Opportunity Canvas
   const SYNONYMS = {
-    title:         ['opportunity title','title','project name','opportunity name','opp title'],
-    sponsor:       ['sponsor','sponsors','sponsored by'],
-    docOwner:      ['owner','document owner','ba','pm','analyst','assigned to','submitter'],
-    businessUnit:  ['business unit','unit','department','team'],
-    targetDate:    ['target date','deadline','due date','go live','go-live','need by'],
-    moscow:        ['moscow','must have','priority score','priority'],
-    objective:     ['business objective','objective','goal','alignment','what objective','aligns to'],
-    problem:       ['problem statement','problem to solve','problem','what problem','issue','challenge'],
-    audience:      ['who are we solving','audience','solving for','who is affected','who we'],
-    userCount:     ['how many','user count','number of users','groups affected','number of'],
-    roiValue:      ['targeted value','roi','cost savings','return on investment','value'],
-    successMetrics:['success metrics','kpi','metrics','how will','measure impact'],
-    vision:        ['future state','vision','future state vision','desired end state'],
-    dependencies:  ['dependencies','dependency','depends on','blockers','known dependencies'],
-    strategy:      ['existing strategy','strategy','connected to','initiative'],
-    severity:      ['severity','impact if not solved','impact if','consequence'],
-    confidence:    ['confidence','confidence %'],
+    title:         ['opportunity title','title','project name','opportunity name','opp title','name of opportunity'],
+    sponsor:       ['sponsor','sponsors','sponsored by','project sponsor'],
+    docOwner:      ['owner','document owner','ba','pm','assigned to','submitter','submitted by','ba pm','uatanalyst'],
+    businessUnit:  ['business unit','unit','department','team','org'],
+    targetDate:    ['target date','deadline','due date','go live','go-live','need by','target completion','when does this'],
+    moscow:        ['moscow','must have','should have','could have','priority score','priority'],
+    objective:     ['business objective','objective','goal','what business objective','aligns to','what objective','which strategic','strategic goal'],
+    problem:       ['problem statement','problem to solve','what problem','what is the problem','issue','challenge','describe the problem','pain point'],
+    audience:      ['who are we solving','audience','solving for','who is affected','who we','target audience','who will benefit','users affected','affected users'],
+    userCount:     ['how many people','how many users','user count','number of users','groups affected','number of','how many groups','users impacted'],
+    roiValue:      ['targeted value','roi','cost savings','return on investment','value','business value','financial impact','expected value'],
+    successMetrics:['success metrics','kpi','metrics','how will','measure impact','how do we measure','definition of success','success criteria'],
+    vision:        ['future state','vision','future state vision','desired end state','what does success look like','end state','desired outcome'],
+    dependencies:  ['dependencies','dependency','depends on','blockers','known dependencies','what depends','reliant on'],
+    strategy:      ['existing strategy','strategy','connected to','initiative','strategic initiative','part of existing'],
+    severity:      ['severity','impact if not solved','impact if','consequence','what happens if','urgency','business impact'],
+    confidence:    ['confidence','confidence %','how confident','certainty'],
     impactScore:   ['impact score','impact','score'],
   };
+
+  // ── Value reject list: things that look like answers but are actually question-text ─
+  // If a "value" cell contains one of these patterns, it's a column header masquerading as data
+  const QUESTION_PATTERNS = [
+    /^what (is|are|business|does|problem|happens|will|the)/i,
+    /^how (many|will|do we|is|can)/i,
+    /^who (are|is|will|we)/i,
+    /^when (does|is|will|should)/i,
+    /^why (is|are|do|should)/i,
+    /^describe /i,
+    /^which /i,
+    /^does this /i,
+    /\?$/,   // ends with question mark
+    /^is there /i,
+    /^if not solved/i,
+    /^provide /i,
+    /^list /i,
+    /^please /i,
+    /^identify /i,
+  ];
+
+  const isQuestionText = v => QUESTION_PATTERNS.some(p => p.test((v||'').trim()));
+
+  // ── Normalizer ───────────────────────────────────────────────────────────────
   const norm = s => (s||'').toLowerCase().replace(/[^a-z0-9\s]/g,'').trim();
+
+  // ── Scorer: how well does a raw key match a known field? ────────────────────
   function bestMatch(key){
     const nk = norm(key);
+    if(nk.length < 3) return null;
     let bestField=null, bestScore=28;
     for(const [field,aliases] of Object.entries(SYNONYMS)){
       for(const alias of aliases){
@@ -592,49 +676,111 @@ function extractLocally(raw){
         let score=0;
         if(nk===na) score=100;
         else if(nk.includes(na)||na.includes(nk)) score=80;
-        else{ const hw=new Set(nk.split(/\s+/)),aw=na.split(/\s+/); score=aw.filter(w=>w.length>2&&hw.has(w)).length*30; }
+        else{
+          const hw=new Set(nk.split(/\s+/)), aw=na.split(/\s+/);
+          score = aw.filter(w=>w.length>3&&hw.has(w)).length * 25;
+        }
         if(score>bestScore){bestScore=score;bestField=field;}
       }
     }
     return bestField;
   }
 
+  // ── Value cleaner ────────────────────────────────────────────────────────────
+  const cleanVal = v => {
+    v = (v||'').trim();
+    if(!v || v==='-' || v==='\u2014' || v.toLowerCase()==='null' || v.toLowerCase()==='n/a') return '';
+    if(isQuestionText(v)) return '';           // reject question-text masquerading as value
+    if(/^\d{1,4}$/.test(v)) return '';         // reject bare row numbers
+    return v;
+  };
+
   const lines = raw.split('\n').map(l=>l.trimEnd()).filter(l=>l.trim());
   let matched=0;
 
-  // FORMAT A: Tab-grid (header row + data row — most common Smartsheet copy)
-  const r0=lines[0]?lines[0].split('\t'):[], r1=lines[1]?lines[1].split('\t'):[];
-  if(r0.length>=3 && r1.length>=3){
-    const colMap={};
-    r0.forEach((hdr,i)=>{ const f=bestMatch(hdr); if(f) colMap[i]=f; });
-    Object.entries(colMap).forEach(([i,field])=>{
-      const val=(r1[+i]||'').trim();
-      if(val&&val.length>1&&val!=='-'&&val!=='\u2014'&&!/^\d{1,4}$/.test(val)&&val.toLowerCase()!=='null'&&val.toLowerCase()!=='n/a'){
-        D[field]=val; matched++;
+  // ── FORMAT A: Tab-grid — header row(s) + data row ───────────────────────────
+  // Smartsheet copy-paste: first row = column headers, second row = values
+  // BUT: some canvases copy as multiple rows (header, blank, data; or interleaved)
+  // Strategy: find the row that has the most bestMatch hits — that's the header row;
+  // the next non-empty row is the data row.
+  {
+    const tabRows = lines.map(l => l.split('\t'));
+    const wideRows = tabRows.filter(r => r.length >= 3);
+
+    if(wideRows.length >= 2){
+      // Score each row as a potential header row
+      let bestHeaderIdx = -1, bestHeaderScore = 0;
+      wideRows.forEach((row, i) => {
+        const score = row.filter(cell => bestMatch(cell) !== null).length;
+        if(score > bestHeaderScore){ bestHeaderScore = score; bestHeaderIdx = i; }
+      });
+
+      if(bestHeaderScore >= 2 && bestHeaderIdx < wideRows.length - 1){
+        const headerRow = wideRows[bestHeaderIdx];
+        const dataRow   = wideRows[bestHeaderIdx + 1];
+        const colMap = {};
+        headerRow.forEach((hdr,i) => { const f=bestMatch(hdr); if(f) colMap[i]=f; });
+        Object.entries(colMap).forEach(([i,field]) => {
+          const val = cleanVal(dataRow[+i]);
+          if(val){ D[field]=val; matched++; }
+        });
       }
+    }
+  }
+
+  // ── FORMAT B: "Label: value" or "Label\tvalue" lines (one per line) ─────────
+  if(matched === 0){
+    lines.forEach(line => {
+      const ti = line.indexOf('\t'), ci = line.indexOf(':');
+      let key='', val='';
+      if(ti>0 && ti<60)        { key=line.substring(0,ti).trim(); val=line.substring(ti+1).trim(); }
+      else if(ci>0 && ci<80)   { key=line.substring(0,ci).trim(); val=line.substring(ci+1).trim(); }
+      if(!key || !val) return;
+      val = cleanVal(val);
+      if(!val || val.length < 2) return;
+      const field = bestMatch(key);
+      if(field){ D[field]=val; matched++; }
     });
   }
 
-  // FORMAT B: "Label: value" or "Label\tvalue" lines (one per line)
-  if(matched===0){
-    lines.forEach(line=>{
-      const ti=line.indexOf('\t'), ci=line.indexOf(':');
-      let key='',val='';
-      if(ti>0&&ti<40){key=line.substring(0,ti).trim();val=line.substring(ti+1).trim();}
-      else if(ci>0&&ci<50){key=line.substring(0,ci).trim();val=line.substring(ci+1).trim();}
-      if(!key||!val||val.length<2)return;
-      const field=bestMatch(key);
-      if(field){D[field]=val;matched++;}
+  // ── FORMAT C: Canvas question-answer interleaved (question line, answer line) ─
+  // Some Smartsheet views export as question on one line, answer on the next
+  if(matched === 0){
+    for(let i=0; i < lines.length - 1; i++){
+      const maybeQ = lines[i].trim();
+      const maybeA = lines[i+1].trim();
+      if(!isQuestionText(maybeQ) && !bestMatch(maybeQ)) continue;
+      const field = bestMatch(maybeQ);
+      if(!field) continue;
+      const val = cleanVal(maybeA);
+      if(val && val.length > 1 && !isQuestionText(val)){
+        D[field] = val; matched++;
+        i++; // skip the answer line
+      }
+    }
+  }
+
+  // ── FORMAT D: Single-column Smartsheet view (label in col A, value in col B) ─
+  // Handles vertical canvas layouts: "Opportunity Title\t[value]"
+  if(matched === 0){
+    lines.forEach(line => {
+      const parts = line.split('\t');
+      if(parts.length < 2) return;
+      const key = parts[0].trim();
+      const val = cleanVal(parts.slice(1).join(' ').trim());
+      if(!key || !val || val.length < 2) return;
+      const field = bestMatch(key);
+      if(field){ D[field]=val; matched++; }
     });
   }
 
-  if(matched===0){
-    alert('Could not extract fields.\n\nPlease enter your data as:\nOpportunity Title: Florida Narrow Network\nSponsor: psterling, aalexander\nProblem: [your problem statement]\nBusiness Objective: [your objective]\n\nOr set your API key (\uD83D\uDD11 top-right) for automatic extraction from any format.');
+  if(matched === 0){
+    alert('Could not auto-extract fields from this format.\n\nTIP: For best results, copy the entire Smartsheet row including the header row (select both rows, Ctrl+C).\n\nOr try "Label: Value" format:\nOpportunity Title: Florida Narrow Network\nSponsor: psterling, aalexander\nProblem: [your problem statement]\n\nFor complex formats, set your Anthropic API key (🔑 top-right) for AI extraction.');
     return;
   }
   render(); persist();
-  const fields=Object.keys(SYNONYMS).filter(f=>D[f]&&D[f].trim());
-  alert('\u2713 Extracted '+matched+' fields: '+fields.join(', ')+'\n\nReview the form and correct anything that looks off.');
+  const populated = Object.keys(SYNONYMS).filter(f=>D[f]&&D[f].trim());
+  alert('✓ Extracted ' + matched + ' field(s): ' + populated.join(', ') + '\n\nReview the form and correct anything that looks off. Use AI extraction (set 🔑 API key) for better accuracy with complex formats.');
 }
 
 
@@ -735,7 +881,7 @@ Document: ${rawContent}`;
       'anthropic-dangerous-direct-browser-access': 'true'
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 2000,
       messages: [{ role: 'user', content: prompt }]
     })
@@ -749,9 +895,8 @@ Document: ${rawContent}`;
   const text = data.content?.find(b=>b.type==='text')?.text || '';
 
   // Extract JSON from response
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if(!jsonMatch) throw new Error('No JSON in response');
-  const extracted = JSON.parse(jsonMatch[0]);
+  let extracted;
+  try { extracted = safeParseJSON(text); } catch(e) { throw new Error('Could not parse AI response: ' + e.message); }
 
   mergeExtracted(extracted, docName);
 
@@ -825,7 +970,7 @@ function mergeExtracted(E, docName){
       }
     });
     // Re-number
-    D.requirements.forEach((r,i) => { if(!r.id||r.id==='BRD-001'&&i>0) r.id=`BRD-00${i+1}`; });
+    D.requirements.forEach((r,i) => { r.id='BRD-'+String(i+1).padStart(3,'0'); });
   }
 
   // NFRs: add if not duplicated
@@ -962,8 +1107,8 @@ function uploadDoc(input){
       let text = e.target.result;
       // Strip RTF control words, groups, and binary data
       text = text
-        .replace(/\{\[^}]*\}/g, '')           // remove RTF groups like {onttbl...}
-        .replace(/\[a-z]+\-?[0-9]* ?/gi, '') // remove control words like \par 0
+        .replace(/\{[^}]*\}/g, '')           // remove RTF groups like {\fonttbl...}
+        .replace(/\\[a-z]+\\-?[0-9]* ?/gi, '') // remove control words like \par \b0
         .replace(/[{}\\]/g, ' ')               // remove remaining braces/backslashes
         .replace(/\s+/g, ' ')
         .trim();
@@ -1270,7 +1415,7 @@ function newBRD(){ if(!confirm('Start new BRD? Unsaved changes will be lost.')) 
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 function addReq(){
-  D.requirements.push({id:`BRD-00${D.requirements.length+1}`,title:'',priority:'High',description:'',businessValue:'',acceptanceCriteria:'',actors:'',stakeholder:'',context:[]});
+  D.requirements.push({id:'BRD-'+String(D.requirements.length+1).padStart(3,'0'),title:'',priority:'High',description:'',businessValue:'',acceptanceCriteria:'',actors:'',stakeholder:'',context:[]});
   render();
 }
 function showPane(showId,hideId,btn){
