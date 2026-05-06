@@ -2,1163 +2,641 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portico | BRD Tool v1.9</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Portico | BRD Tool v2.0</title>
 <style>
+/* ── Reset & Base ─────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --gold:#F1C400;--gray:#54585A;--blue:#009CDE;--orange:#D86018;
-  --green:#A2AD00;--red:#C5003E;--lgray:#F4F4F4;--mgray:#D0D7DE;
-  --dgray:#3A3A3A;--navy:#2E3A4E;--ltblue:#D6E4F0;
+  --green:#A2AD00;--red:#C5003E;--dgray:#3A3A3A;--lgray:#F4F4F4;
+  --mgray:#D0D7DE;--white:#FFFFFF;
+  --font:'Calibri',Georgia,serif;
+  --radius:6px;--shadow:0 2px 12px rgba(0,0,0,.08);
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Calibri,'Segoe UI',sans-serif;font-size:14px;color:var(--dgray);background:#EEF1F4;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+body{font-family:var(--font);font-size:14px;color:var(--dgray);background:#ECEEF1;min-height:100vh;display:flex;flex-direction:column}
 
-.topbar{background:var(--navy);padding:0 20px;height:50px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.3)}
-.tb-logo{color:var(--gold);font-size:18px;font-weight:800;letter-spacing:3px}
-.tb-sub{color:#8899aa;font-size:12px;margin-left:12px}
-.tb-right{display:flex;align-items:center;gap:8px}
-
-.stepbar{background:var(--lgray);border-bottom:2px solid var(--mgray);padding:0 16px;height:42px;display:flex;align-items:center;gap:2px;flex-shrink:0}
-.step{display:flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;color:#aaa;cursor:pointer;transition:all .15s;user-select:none}
-.step.active{background:var(--blue);color:#fff}
-.step.done{color:var(--green)}
-.step-num{width:18px;height:18px;border-radius:50%;background:#ddd;color:#999;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
-.step.active .step-num{background:rgba(255,255,255,.25);color:#fff}
-.step.done .step-num{background:var(--green);color:#fff}
-.step-sep{width:16px;height:1px;background:var(--mgray)}
-
-.workspace{display:flex;flex:1;overflow:hidden}
-
-/* LEFT */
-.left{width:400px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--mgray);background:#fff}
-.left-scroll{flex:1;overflow-y:auto}
-.fsec{padding:14px 16px;border-bottom:1px solid var(--lgray)}
-.fsec:last-child{border-bottom:none}
-.fsec-label{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#bbb;margin-bottom:10px}
-.fg{margin-bottom:10px}
-.fg label{display:block;font-size:11px;font-weight:700;color:var(--gray);margin-bottom:3px}
-.fg input,.fg textarea,.fg select{width:100%;border:1.5px solid var(--mgray);border-radius:5px;padding:7px 9px;font-family:inherit;font-size:12px;color:var(--dgray);background:#fff;outline:none;transition:border .15s;resize:vertical}
-.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:var(--blue);background:#f8fcff}
-.fg textarea{min-height:56px;line-height:1.45}
-.list-row{display:flex;gap:5px;margin-bottom:5px}
-.list-row input{flex:1}
-.list-row button{border:1px solid #ddd;border-radius:4px;background:none;cursor:pointer;color:#bbb;padding:0 8px;font-size:14px;flex-shrink:0}
-.list-row button:hover{color:var(--red);border-color:var(--red)}
-.add-btn{width:100%;background:none;border:1.5px dashed var(--blue);border-radius:5px;padding:6px;color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;margin-top:4px;font-family:inherit}
-.add-btn:hover{background:#f0f8ff}
-.left-actions{padding:12px 16px;border-top:1px solid var(--mgray);display:flex;flex-direction:column;gap:6px;flex-shrink:0;background:#fff}
-
-/* BUTTONS */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border:none;border-radius:6px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;width:100%}
-.btn-navy{background:var(--navy);color:#fff}
-.btn-blue{background:var(--blue);color:#fff}
+/* ── Top Bar ──────────────────────────────────────────────────────────── */
+#topbar{background:var(--gray);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+#topbar .brand{display:flex;align-items:center;gap:12px}
+#topbar .brand span:first-child{color:var(--gold);font-size:18px;font-weight:800;letter-spacing:3px}
+#topbar .brand span:last-child{color:#aaa;font-size:12px}
+#topbar .actions{display:flex;align-items:center;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:var(--radius);border:none;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:600;transition:all .15s;white-space:nowrap}
 .btn-gold{background:var(--gold);color:var(--gray)}
-.btn-outline{background:none;border:1.5px solid var(--mgray);color:var(--gray)}
-.btn-green{background:var(--green);color:#fff}
-.btn-red{background:var(--red);color:#fff}
-.btn-sm{width:auto;padding:5px 12px;font-size:11px}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-.btn-row{display:flex;gap:6px}
-.btn-row .btn{flex:1}
+.btn-gold:hover{background:#d4ab00}
+.btn-ghost{background:transparent;color:#ccc;border:1px solid #555}
+.btn-ghost:hover{border-color:#999;color:#fff}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-blue:hover{background:#0081b8}
+.btn-gray{background:var(--gray);color:#fff;border:1px solid #6a6e70}
+.btn-gray:hover{background:#444}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+#api-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;cursor:pointer;padding:5px 10px;border-radius:var(--radius);border:1px solid #555;color:#ccc;transition:all .15s}
+#api-badge:hover{border-color:#999;color:#fff}
+#api-badge.has-key{border-color:var(--green);color:var(--green)}
 
-/* RIGHT - PREVIEW */
-.right{flex:1;overflow-y:auto;background:#dee2e6;padding:20px}
-.preview{background:#fff;max-width:800px;margin:0 auto;box-shadow:0 4px 24px rgba(0,0,0,.15);min-height:600px}
+/* ── Nav Tabs ─────────────────────────────────────────────────────────── */
+#nav{background:#fff;border-bottom:2px solid var(--mgray);display:flex;align-items:stretch;overflow-x:auto;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.nav-tab{padding:12px 20px;font-size:12px;font-weight:600;color:#888;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:6px;background:none;border-left:none;border-right:none;border-top:none;font-family:var(--font)}
+.nav-tab:hover{color:var(--gray);background:#fafafa}
+.nav-tab.active{color:var(--blue);border-bottom-color:var(--blue);background:#fff}
+.nav-tab .tab-num{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;background:var(--mgray);color:var(--gray)}
+.nav-tab.active .tab-num{background:var(--blue);color:#fff}
+.nav-tab.done .tab-num{background:var(--green);color:#fff}
 
-/* BRD preview styles */
-.brd-cover{background:var(--navy);padding:32px 40px;text-align:center}
-.brd-cover h1{color:var(--gold);font-size:26px;font-weight:800;letter-spacing:.5px}
-.brd-cover h2{color:var(--gold);font-size:18px;font-weight:400;margin-top:4px}
-.brd-cover p{color:#8899bb;font-size:12px;margin-top:10px}
-.brd-body{padding:28px 36px}
-.brd-sec{margin-bottom:28px}
-.brd-sec-hdr{display:flex;margin-bottom:12px;border-radius:2px;overflow:hidden}
-.brd-sec-num{background:var(--navy);color:#fff;font-weight:800;font-size:15px;padding:7px 14px;min-width:38px;text-align:center}
-.brd-sec-title{background:var(--ltblue);color:var(--navy);font-weight:700;font-size:12px;padding:7px 14px;letter-spacing:1.5px;flex:1;display:flex;align-items:center}
-.brd-sub{color:var(--blue);font-weight:700;font-size:13px;margin:12px 0 6px;padding-bottom:3px;border-bottom:2px solid var(--blue)}
-.tbl{width:100%;border-collapse:collapse;font-size:12px}
-.tbl th{background:var(--navy);color:#fff;padding:7px 10px;text-align:left;font-weight:700;font-size:11px}
-.tbl td{padding:7px 10px;border:1px solid #e0e0e0;vertical-align:top}
-.tbl tr:nth-child(even) td{background:#f9f9f9}
-.tbl .lbl{background:#f3f3f3;font-weight:700;color:var(--gray);width:26%}
-.brd-bullets{margin:0;padding-left:22px;font-size:12px;line-height:1.7;color:#444}
-.brd-bullets li{margin-bottom:2px}
-.empty{color:#ccc;font-style:italic}
-.ctx-badge{background:#f0fff4;border-left:3px solid var(--green);padding:6px 10px;margin-top:6px;font-size:11px;border-radius:2px}
-.ctx-badge strong{color:var(--green);font-size:10px}
-.req-blk{border:1px solid #e0e0e0;border-radius:4px;overflow:hidden;margin-bottom:10px}
-.req-blk-hdr{background:var(--gray);color:#fff;padding:6px 12px;font-size:12px;font-weight:700}
+/* ── Layout ───────────────────────────────────────────────────────────── */
+#app{display:grid;grid-template-columns:380px 1fr;flex:1;min-height:0;height:calc(100vh - 52px - 48px)}
+#left{background:#fff;overflow-y:auto;border-right:1px solid var(--mgray);display:flex;flex-direction:column}
+#left-body{flex:1;padding:20px}
+#left-actions{padding:12px 20px;border-top:1px solid var(--mgray);background:#fafafa;display:flex;gap:8px;flex-wrap:wrap}
+#right{overflow-y:auto;padding:24px;background:#ECEEF1}
 
-/* AI STATUS */
-.ai-status{padding:10px 14px;border-radius:6px;font-size:12px;margin:8px 0;display:flex;align-items:center;gap:8px}
-.ai-status.thinking{background:#e8f4fd;border-left:3px solid var(--blue);color:var(--navy)}
-.ai-status.done{background:#f0fff4;border-left:3px solid var(--green);color:#1a4a1a}
-.ai-status.error{background:#fff0f0;border-left:3px solid var(--red);color:#5a0000}
-.spinner{width:14px;height:14px;border:2px solid #cce4f7;border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+/* ── Form Elements ────────────────────────────────────────────────────── */
+.fsec{background:#fff;border:1px solid var(--mgray);border-radius:8px;padding:16px;margin-bottom:14px;border-top:3px solid var(--blue)}
+.fsec-label{font-size:10px;font-weight:800;letter-spacing:1.5px;color:var(--gray);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.fg{margin-bottom:10px}
+.fg label{display:block;font-size:11px;font-weight:700;color:var(--gray);margin-bottom:4px;letter-spacing:.3px}
+.fg input,.fg select,.fg textarea{width:100%;border:1.5px solid var(--mgray);border-radius:var(--radius);padding:7px 10px;font-family:var(--font);font-size:13px;color:var(--dgray);background:#fff;outline:none;transition:border .15s;resize:vertical}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--blue)}
+.fg textarea{min-height:64px;line-height:1.5}
+.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fg-note{font-size:11px;color:#888;margin-top:3px;font-style:italic}
+
+.list-item{display:flex;gap:6px;margin-bottom:6px;align-items:flex-start}
+.list-item input{flex:1}
+.del-btn{background:none;border:1px solid var(--red);border-radius:4px;color:var(--red);cursor:pointer;padding:4px 8px;font-size:11px;flex-shrink:0;font-family:var(--font);margin-top:1px}
+.del-btn:hover{background:var(--red);color:#fff}
+.add-btn{background:none;border:1.5px dashed var(--blue);border-radius:var(--radius);color:var(--blue);cursor:pointer;padding:5px 14px;font-size:11px;font-weight:600;font-family:var(--font);transition:all .15s}
+.add-btn:hover{background:var(--blue);color:#fff}
+
+.req-card{border:1px solid var(--mgray);border-radius:8px;margin-bottom:12px;overflow:hidden}
+.req-card-hdr{background:var(--gray);color:#fff;padding:8px 12px;font-size:12px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.req-card-body{padding:12px;background:#fafafa}
+.req-card-body .fg:last-child{margin-bottom:0}
+
+/* ── Paste zone ───────────────────────────────────────────────────────── */
+.paste-zone{border:2px dashed var(--mgray);border-radius:8px;padding:12px;background:var(--lgray);transition:border .2s}
+.paste-zone:focus-within{border-color:var(--blue);background:#f0f8ff}
+.paste-zone textarea{border:none!important;background:transparent!important;padding:4px!important;font-size:12px!important;min-height:80px}
+
+/* ── Preview ──────────────────────────────────────────────────────────── */
+#preview-wrap{background:#fff;border-radius:10px;box-shadow:var(--shadow);min-height:600px;overflow:hidden}
+.brd-cover{background:var(--gray);padding:36px 40px;color:#fff;position:relative}
+.brd-cover::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:var(--gold)}
+.brd-cover h1{font-size:22px;font-weight:800;color:var(--gold);letter-spacing:2px;margin-bottom:4px}
+.brd-cover h2{font-size:13px;color:var(--gold);margin-bottom:16px;font-weight:400}
+.brd-cover-meta{display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;color:#bbb;margin-top:12px}
+.brd-cover-meta span{display:flex;gap:4px}<br>.brd-cover-meta strong{color:#ddd}
+.brd-body{padding:24px 32px}
+.brd-sec{margin-bottom:24px}
+.brd-sec-hdr{display:flex;align-items:stretch;margin-bottom:10px;gap:0}
+.brd-sec-num{background:var(--gray);color:#fff;font-weight:800;font-size:14px;width:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border-radius:3px 0 0 3px}
+.brd-sec-title{background:var(--lgray);color:var(--gray);font-weight:800;font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:6px 14px;flex:1;display:flex;align-items:center;border-radius:0 3px 3px 0}
+.brd-sub{font-size:12px;font-weight:700;color:var(--blue);margin:10px 0 5px;padding-bottom:3px;border-bottom:1px solid var(--mgray)}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px}
+.tbl th{background:var(--gray);color:#fff;padding:6px 10px;text-align:left;font-size:11px;font-weight:700}
+.tbl td{padding:5px 10px;border:1px solid var(--mgray);vertical-align:top;line-height:1.5}
+.tbl tr:nth-child(even) td{background:#fafafa}
+.tbl .lbl{background:#f0f4f8;font-weight:700;font-size:11px;color:var(--gray);width:28%;white-space:nowrap}
+.empty{color:#bbb;font-style:italic;font-size:11px}
+.brd-bullets{margin:4px 0 4px 16px;font-size:12px;line-height:1.8}
+.req-blk{border:1px solid var(--mgray);border-radius:6px;margin-bottom:12px;overflow:hidden}
+.req-blk-hdr{background:var(--gray);color:#fff;padding:7px 12px;font-size:12px;font-weight:700}
+.nfr-blk{background:#f7f9fb;border-left:3px solid var(--blue);padding:8px 12px;margin-bottom:6px;font-size:12px}
+.risk-blk{background:#fff8f0;border-left:3px solid var(--orange);padding:8px 12px;margin-bottom:6px;font-size:12px}
+.uat-blk{border:1px solid var(--mgray);border-radius:6px;margin-bottom:12px;overflow:hidden}
+.uat-blk-hdr{background:var(--green);color:#fff;padding:7px 12px;font-size:12px;font-weight:700}
+.meta-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+.meta-item{font-size:11px;display:flex;gap:4px}<br>.meta-item strong{color:var(--gray)}
+.tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;text-transform:uppercase}
+.tag-must{background:#fde8ee;color:var(--red)}
+.tag-should{background:#fff3cd;color:#856404}
+.tag-could{background:#e8f5e9;color:var(--green)}
+
+/* ── Saved panel ──────────────────────────────────────────────────────── */
+.saved-card{border:1px solid var(--mgray);border-radius:6px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;background:#fff;gap:8px}
+.saved-card-title{font-size:13px;font-weight:700;color:var(--dgray)}
+.saved-card-meta{font-size:11px;color:#888;margin-top:2px}
+.saved-card-actions{display:flex;gap:6px;flex-shrink:0}
+
+/* ── Toast ────────────────────────────────────────────────────────────── */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--dgray);color:#fff;padding:10px 18px;border-radius:6px;font-size:13px;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;z-index:9999}
+#toast.show{transform:translateY(0);opacity:1}
+
+/* ── Spinner ──────────────────────────────────────────────────────────── */
 @keyframes spin{to{transform:rotate(360deg)}}
+.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
 
-/* SAVED LIST */
-.saved-item{border:1px solid var(--mgray);border-radius:6px;padding:10px 14px;margin-bottom:7px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:#fff;transition:all .15s}
-.saved-item:hover{border-color:var(--blue);background:#f8fcff}
-.saved-item-title{font-size:13px;font-weight:700}
-.saved-item-meta{font-size:10px;color:#999;margin-top:2px}
-.subtabs{display:flex;gap:4px;margin-bottom:12px}
-.stab{padding:5px 12px;border-radius:16px;border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;background:#eee;color:#888;transition:all .15s}
-.stab.on{background:var(--blue);color:#fff}
-.req-card{border:1.5px solid var(--mgray);border-radius:6px;padding:12px;margin-bottom:10px;background:#fafafa}
-.req-card-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.tb-save-ind{color:var(--gold);font-size:11px;opacity:0;transition:opacity .4s}
-.tb-save-ind.show{opacity:1}
-.doc-item{border:1px solid var(--mgray);border-radius:5px;padding:8px 10px;margin-bottom:6px;background:var(--lgray);display:flex;gap:8px;align-items:flex-start}
-.doc-preview{font-size:10px;color:#999;margin-top:3px;white-space:pre-line;max-height:36px;overflow:hidden}
+/* ── AI Expanding ─────────────────────────────────────────────────────── */
+.ai-expanding{background:linear-gradient(135deg,#e8f4fd,#f0f8ff);border:1px solid var(--blue);border-radius:8px;padding:14px;margin-bottom:12px;font-size:12px}
+.ai-expanding .ai-label{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--blue);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.ai-field{margin-bottom:10px}
+.ai-field label{display:block;font-size:11px;font-weight:700;color:var(--blue);margin-bottom:3px}
+.ai-field textarea{width:100%;border:1px solid rgba(0,156,222,.3);border-radius:4px;padding:6px 8px;font-family:var(--font);font-size:12px;background:rgba(255,255,255,.7);color:var(--dgray);resize:vertical;min-height:52px;outline:none}
+.ai-field textarea:focus{border-color:var(--blue);background:#fff}
 
-/* API KEY MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;display:flex;align-items:center;justify-content:center}
-.modal-overlay.hidden{display:none}
-.modal{background:#fff;border-radius:10px;padding:28px;max-width:480px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,.3)}
-.modal h2{color:var(--navy);font-size:18px;margin-bottom:6px}
-.modal p{font-size:12px;color:#666;margin-bottom:16px;line-height:1.6}
-.modal .fg{margin-bottom:14px}
-.modal input{font-family:monospace;font-size:12px;letter-spacing:.5px}
-.api-key-indicator{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 10px;border-radius:12px;cursor:pointer;border:none;font-family:inherit;font-weight:700}
-.api-key-indicator.set{background:rgba(162,173,0,.2);color:var(--green)}
-.api-key-indicator.unset{background:rgba(197,0,62,.15);color:var(--red)}
+/* ── Responsive helpers ───────────────────────────────────────────────── */
+@media(max-width:900px){#app{grid-template-columns:1fr};#right{display:none}}
 </style>
 </head>
 <body>
 
-<!-- API KEY MODAL -->
-<div class="modal-overlay hidden" id="api-modal">
-  <div class="modal">
-    <h2>🔑 Anthropic API Key</h2>
-    <p>The AI document parsing feature uses the Claude API. Your key is stored only in your browser's localStorage — it is never sent anywhere except directly to <strong>api.anthropic.com</strong>.</p>
-    <p style="background:#fff8e7;padding:8px;border-radius:4px;border-left:3px solid var(--gold)">Get your key at <strong>console.anthropic.com</strong> → API Keys. Starts with <code>sk-ant-</code></p>
-    <div class="fg">
-      <label style="font-size:11px;font-weight:700;color:var(--gray);display:block;margin-bottom:4px">API Key</label>
-      <input type="password" id="api-key-input" placeholder="sk-ant-api03-..." style="width:100%;border:1.5px solid var(--mgray);border-radius:5px;padding:8px 10px;font-family:monospace;font-size:12px;outline:none">
-    </div>
-    <div style="display:flex;gap:8px;margin-top:4px">
-      <button class="btn btn-navy" style="flex:2" onclick="saveApiKey()">Save Key</button>
-      <button class="btn btn-outline" style="flex:1" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-outline" style="flex:1;color:var(--red);border-color:var(--red)" onclick="clearApiKey()">Clear</button>
-    </div>
-    <p style="margin-top:12px;font-size:10px;color:#bbb">Your key is stored in localStorage only and used solely for AI document parsing. All other features work without a key.</p>
+<!-- ── TOP BAR ─────────────────────────────────────────────────────────── -->
+<div id="topbar">
+  <div class="brand">
+    <span>PORTICO</span>
+    <span>Business Requirements Document Tool v2.0</span>
   </div>
-</div>
-
-<!-- TOP BAR -->
-<div class="topbar">
-  <div style="display:flex;align-items:center">
-    <span class="tb-logo">PORTICO</span>
-    <span class="tb-sub">Business Requirements Document Tool v1.9</span>
-  </div>
-  <div class="tb-right">
-    <span class="tb-save-ind" id="save-ind">✓ Saved</span>
-    <button class="api-key-indicator unset" id="api-key-btn" onclick="openModal()">🔑 Set API Key</button>
-    <button class="btn btn-outline btn-sm" onclick="newBRD()">+ New</button>
-    <button class="btn btn-outline btn-sm" onclick="saveBRD()">💾 Save</button>
+  <div class="actions">
+    <div id="api-badge" onclick="setApiKey()" title="Set Anthropic API key for AI extraction">
+      🔑 <span id="api-label">Set API Key</span>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="newBRD()">+ New</button>
+    <button class="btn btn-ghost btn-sm" onclick="saveBRD()">💾 Save</button>
     <button class="btn btn-gold btn-sm" onclick="downloadBRD()">⬇ Download BRD</button>
   </div>
 </div>
 
-<!-- STEP BAR -->
-<div class="stepbar">
-  <div class="step active" id="s1" onclick="goto(1)"><div class="step-num">1</div>Canvas Data</div>
-  <div class="step-sep"></div>
-  <div class="step" id="s2" onclick="goto(2)"><div class="step-num">2</div>Scope & Stakeholders</div>
-  <div class="step-sep"></div>
-  <div class="step" id="s3" onclick="goto(3)"><div class="step-num">3</div>Requirements</div>
-  <div class="step-sep"></div>
-  <div class="step" id="s4" onclick="goto(4)"><div class="step-num">4</div>Source Documents</div>
-  <div class="step-sep"></div>
-  <div class="step" id="s5" onclick="goto(5)"><div class="step-num">5</div>Saved BRDs</div>
+<!-- ── NAV ────────────────────────────────────────────────────────────── -->
+<div id="nav">
+  <button class="nav-tab" onclick="goto(1)" id="tab1"><span class="tab-num">1</span> Canvas Data</button>
+  <button class="nav-tab" onclick="goto(2)" id="tab2"><span class="tab-num">2</span> Scope &amp; Stakeholders</button>
+  <button class="nav-tab" onclick="goto(3)" id="tab3"><span class="tab-num">3</span> Requirements</button>
+  <button class="nav-tab" onclick="goto(4)" id="tab4"><span class="tab-num">4</span> Source Documents</button>
+  <button class="nav-tab" onclick="goto(5)" id="tab5"><span class="tab-num">5</span> Saved BRDs</button>
 </div>
 
-<div class="workspace">
-  <div class="left">
-    <div class="left-scroll" id="left-body"></div>
-    <div class="left-actions" id="left-actions"></div>
+<!-- ── APP ────────────────────────────────────────────────────────────── -->
+<div id="app">
+  <div id="left">
+    <div id="left-body"></div>
+    <div id="left-actions"></div>
   </div>
-  <div class="right">
-    <div class="preview" id="preview">
-      <div class="brd-cover"><h1>Business Requirements Document</h1><h2>(BRD)</h2><p>Fill in the fields or paste Smartsheet data to begin</p></div>
-      <div class="brd-body" style="text-align:center;padding-top:60px;color:#ccc">
-        <div style="font-size:48px;margin-bottom:16px">📋</div>
-        <p style="font-size:14px">Fill in the fields and click <strong>Generate Preview</strong></p>
-      </div>
+  <div id="right">
+    <div id="preview-wrap">
+      <div id="preview"></div>
     </div>
   </div>
 </div>
 
+<div id="toast"></div>
+
 <script>
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+const SAVED = 'portico-brd-v2';
+const FIXED_BA_MANAGER = 'Charlie Nadeau';
+
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let D = blankState();
+let step = 1;
 
 function blankState(){
   return {
-    title:'', sponsor:'', docOwner:'', businessUnit:'', version:'1.0 DRAFT',
-    targetDate:'', moscow:'Must Have',
-    objective:'', problem:'', audience:'', userCount:'',
-    vision:'', roiValue:'', successMetrics:'', dependencies:'', strategy:'',
+    // Canvas-sourced fields
+    title:'', sponsor:'', businessUnit:'', version:'1.0 DRAFT',
+    targetDate:'', moscow:'Must Have', sdTicket:'', adoCard:'',
+    submitter:'', initiative:'', domain:'', capability:'',
+    impactOp:0, impactFin:0, impactSec:0, impactComp:0, impactRep:0,
+    confidence:'', impactTotal:'', impactJustification:'',
+    roiValue:'', budgetNeeded:'', severity:'',
+    existingStrategy:'', objective:'', problem:'',
+    audience:'', userCount:'', vision:'', successMetrics:'',
+    dependencies:'', additionalDetails:'',
+    // Team — BA Manager is fixed; all others from canvas or blank
+    baManager: FIXED_BA_MANAGER,
+    productOwner:'', ba:'', pm:'', productSpecialist:'',
+    // Interview-time fields (left blank)
+    developer:'', qaAnalyst:'', uatOwner:'',
+    sprintName:'', fixVersion:'',
+    // Document sections
     inScope:['',''], outScope:[''],
     constraints:[''],
-    stakeholders:[{name:'',type:'Sponsor',involvement:'Approver',commsNeeds:'Executive summary updates'}],
-    requirements:[{id:'BRD-001',title:'',priority:'High',description:'',businessValue:'',acceptanceCriteria:'',actors:'',stakeholder:'',context:[]}],
+    stakeholders:[{name:'',type:'Sponsor',involvement:'Approver',commsNeeds:''}],
+    requirements:[{id:'BRD-001',title:'',priority:'High',description:'',businessValue:'',acceptanceCriteria:'',actors:'',stakeholder:'',preconditions:'',postconditions:'',context:[]}],
     nfrs:[{cat:'Availability',req:'',pri:'High'},{cat:'Security',req:'',pri:'High'},{cat:'Performance',req:'',pri:'Medium'}],
+    risks:[{title:'',likelihood:'Medium',impact:'High',mitigation:''}],
+    uatCases:[{scenario:'',given:'',when:'',then:''}],
     documents:[],
-    timelines:[],
-    risks:[]
   };
-}
-
-const SESS = 'portico-brd-v19';
-const SAVED = 'portico-brd-saved-v19';
-let step = 1;
-
-function persist(){
-  localStorage.setItem(SESS, JSON.stringify(D));
-  const el = document.getElementById('save-ind');
-  el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'), 1500);
-}
-
-function load(){
-  try{ const d=localStorage.getItem(SESS); if(d) D={...blankState(),...JSON.parse(d)}; }catch(e){}
 }
 
 // ─── STEP NAV ─────────────────────────────────────────────────────────────────
-function goto(n){
-  step = n;
-  [1,2,3,4,5].forEach(i=>{
-    const el = document.getElementById('s'+i);
-    el.classList.toggle('active', i===n);
-    el.classList.toggle('done', i<n);
-    el.querySelector('.step-num').textContent = i < n ? '✓' : i;
-  });
-  render();
+function goto(n){ step=n; render(); persist(); updateTabs(); }
+function updateTabs(){
+  for(let i=1;i<=5;i++){
+    const t=document.getElementById('tab'+i);
+    if(!t)continue;
+    t.classList.toggle('active',i===step);
+  }
 }
 
+// ─── RENDER ───────────────────────────────────────────────────────────────────
 function render(){
-  const lb = document.getElementById('left-body');
-  const la = document.getElementById('left-actions');
-  lb.innerHTML = steps[step].form();
-  la.innerHTML = steps[step].actions();
+  const lb=document.getElementById('left-body');
+  const la=document.getElementById('left-actions');
+  lb.innerHTML=steps[step].form();
+  la.innerHTML=steps[step].actions();
   renderPreview();
+  updateTabs();
 }
+const x = v => String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const rp = () => { persist(); renderPreview(); };
 
 // ─── STEP 1: CANVAS DATA ──────────────────────────────────────────────────────
 const steps = {
-  1: {
+  1:{
     form(){
+      const impactTotal = (D.impactOp||0)+(D.impactFin||0)+(D.impactSec||0)+(D.impactComp||0)+(D.impactRep||0);
       return `
       <div class="fsec">
         <div class="fsec-label">📥 Import from Smartsheet</div>
-        <div class="fg"><label>Paste Smartsheet row (tab-separated or any format)</label>
-          <textarea id="ss-paste" rows="5" placeholder="Paste Smartsheet headers + data row here..."></textarea></div>
-        <button class="btn btn-navy" onclick="extractSmartsheet()">⚡ Extract Fields Automatically</button>
+        <p style="font-size:11px;color:#666;margin-bottom:10px;line-height:1.5">Copy the header row + data row from your Opportunity Canvas in Smartsheet and paste below. With an API key set, Claude will extract all fields automatically.</p>
+        <div class="paste-zone">
+          <textarea id="ss-paste" rows="5" placeholder="Paste Smartsheet headers + data row here..."></textarea>
+        </div>
+        <div style="margin-top:8px">
+          <button class="btn btn-blue" style="width:100%" onclick="extractSmartsheet()">⚡ Extract Fields Automatically</button>
+        </div>
       </div>
+
       <div class="fsec">
-        <div class="fsec-label">Project Header</div>
+        <div class="fsec-label">📋 Project Header</div>
         <div class="fg"><label>Opportunity / Project Title</label>
           <input value="${x(D.title)}" oninput="D.title=this.value;rp()"></div>
-        <div class="fg"><label>Sponsor(s)</label>
-          <input value="${x(D.sponsor)}" oninput="D.sponsor=this.value;rp()"></div>
-        <div class="fg"><label>Document Owner (BA/PM)</label>
-          <input value="${x(D.docOwner)}" oninput="D.docOwner=this.value;rp()"></div>
-        <div class="fg"><label>Business Unit</label>
-          <input value="${x(D.businessUnit)}" oninput="D.businessUnit=this.value;rp()"></div>
-        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div><label>Target Date</label><input value="${x(D.targetDate)}" oninput="D.targetDate=this.value;rp()"></div>
-          <div><label>MoSCoW</label><select onchange="D.moscow=this.value;rp()">
-            ${['Must Have','Should Have','Could Have',"Won't Have"].map(v=>`<option ${D.moscow===v?'selected':''}>${v}</option>`).join('')}
-          </select></div>
+        <div class="fg-row">
+          <div class="fg"><label>SD Ticket #</label>
+            <input value="${x(D.sdTicket)}" oninput="D.sdTicket=this.value;rp()" placeholder="e.g. 28109"></div>
+          <div class="fg"><label>ADO Card #</label>
+            <input value="${x(D.adoCard)}" oninput="D.adoCard=this.value;rp()" placeholder="e.g. 54037"></div>
         </div>
-        <div class="fg"><label>Version</label><input value="${x(D.version)}" oninput="D.version=this.value;rp()"></div>
+        <div class="fg-row">
+          <div class="fg"><label>Target Date</label>
+            <input value="${x(D.targetDate)}" oninput="D.targetDate=this.value;rp()"></div>
+          <div class="fg"><label>MoSCoW</label>
+            <select onchange="D.moscow=this.value;rp()">
+              ${['Must Have','Should Have','Could Have',"Won't Have"].map(v=>`<option ${D.moscow===v?'selected':''}>${v}</option>`).join('')}
+            </select></div>
+        </div>
+        <div class="fg-row">
+          <div class="fg"><label>Initiative</label>
+            <input value="${x(D.initiative)}" oninput="D.initiative=this.value;rp()"></div>
+          <div class="fg"><label>Business Unit / Domain</label>
+            <input value="${x(D.businessUnit)}" oninput="D.businessUnit=this.value;rp()"></div>
+        </div>
+        <div class="fg"><label>Submitter</label>
+          <input value="${x(D.submitter)}" oninput="D.submitter=this.value;rp()" placeholder="From Smartsheet entry"></div>
+        <div class="fg"><label>Version</label>
+          <input value="${x(D.version)}" oninput="D.version=this.value;rp()"></div>
       </div>
+
       <div class="fsec">
-        <div class="fsec-label">Problem & Objective</div>
-        <div class="fg"><label>Business Objective</label>
+        <div class="fsec-label">👥 Team</div>
+        <p style="font-size:11px;color:#888;margin-bottom:10px;line-height:1.5">Sponsor, Product Owner, BA, PM, and Product Specialist are populated from the canvas entry or filled during the interview. BA Manager is always Charlie Nadeau. Interview-time fields (Developer, QA, UAT) are left blank.</p>
+        <div class="fg"><label>Sponsor(s)</label>
+          <input value="${x(D.sponsor)}" oninput="D.sponsor=this.value;rp()" placeholder="From Smartsheet — who are the sponsors?"></div>
+        <div class="fg"><label>Product Owner</label>
+          <input value="${x(D.productOwner)}" oninput="D.productOwner=this.value;rp()" placeholder="From canvas or interview"></div>
+        <div class="fg"><label>Business Analyst</label>
+          <input value="${x(D.ba)}" oninput="D.ba=this.value;rp()" placeholder="From canvas or interview"></div>
+        <div class="fg"><label>Business Analyst Manager</label>
+          <input value="${x(FIXED_BA_MANAGER)}" disabled style="background:#f0f0f0;color:#888"></div>
+        <div class="fg"><label>Project Manager</label>
+          <input value="${x(D.pm)}" oninput="D.pm=this.value;rp()" placeholder="From canvas or interview"></div>
+        <div class="fg"><label>Product Specialist</label>
+          <input value="${x(D.productSpecialist)}" oninput="D.productSpecialist=this.value;rp()" placeholder="From canvas or interview"></div>
+        <div class="fg-row">
+          <div class="fg"><label>Developer</label>
+            <input value="${x(D.developer)}" oninput="D.developer=this.value;rp()" placeholder="Fill during interview"></div>
+          <div class="fg"><label>QA Analyst</label>
+            <input value="${x(D.qaAnalyst)}" oninput="D.qaAnalyst=this.value;rp()" placeholder="Fill during interview"></div>
+        </div>
+        <div class="fg-row">
+          <div class="fg"><label>UAT / Business Sign-Off</label>
+            <input value="${x(D.uatOwner)}" oninput="D.uatOwner=this.value;rp()" placeholder="Fill during interview"></div>
+          <div class="fg"><label>Sprint / Fix Version</label>
+            <input value="${x(D.sprintName)}" oninput="D.sprintName=this.value;rp()" placeholder="Fill during planning"></div>
+        </div>
+      </div>
+
+      <div class="fsec">
+        <div class="fsec-label">🎯 Problem &amp; Objective</div>
+        <div class="fg"><label>Is this part of an existing strategy?</label>
+          <input value="${x(D.existingStrategy)}" oninput="D.existingStrategy=this.value;rp()" placeholder="e.g. Connected Execution, Connected Platforms"></div>
+        <div class="fg"><label>What business objective does this align to?</label>
           <textarea oninput="D.objective=this.value;rp()">${x(D.objective)}</textarea></div>
-        <div class="fg"><label>Problem to Solve</label>
-          <textarea oninput="D.problem=this.value;rp()">${x(D.problem)}</textarea></div>
-        <div class="fg"><label>Who Are We Solving For?</label>
+        <div class="fg"><label>What problem are we trying to solve?</label>
+          <textarea rows="4" oninput="D.problem=this.value;rp()">${x(D.problem)}</textarea></div>
+        <div class="fg"><label>Who are we solving this for?</label>
           <textarea rows="2" oninput="D.audience=this.value;rp()">${x(D.audience)}</textarea></div>
-        <div class="fg"><label>Number of Users / Groups Affected</label>
-          <input value="${x(D.userCount)}" oninput="D.userCount=this.value;rp()"></div>
-        <div class="fg"><label>Future State Vision</label>
-          <textarea oninput="D.vision=this.value;rp()">${x(D.vision)}</textarea></div>
-        <div class="fg"><label>Targeted Value / ROI</label>
+        <div class="fg"><label>How many people / users are affected?</label>
+          <textarea rows="2" oninput="D.userCount=this.value;rp()">${x(D.userCount)}</textarea></div>
+        <div class="fg"><label>Future state vision</label>
+          <textarea rows="3" oninput="D.vision=this.value;rp()">${x(D.vision)}</textarea></div>
+      </div>
+
+      <div class="fsec">
+        <div class="fsec-label">📊 Scoring &amp; Value</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+          ${[['Operational','impactOp'],['Financial','impactFin'],['Security','impactSec'],['Compliance','impactComp'],['Reputational','impactRep']].map(([l,k])=>
+            `<div class="fg"><label style="font-size:10px">${l}</label>
+              <select onchange="D.${k}=+this.value;rp()">
+                ${[0,25,50,75,100].map(v=>`<option ${D[k]===v?'selected':''}>${v}</option>`).join('')}
+              </select></div>`).join('')}
+          <div class="fg"><label style="font-size:10px">Confidence</label>
+            <select onchange="D.confidence=this.value;rp()">
+              ${['','20%','40%','50%','60%','80%','100%'].map(v=>`<option ${D.confidence===v?'selected':''}>${v||'—'}</option>`).join('')}
+            </select></div>
+        </div>
+        <div style="background:var(--lgray);border-radius:6px;padding:8px 12px;font-size:12px;margin-bottom:10px">
+          Total Impact Score: <strong>${impactTotal}</strong> / 500 &nbsp;|&nbsp; Confidence: <strong>${D.confidence||'—'}</strong>
+        </div>
+        <div class="fg"><label>Impact Score Justification</label>
+          <textarea rows="3" oninput="D.impactJustification=this.value;rp()">${x(D.impactJustification)}</textarea></div>
+        <div class="fg"><label>Targeted Value / ROI / Cost Savings</label>
           <textarea rows="2" oninput="D.roiValue=this.value;rp()">${x(D.roiValue)}</textarea></div>
-        <div class="fg"><label>Success Metrics</label>
-          <textarea rows="2" oninput="D.successMetrics=this.value;rp()">${x(D.successMetrics)}</textarea></div>
-        <div class="fg"><label>Known Dependencies</label>
+        <div class="fg"><label>Budget Needed</label>
+          <input value="${x(D.budgetNeeded)}" oninput="D.budgetNeeded=this.value;rp()"></div>
+        <div class="fg"><label>Severity</label>
+          <textarea rows="2" oninput="D.severity=this.value;rp()">${x(D.severity)}</textarea></div>
+        <div class="fg"><label>How will success be measured?</label>
+          <textarea rows="3" oninput="D.successMetrics=this.value;rp()">${x(D.successMetrics)}</textarea></div>
+        <div class="fg"><label>Dependencies</label>
           <textarea rows="2" oninput="D.dependencies=this.value;rp()">${x(D.dependencies)}</textarea></div>
+        <div class="fg"><label>Additional Details</label>
+          <textarea rows="2" oninput="D.additionalDetails=this.value;rp()">${x(D.additionalDetails)}</textarea></div>
       </div>`;
     },
-    actions(){ return `<button class="btn btn-blue" onclick="goto(2)">Next: Scope & Stakeholders →</button>`; }
+    actions(){
+      return `<button class="btn btn-blue" onclick="goto(2)">Next: Scope &amp; Stakeholders →</button>
+              <button class="btn btn-gray btn-sm" onclick="expandWithAI()" title="Use AI to expand canvas data into full BRD sections">✨ AI Expand</button>`;
+    }
   },
 
-  2: {
+  // ─── STEP 2: SCOPE & STAKEHOLDERS ─────────────────────────────────────────
+  2:{
     form(){
-      const inRows  = D.inScope.map((v,i)=>`<div class="list-row"><input value="${x(v)}" oninput="D.inScope[${i}]=this.value;rp()" placeholder="In-scope item"><button onclick="D.inScope.splice(${i},1);render()">×</button></div>`).join('');
-      const outRows = D.outScope.map((v,i)=>`<div class="list-row"><input value="${x(v)}" oninput="D.outScope[${i}]=this.value;rp()" placeholder="Out-of-scope item"><button onclick="D.outScope.splice(${i},1);render()">×</button></div>`).join('');
-      const conRows = D.constraints.map((v,i)=>`<div class="list-row"><input value="${x(v)}" oninput="D.constraints[${i}]=this.value;rp()" placeholder="Constraint or assumption"><button onclick="D.constraints.splice(${i},1);render()">×</button></div>`).join('');
-      const stHTML  = D.stakeholders.map((s,i)=>`
-        <div class="req-card">
-          <div class="req-card-hdr"><strong style="font-size:11px">Stakeholder ${i+1}</strong>${i>0?`<button class="btn btn-sm" style="color:var(--red);border:1px solid var(--red);padding:2px 8px;border-radius:3px;background:none;cursor:pointer;font-size:10px" onclick="D.stakeholders.splice(${i},1);render()">Remove</button>`:''}</div>
-          <div class="fg"><label>Name / Role</label><input value="${x(s.name)}" oninput="D.stakeholders[${i}].name=this.value;rp()"></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-            <div class="fg"><label>Type</label><select onchange="D.stakeholders[${i}].type=this.value;rp()">
-              ${['Sponsor','Business Owner','BA/PM','Developer','SME','End User'].map(t=>`<option ${s.type===t?'selected':''}>${t}</option>`).join('')}
-            </select></div>
-            <div class="fg"><label>Involvement</label><select onchange="D.stakeholders[${i}].involvement=this.value;rp()">
-              ${['Approver','Owner','Contributor','Informed'].map(t=>`<option ${s.involvement===t?'selected':''}>${t}</option>`).join('')}
-            </select></div>
-          </div>
-          <div class="fg"><label>Communication Needs</label><input value="${x(s.commsNeeds)}" oninput="D.stakeholders[${i}].commsNeeds=this.value;rp()"></div>
-        </div>`).join('');
       return `
       <div class="fsec">
-        <div class="fsec-label">Project Scope</div>
-        <div class="fg"><label>✅ In-Scope</label>${inRows}<button class="add-btn" onclick="D.inScope.push('');render()">+ Add Item</button></div>
-        <div class="fg"><label>🚫 Out-of-Scope</label>${outRows}<button class="add-btn" onclick="D.outScope.push('');render()">+ Add Item</button></div>
+        <div class="fsec-label">✅ In-Scope</div>
+        ${D.inScope.map((v,i)=>`
+          <div class="list-item">
+            <input value="${x(v)}" oninput="D.inScope[${i}]=this.value;rp()" placeholder="In-scope item">
+            <button class="del-btn" onclick="D.inScope.splice(${i},1);render()">✕</button>
+          </div>`).join('')}
+        <button class="add-btn" onclick="D.inScope.push('');render()">+ Add item</button>
       </div>
       <div class="fsec">
-        <div class="fsec-label">Constraints & Assumptions</div>
-        ${conRows}<button class="add-btn" onclick="D.constraints.push('');render()">+ Add Constraint</button>
+        <div class="fsec-label">❌ Out-of-Scope</div>
+        ${D.outScope.map((v,i)=>`
+          <div class="list-item">
+            <input value="${x(v)}" oninput="D.outScope[${i}]=this.value;rp()" placeholder="Out-of-scope item">
+            <button class="del-btn" onclick="D.outScope.splice(${i},1);render()">✕</button>
+          </div>`).join('')}
+        <button class="add-btn" onclick="D.outScope.push('');render()">+ Add item</button>
       </div>
       <div class="fsec">
-        <div class="fsec-label">Stakeholders</div>
-        ${stHTML}
+        <div class="fsec-label">⚠️ Constraints &amp; Assumptions</div>
+        ${D.constraints.map((v,i)=>`
+          <div class="list-item">
+            <input value="${x(v)}" oninput="D.constraints[${i}]=this.value;rp()" placeholder="Constraint or assumption">
+            <button class="del-btn" onclick="D.constraints.splice(${i},1);render()">✕</button>
+          </div>`).join('')}
+        <button class="add-btn" onclick="D.constraints.push('');render()">+ Add item</button>
+      </div>
+      <div class="fsec">
+        <div class="fsec-label">👥 Stakeholders &amp; Roles</div>
+        ${D.stakeholders.map((s,i)=>`
+          <div class="req-card" style="border-top-color:var(--blue)">
+            <div class="req-card-hdr" style="background:var(--blue)">
+              Stakeholder ${i+1}
+              ${i>0?`<button class="del-btn" style="color:#fff;border-color:rgba(255,255,255,.5)" onclick="D.stakeholders.splice(${i},1);render()">✕ Remove</button>`:''}
+            </div>
+            <div class="req-card-body">
+              <div class="fg"><label>Name / Role</label>
+                <input value="${x(s.name)}" oninput="D.stakeholders[${i}].name=this.value;rp()" placeholder="Full name and title"></div>
+              <div class="fg-row">
+                <div class="fg"><label>Type</label>
+                  <select onchange="D.stakeholders[${i}].type=this.value;rp()">
+                    ${['Sponsor','Business Owner','SME','BA','IT','Operations','Vendor','Legal','Finance'].map(t=>`<option ${s.type===t?'selected':''}>${t}</option>`).join('')}
+                  </select></div>
+                <div class="fg"><label>Involvement</label>
+                  <select onchange="D.stakeholders[${i}].involvement=this.value;rp()">
+                    ${['Approver','Lead','Contributor','Reviewer','Informed','Implementer'].map(t=>`<option ${s.involvement===t?'selected':''}>${t}</option>`).join('')}
+                  </select></div>
+              </div>
+              <div class="fg"><label>Communication Needs</label>
+                <input value="${x(s.commsNeeds)}" oninput="D.stakeholders[${i}].commsNeeds=this.value;rp()" placeholder="e.g. Executive updates, BRD sign-off"></div>
+            </div>
+          </div>`).join('')}
         <button class="add-btn" onclick="D.stakeholders.push({name:'',type:'SME',involvement:'Contributor',commsNeeds:''});render()">+ Add Stakeholder</button>
+      </div>
+      <div class="fsec">
+        <div class="fsec-label">⚡ Risks</div>
+        ${D.risks.map((r,i)=>`
+          <div class="req-card" style="border-top-color:var(--orange)">
+            <div class="req-card-hdr" style="background:var(--orange)">
+              Risk ${i+1}
+              ${i>0?`<button class="del-btn" style="color:#fff;border-color:rgba(255,255,255,.5)" onclick="D.risks.splice(${i},1);render()">✕</button>`:''}
+            </div>
+            <div class="req-card-body">
+              <div class="fg"><label>Risk Title</label>
+                <input value="${x(r.title)}" oninput="D.risks[${i}].title=this.value;rp()"></div>
+              <div class="fg-row">
+                <div class="fg"><label>Likelihood</label>
+                  <select onchange="D.risks[${i}].likelihood=this.value;rp()">
+                    ${['High','Medium','Low'].map(v=>`<option ${r.likelihood===v?'selected':''}>${v}</option>`).join('')}
+                  </select></div>
+                <div class="fg"><label>Impact</label>
+                  <select onchange="D.risks[${i}].impact=this.value;rp()">
+                    ${['Critical','High','Medium','Low'].map(v=>`<option ${r.impact===v?'selected':''}>${v}</option>`).join('')}
+                  </select></div>
+              </div>
+              <div class="fg"><label>Mitigation</label>
+                <textarea rows="2" oninput="D.risks[${i}].mitigation=this.value;rp()">${x(r.mitigation)}</textarea></div>
+            </div>
+          </div>`).join('')}
+        <button class="add-btn" onclick="D.risks.push({title:'',likelihood:'Medium',impact:'High',mitigation:''});render()">+ Add Risk</button>
       </div>`;
     },
-    actions(){ return `<div class="btn-row"><button class="btn btn-outline" onclick="goto(1)">← Back</button><button class="btn btn-blue" onclick="goto(3)">Next: Requirements →</button></div>`; }
+    actions(){
+      return `<button class="btn btn-gray btn-sm" onclick="goto(1)">← Back</button>
+              <button class="btn btn-blue" onclick="goto(3)">Next: Requirements →</button>`;
+    }
   },
 
-  3: {
+  // ─── STEP 3: REQUIREMENTS ─────────────────────────────────────────────────
+  3:{
     form(){
-      const reqHTML = D.requirements.map((r,i)=>`
+      return `
+      ${D.requirements.map((r,i)=>`
         <div class="req-card">
           <div class="req-card-hdr">
-            <strong style="font-size:11px;color:var(--navy)">${x(r.id||'BRD-00'+(i+1))}</strong>
-            ${i>0?`<button class="btn btn-sm" style="color:var(--red);border:1px solid var(--red);padding:2px 8px;border-radius:3px;background:none;cursor:pointer;font-size:10px" onclick="D.requirements.splice(${i},1);render()">Remove</button>`:''}
+            ${x(r.id||'BRD-00'+(i+1))}: ${r.title?x(r.title):'[ Untitled ]'}
+            ${i>0?`<button class="del-btn" style="color:#fff;border-color:rgba(255,255,255,.5)" onclick="D.requirements.splice(${i},1);renum();render()">✕</button>`:''}
           </div>
-          <div class="fg"><label>Title</label><input value="${x(r.title)}" oninput="D.requirements[${i}].title=this.value;rp()" placeholder="Requirement title"></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-            <div class="fg"><label>Priority</label><select onchange="D.requirements[${i}].priority=this.value;rp()">
-              ${['High','Medium','Low','Critical'].map(p=>`<option ${r.priority===p?'selected':''}>${p}</option>`).join('')}
-            </select></div>
-            <div class="fg"><label>Stakeholder</label><input value="${x(r.stakeholder)}" oninput="D.requirements[${i}].stakeholder=this.value;rp()" placeholder="e.g. Finance"></div>
-          </div>
-          <div class="fg"><label>Description</label><textarea rows="2" oninput="D.requirements[${i}].description=this.value;rp()">${x(r.description)}</textarea></div>
-          <div class="fg"><label>Business Value</label><textarea rows="2" oninput="D.requirements[${i}].businessValue=this.value;rp()">${x(r.businessValue||'')}</textarea></div>
-          <div class="fg"><label>Acceptance Criteria</label><textarea rows="2" oninput="D.requirements[${i}].acceptanceCriteria=this.value;rp()">${x(r.acceptanceCriteria||'')}</textarea></div>
-          <div class="fg"><label>Primary Actors</label><input value="${x(r.actors||'')}" oninput="D.requirements[${i}].actors=this.value;rp()"></div>
-          ${r.context&&r.context.length?`<div class="ctx-badge"><strong>📄 From source documents:</strong><br>${r.context.map(c=>`<em>[${x(c.src)}]</em> ${x(c.text)}`).join('<br>')}</div>`:''}
-        </div>`).join('');
-
-      const nfrHTML = D.nfrs.map((n,i)=>`
-        <div style="display:grid;grid-template-columns:1fr 2fr auto;gap:6px;align-items:end;margin-bottom:6px;padding:8px;background:#fafafa;border:1px solid var(--mgray);border-radius:5px">
-          <div class="fg" style="margin:0"><label>Category</label><select onchange="D.nfrs[${i}].cat=this.value;rp()">
-            ${['Availability','Security','Performance','Scalability','Usability','Compliance','Audit Logging'].map(c=>`<option ${n.cat===c?'selected':''}>${c}</option>`).join('')}
-          </select></div>
-          <div class="fg" style="margin:0"><label>Requirement</label><input value="${x(n.req)}" oninput="D.nfrs[${i}].req=this.value;rp()" placeholder="Describe requirement"></div>
-          ${i>0?`<button onclick="D.nfrs.splice(${i},1);render()" style="height:32px;margin-top:18px;border:1px solid var(--red);border-radius:4px;background:none;color:var(--red);cursor:pointer;padding:0 8px">✕</button>`:'<div></div>'}
-        </div>`).join('');
-
-      return `
-      <div class="fsec">
-        <div class="subtabs">
-          <button class="stab on" onclick="showPane('reqs-pane','nfr-pane',this)">📋 Functional Reqs</button>
-          <button class="stab" onclick="showPane('nfr-pane','reqs-pane',this)">⚙️ Non-Functional</button>
-        </div>
-        <div id="reqs-pane">${reqHTML}<button class="add-btn" onclick="addReq()">+ Add Requirement</button></div>
-        <div id="nfr-pane" style="display:none">${nfrHTML}<button class="add-btn" onclick="D.nfrs.push({cat:'Availability',req:'',pri:'High'});render()">+ Add NFR</button></div>
-      </div>`;
-    },
-    actions(){ return `<div class="btn-row"><button class="btn btn-outline" onclick="goto(2)">← Back</button><button class="btn btn-blue" onclick="goto(4)">Next: Documents →</button></div>`; }
-  },
-
-  4: {
-    form(){
-      const docList = D.documents.length
-        ? D.documents.map((d,i)=>`
-          <div class="doc-item">
-            <div style="flex:1">
-              <div style="font-size:12px;font-weight:700">📄 ${x(d.name)}</div>
-              <div style="font-size:10px;color:#999">${d.content.length.toLocaleString()} chars · ${new Date(d.added).toLocaleDateString()}</div>
-              <div class="doc-preview">${x(d.content.substring(0,120))}${d.content.length>120?'…':''}</div>
+          <div class="req-card-body">
+            <div class="fg-row">
+              <div class="fg"><label>Req ID</label>
+                <input value="${x(r.id||'BRD-00'+(i+1))}" oninput="D.requirements[${i}].id=this.value;rp()"></div>
+              <div class="fg"><label>Priority</label>
+                <select onchange="D.requirements[${i}].priority=this.value;rp()">
+                  ${['Critical','High','Medium','Low'].map(p=>`<option ${r.priority===p?'selected':''}>${p}</option>`).join('')}
+                </select></div>
             </div>
-            <button style="background:none;border:none;cursor:pointer;color:#bbb;font-size:16px" onclick="removeDoc(${i})">✕</button>
-          </div>`).join('')
-        : `<div style="padding:10px;color:#bbb;font-size:12px;text-align:center">No documents added yet</div>`;
-
-      return `
-      <div class="fsec">
-        <div class="fsec-label">🤖 AI-Powered Document Integration</div>
-        <p style="font-size:11px;color:#666;margin-bottom:10px;line-height:1.55">Paste any meeting transcript, interview recording, email thread, or specification. The AI will <strong>automatically remove timestamps</strong>, extract decisions, requirements, timelines, constraints, and scope items — then populate each BRD section intelligently.</p>
-        <div class="fg"><label>Document Name</label><input id="dname" placeholder="e.g. Meeting Transcript 4/16, Requirements Spec v2"></div>
-        <div class="fg"><label>Paste Document Content</label>
-          <textarea id="dtext" rows="6" placeholder="Paste meeting transcript (with or without timestamps), interview notes, email threads, requirements specs..."></textarea></div>
-
-        <div class="fg">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-            <label style="margin:0">Custom AI Prompt <span style="font-weight:400;color:#aaa">(optional)</span></label>
-            <button onclick="togglePrompt()" id="prompt-toggle-btn" style="background:none;border:1px solid var(--blue);border-radius:12px;color:var(--blue);font-size:10px;font-weight:700;padding:2px 8px;cursor:pointer;font-family:inherit">+ Add Prompt</button>
+            <div class="fg"><label>Requirement Title</label>
+              <input value="${x(r.title)}" oninput="D.requirements[${i}].title=this.value;rp()" placeholder="Short descriptive title"></div>
+            <div class="fg"><label>Description</label>
+              <textarea rows="3" oninput="D.requirements[${i}].description=this.value;rp()">${x(r.description)}</textarea></div>
+            <div class="fg"><label>Business Value</label>
+              <textarea rows="2" oninput="D.requirements[${i}].businessValue=this.value;rp()">${x(r.businessValue)}</textarea></div>
+            <div class="fg"><label>Preconditions</label>
+              <textarea rows="2" oninput="D.requirements[${i}].preconditions=this.value;rp()">${x(r.preconditions||'')}</textarea></div>
+            <div class="fg"><label>Postconditions</label>
+              <textarea rows="2" oninput="D.requirements[${i}].postconditions=this.value;rp()">${x(r.postconditions||'')}</textarea></div>
+            <div class="fg"><label>Acceptance Criteria</label>
+              <textarea rows="4" oninput="D.requirements[${i}].acceptanceCriteria=this.value;rp()">${x(r.acceptanceCriteria)}</textarea></div>
+            <div class="fg-row">
+              <div class="fg"><label>Primary Actors</label>
+                <input value="${x(r.actors)}" oninput="D.requirements[${i}].actors=this.value;rp()"></div>
+              <div class="fg"><label>Stakeholder</label>
+                <input value="${x(r.stakeholder)}" oninput="D.requirements[${i}].stakeholder=this.value;rp()"></div>
+            </div>
           </div>
-          <div id="custom-prompt-area" style="display:none">
-            <textarea id="custom-prompt" rows="3" style="font-size:11px;color:#555;border-color:var(--blue);background:#f8fcff" placeholder="Give the AI specific instructions for this document. Examples:&#10;• Focus only on Florida requirements, ignore Minnesota&#10;• This is a technical spec — extract system requirements only&#10;• Treat all dates mentioned as hard deadlines&#10;• The sponsor is Laura Weiglein, not the meeting facilitator"></textarea>
-            <div style="font-size:10px;color:#888;margin-top:3px">This instruction is added to the AI prompt before it reads your document.</div>
-          </div>
-        </div>
+        </div>`).join('')}
+      <button class="add-btn" onclick="addReq()" style="width:100%;padding:10px">+ Add Requirement</button>
 
-        <div class="btn-row" style="margin-bottom:8px">
-          <button class="btn btn-navy" onclick="addAndParseDoc()">🤖 Add & AI-Parse</button>
-          <button class="btn btn-outline" onclick="addRawDoc()">+ Add Raw</button>
-        </div>
-        <div style="border-top:1px solid var(--lgray);padding-top:8px;margin-top:4px">
-          <label style="font-size:11px;font-weight:700;color:var(--gray);display:block;margin-bottom:4px">Or upload file (.txt, .rtf, .docx)</label>
-          <input type="file" id="docfile" accept=".txt,.rtf,.pdf,.docx" onchange="uploadDoc(this)" style="font-size:11px;width:100%">
-        </div>
-        <div id="ai-status-area"></div>
+      <div class="fsec" style="margin-top:16px">
+        <div class="fsec-label">⚙️ Non-Functional Requirements</div>
+        ${D.nfrs.map((n,i)=>`
+          <div style="display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;margin-bottom:8px">
+            <select style="border:1.5px solid var(--mgray);border-radius:4px;padding:6px;font-family:var(--font);font-size:12px" onchange="D.nfrs[${i}].cat=this.value;rp()">
+              ${['Availability','Security','Performance','Scalability','Compliance','Data Integrity','Auditability','Usability'].map(c=>`<option ${n.cat===c?'selected':''}>${c}</option>`).join('')}
+            </select>
+            <input value="${x(n.req)}" oninput="D.nfrs[${i}].req=this.value;rp()" placeholder="Describe the requirement" style="border:1.5px solid var(--mgray);border-radius:4px;padding:6px 8px;font-family:var(--font);font-size:12px">
+            <select style="border:1.5px solid var(--mgray);border-radius:4px;padding:6px;font-family:var(--font);font-size:12px" onchange="D.nfrs[${i}].pri=this.value;rp()">
+              ${['Critical','High','Medium','Low'].map(p=>`<option ${n.pri===p?'selected':''}>${p}</option>`).join('')}
+            </select>
+            ${i>0?`<button class="del-btn" onclick="D.nfrs.splice(${i},1);render()">✕</button>`:'<div></div>'}
+          </div>`).join('')}
+        <button class="add-btn" onclick="D.nfrs.push({cat:'Compliance',req:'',pri:'High'});render()">+ Add NFR</button>
       </div>
+
       <div class="fsec">
-        <div class="fsec-label">Added Documents (${D.documents.length})</div>
-        ${docList}
-        ${D.documents.length?`<button class="btn btn-green" style="margin-top:8px" onclick="reIntegrate()">🔄 Re-integrate All Documents</button>`:''}
+        <div class="fsec-label">✅ UAT Cases</div>
+        ${D.uatCases.map((u,i)=>`
+          <div class="req-card" style="border-top-color:var(--green)">
+            <div class="req-card-hdr" style="background:var(--green)">
+              UAT-00${i+1}
+              ${i>0?`<button class="del-btn" style="color:#fff;border-color:rgba(255,255,255,.5)" onclick="D.uatCases.splice(${i},1);render()">✕</button>`:''}
+            </div>
+            <div class="req-card-body">
+              <div class="fg"><label>Business Scenario</label>
+                <input value="${x(u.scenario)}" oninput="D.uatCases[${i}].scenario=this.value;rp()"></div>
+              <div class="fg"><label>Given (starting state)</label>
+                <textarea rows="2" oninput="D.uatCases[${i}].given=this.value;rp()">${x(u.given)}</textarea></div>
+              <div class="fg"><label>When (action taken)</label>
+                <textarea rows="2" oninput="D.uatCases[${i}].when=this.value;rp()">${x(u.when)}</textarea></div>
+              <div class="fg"><label>Then (expected result)</label>
+                <textarea rows="2" oninput="D.uatCases[${i}].then=this.value;rp()">${x(u.then)}</textarea></div>
+            </div>
+          </div>`).join('')}
+        <button class="add-btn" onclick="D.uatCases.push({scenario:'',given:'',when:'',then:''});render()">+ Add UAT Case</button>
       </div>`;
     },
-    actions(){ return `<div class="btn-row"><button class="btn btn-outline" onclick="goto(3)">← Back</button><button class="btn btn-gold" onclick="downloadBRD()">⬇ Download BRD</button></div>`; }
+    actions(){
+      return `<button class="btn btn-gray btn-sm" onclick="goto(2)">← Back</button>
+              <button class="btn btn-blue" onclick="goto(4)">Next: Source Docs →</button>`;
+    }
   },
 
-  5: {
+  // ─── STEP 4: SOURCE DOCUMENTS ─────────────────────────────────────────────
+  4:{
     form(){
-      let saved = getSaved();
-      const list = saved.length ? saved.map((s,i)=>`
-        <div class="saved-item">
-          <div onclick="loadSaved(${i})" style="flex:1">
-            <div class="saved-item-title">${x(s.title||'Untitled BRD')}</div>
-            <div class="saved-item-meta">${new Date(s.savedAt).toLocaleString()} · ${(s.requirements||[]).length} req(s) · ${(s.documents||[]).length} doc(s)</div>
-          </div>
-          <div style="display:flex;gap:5px">
-            <button class="btn btn-gold btn-sm" onclick="event.stopPropagation();loadAndDownload(${i})">⬇</button>
-            <button class="btn btn-sm" style="border:1px solid var(--red);color:var(--red);background:none;cursor:pointer;border-radius:4px;padding:4px 8px;font-size:10px" onclick="event.stopPropagation();deleteSaved(${i})">✕</button>
-          </div>
-        </div>`).join('')
-        : `<div style="padding:20px;text-align:center;color:#bbb">No saved BRDs yet</div>`;
-      return `<div class="fsec"><div class="fsec-label">Previously Saved BRDs</div>${list}</div>`;
+      return `
+      <div class="fsec">
+        <div class="fsec-label">📄 Source Documents &amp; Meeting Notes</div>
+        <p style="font-size:11px;color:#666;margin-bottom:12px;line-height:1.5">Upload documents or paste meeting notes / interview content. Claude will extract additional context to enrich requirements.</p>
+        <div class="fg">
+          <label>Upload Document (PDF or .docx)</label>
+          <input type="file" accept=".pdf,.docx,.doc,.txt,.rtf" onchange="uploadDoc(this)" style="font-size:12px;padding:6px">
+          <div class="fg-note">Supported: PDF, Word, plain text, RTF</div>
+        </div>
+        <div class="fg" style="margin-top:12px">
+          <label>— or — Paste meeting notes / interview content directly</label>
+          <textarea id="paste-doc" rows="8" placeholder="Paste meeting notes, interview transcript, or any supporting text here..." style="width:100%;border:1.5px solid var(--mgray);border-radius:var(--radius);padding:8px 10px;font-family:var(--font);font-size:12px;resize:vertical"></textarea>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-blue btn-sm" onclick="parsePastedDoc()">✨ Parse &amp; Add Context</button>
+          <button class="btn btn-gray btn-sm" onclick="addDocManual()">+ Add as Note (no AI)</button>
+        </div>
+      </div>
+      ${D.documents.length ? `
+        <div class="fsec">
+          <div class="fsec-label">📚 Loaded Documents (${D.documents.length})</div>
+          ${D.documents.map((d,i)=>`
+            <div style="border:1px solid var(--mgray);border-radius:6px;padding:10px;margin-bottom:8px;background:#fafafa">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                <strong style="font-size:12px">${x(d.name)}</strong>
+                <button class="del-btn" onclick="D.documents.splice(${i},1);render()">✕</button>
+              </div>
+              <p style="font-size:11px;color:#666;line-height:1.5;white-space:pre-line">${x(d.content.substring(0,300))}${d.content.length>300?'…':''}</p>
+            </div>`).join('')}
+        </div>` : ''}`;
     },
-    actions(){ return `<button class="btn btn-blue" onclick="goto(1)">← Return to Editor</button>`; }
+    actions(){
+      return `<button class="btn btn-gray btn-sm" onclick="goto(3)">← Back</button>
+              <button class="btn btn-blue" onclick="goto(5)">Next: Saved BRDs →</button>
+              <button class="btn btn-gold" onclick="downloadBRD()">⬇ Download BRD</button>`;
+    }
+  },
+
+  // ─── STEP 5: SAVED BRDs ───────────────────────────────────────────────────
+  5:{
+    form(){
+      const saved = getSaved();
+      return `
+      <div class="fsec">
+        <div class="fsec-label">💾 Saved BRDs</div>
+        ${saved.length===0?`<p style="color:#888;font-size:12px;font-style:italic">No saved BRDs yet. Complete your BRD and click Save.</p>`:''}
+        ${saved.map((s,i)=>`
+          <div class="saved-card">
+            <div>
+              <div class="saved-card-title">${x(s.title||'Untitled BRD')}</div>
+              <div class="saved-card-meta">${new Date(s.savedAt).toLocaleString()} &nbsp;·&nbsp; ${(s.requirements||[]).length} req(s)</div>
+            </div>
+            <div class="saved-card-actions">
+              <button class="btn btn-blue btn-sm" onclick="loadSaved(${i})">Open</button>
+              <button class="btn btn-gray btn-sm" onclick="loadAndDownload(${i})">↓ DL</button>
+              <button class="btn btn-sm" style="background:#fee;color:var(--red);border:1px solid var(--red)" onclick="deleteSaved(${i})">✕</button>
+            </div>
+          </div>`).join('')}
+      </div>`;
+    },
+    actions(){
+      return `<button class="btn btn-gray btn-sm" onclick="goto(4)">← Back</button>
+              <button class="btn btn-gold" onclick="saveBRD()">💾 Save Current BRD</button>
+              <button class="btn btn-blue" onclick="newBRD()">+ New BRD</button>`;
+    }
   }
 };
 
-
-// ─── ROBUST JSON PARSER ───────────────────────────────────────────────────────
-function safeParseJSON(text) {
-  // 1. Try direct parse first
-  try { return JSON.parse(text); } catch(e) {}
-
-  // 2. Extract the outermost {...} block
-  const s = text.indexOf('{'), e2 = text.lastIndexOf('}');
-  if(s === -1 || e2 === -1 || e2 <= s) throw new Error('No JSON object found in response');
-  let candidate = text.slice(s, e2 + 1);
-
-  // 3. Try parsing candidate as-is
-  try { return JSON.parse(candidate); } catch(e) {}
-
-  // 4. Attempt repair: truncate at last valid structure boundary
-  // Walk backwards from end to find a valid parse point
-  for(let i = candidate.length - 1; i > candidate.length * 0.3; i--) {
-    const ch = candidate[i];
-    if(ch === '}' || ch === ']' || ch === '"') {
-      try {
-        // Build a repairable candidate
-        let sub = candidate.slice(0, i + 1);
-        // Count unmatched braces/brackets
-        let braces = 0, brackets = 0, inStr = false, escape = false;
-        for(let j = 0; j < sub.length; j++) {
-          const c = sub[j];
-          if(escape) { escape = false; continue; }
-          if(c === '\\') { escape = true; continue; }
-          if(c === '"' && !inStr) inStr = true;
-          else if(c === '"' && inStr) inStr = false;
-          if(!inStr) {
-            if(c === '{') braces++;
-            else if(c === '}') braces--;
-            else if(c === '[') brackets++;
-            else if(c === ']') brackets--;
-          }
-        }
-        // Close any open structures
-        if(brackets > 0) sub += ']'.repeat(brackets);
-        if(braces > 0) sub += '}'.repeat(braces);
-        // Remove trailing commas before closing
-        sub = sub.replace(/,\s*([}\]])/g, '$1');
-        return JSON.parse(sub);
-      } catch(e2) { continue; }
-    }
-  }
-  throw new Error('Could not parse or repair JSON response');
-}
-
-// ─── SMARTSHEET / CANVAS EXTRACTION (AI-powered) ─────────────────────────────
-async function extractSmartsheet(){
-  const raw = document.getElementById('ss-paste').value.trim();
-  if(!raw){ alert('Paste your Smartsheet / Opportunity Canvas data first'); return; }
-
-  const btn = document.querySelector('[onclick="extractSmartsheet()"]');
-  const origText = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block"></span> Reading your data…</span>';
-
-  const apiKey = localStorage.getItem('portico-api-key');
-
-  if(apiKey){
-    try{
-      await extractWithAI(raw, apiKey);
-      btn.disabled = false; btn.innerHTML = origText;
-      return;
-    } catch(e){
-      btn.disabled = false; btn.innerHTML = origText;
-      const msg = e.message||'';
-      const isCors = msg.includes('fetch')||msg.includes('Network')||msg.includes('CORS');
-      if(isCors){
-        alert('The browser blocked the API call (CORS).\n\nGitHub Pages restricts direct API calls from the browser.\n\nYour data will still be extracted using the local method. Paste your data in this format for best results:\n\nOpportunity Title: Florida Narrow Network\nSponsor: psterling, aalexander\nProblem: [problem statement]\nBusiness Objective: [objective]\nTarget Date: 10/01/2026');
-        extractLocally(raw);
-      } else {
-        alert('AI extraction error: '+msg+'\n\nTrying local extraction...');
-        extractLocally(raw);
-      }
-      return;
-    }
-  }
-
-  extractLocally(raw);
-  btn.disabled = false; btn.innerHTML = origText;
-}
-
-async function extractWithAI(raw, apiKey){
-  const prompt = `You are a data extraction assistant for Portico Benefit Services. I am pasting raw data copied from a Smartsheet Opportunity Canvas intake form. The data may be:
-- Tab-separated rows where row 1 = column headers (sometimes phrased as questions like "What problem are we solving?") and row 2 = the actual answers
-- Key-value pairs (one per line)
-- Mixed formats
-
-CRITICAL RULE: The column headers are often written as QUESTIONS (e.g. "What Business Objective Does This Problem Align To?", "How many people/users have this problem?"). These question-text headers are column LABELS — not values. The actual data is in the corresponding cell on the same row or the next row. DO NOT put question text into any field value.
-
-Return ONLY a valid JSON object with these exact keys (omit keys where no value is found):
-{
-  "title": "the opportunity or project name — NOT a question, a real project title",
-  "sponsor": "sponsor name(s) — real person names like 'psterling, aalexander'",
-  "docOwner": "document owner or BA/PM name — a real person name or username",
-  "businessUnit": "business unit or department name",
-  "targetDate": "target date or deadline — a date like '10/01/2026' or 'Q3 2026'",
-  "moscow": "MoSCoW priority: Must Have / Should Have / Could Have / Won't Have",
-  "objective": "the actual business objective text — NOT the question asking for it",
-  "problem": "the actual problem statement — NOT the question asking for it",
-  "audience": "who is affected — actual user groups, not the question text",
-  "userCount": "number of users or groups — a number or description",
-  "roiValue": "targeted value or ROI — actual dollar amounts or descriptions",
-  "successMetrics": "actual success metrics or KPIs",
-  "vision": "actual future state vision text",
-  "dependencies": "actual known dependencies",
-  "strategy": "existing strategy or initiative this connects to",
-  "severity": "severity or impact if not solved",
-  "confidence": "confidence percentage",
-  "impactScore": "impact score"
-}
-
-Rules:
-- Match fields by semantic meaning — column headers may be phrased as questions
-- NEVER put question text (text ending in '?' or starting with 'What/How/Who/When/Why/Describe') as a field value
-- If a cell value looks like a column header question, skip it
-- If a cell looks like a person name (e.g. "Mike Imgrund", "psterling") it belongs in sponsor or docOwner
-- Ignore row numbers, system metadata, blank cells
-- Return ONLY the JSON object, no explanation, no markdown
-
-Raw data:
-\${raw}\``;
-
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-direct-browser-access':'true'
-    },
-    body: JSON.stringify({
-      model:'claude-sonnet-4-6',
-      max_tokens:1000,
-      messages:[{ role:'user', content: prompt }]
-    })
-  });
-
-  if(!resp.ok) throw new Error(`API ${resp.status}`);
-  const data = await resp.json();
-  const text = data.content?.find(b=>b.type==='text')?.text || '';
-  let extracted;
-  try { extracted = safeParseJSON(text); } catch(e) { throw new Error('Could not parse AI response: ' + e.message); }
-  let count = 0;
-  const brdFields = ['title','sponsor','docOwner','businessUnit','targetDate','moscow',
-    'objective','problem','audience','userCount','roiValue','successMetrics',
-    'vision','dependencies','strategy','severity','confidence','impactScore'];
-
-  brdFields.forEach(field => {
-    if(extracted[field] && String(extracted[field]).trim()){
-      D[field] = String(extracted[field]).trim();
-      count++;
-    }
-  });
-
-  render(); persist();
-  alert(`✓ AI extracted ${count} fields from your data.\n\nReview the form — edit anything that needs adjusting.`);
-}
-
-function extractLocally(raw){
-
-  // ── Canonical synonyms for each BRD field ───────────────────────────────────
-  // Includes the full question-style headers used by the Portico Opportunity Canvas
-  const SYNONYMS = {
-    title:         ['opportunity title','title','project name','opportunity name','opp title','name of opportunity'],
-    sponsor:       ['sponsor','sponsors','sponsored by','project sponsor'],
-    docOwner:      ['owner','document owner','ba','pm','assigned to','submitter','submitted by','ba pm','uatanalyst'],
-    businessUnit:  ['business unit','unit','department','team','org'],
-    targetDate:    ['target date','deadline','due date','go live','go-live','need by','target completion','when does this'],
-    moscow:        ['moscow','must have','should have','could have','priority score','priority'],
-    objective:     ['business objective','objective','goal','what business objective','aligns to','what objective','which strategic','strategic goal'],
-    problem:       ['problem statement','problem to solve','what problem','what is the problem','issue','challenge','describe the problem','pain point'],
-    audience:      ['who are we solving','audience','solving for','who is affected','who we','target audience','who will benefit','users affected','affected users'],
-    userCount:     ['how many people','how many users','user count','number of users','groups affected','number of','how many groups','users impacted'],
-    roiValue:      ['targeted value','roi','cost savings','return on investment','value','business value','financial impact','expected value'],
-    successMetrics:['success metrics','kpi','metrics','how will','measure impact','how do we measure','definition of success','success criteria'],
-    vision:        ['future state','vision','future state vision','desired end state','what does success look like','end state','desired outcome'],
-    dependencies:  ['dependencies','dependency','depends on','blockers','known dependencies','what depends','reliant on'],
-    strategy:      ['existing strategy','strategy','connected to','initiative','strategic initiative','part of existing'],
-    severity:      ['severity','impact if not solved','impact if','consequence','what happens if','urgency','business impact'],
-    confidence:    ['confidence','confidence %','how confident','certainty'],
-    impactScore:   ['impact score','impact','score'],
-  };
-
-  // ── Value reject list: things that look like answers but are actually question-text ─
-  // If a "value" cell contains one of these patterns, it's a column header masquerading as data
-  const QUESTION_PATTERNS = [
-    /^what (is|are|business|does|problem|happens|will|the)/i,
-    /^how (many|will|do we|is|can)/i,
-    /^who (are|is|will|we)/i,
-    /^when (does|is|will|should)/i,
-    /^why (is|are|do|should)/i,
-    /^describe /i,
-    /^which /i,
-    /^does this /i,
-    /\?$/,   // ends with question mark
-    /^is there /i,
-    /^if not solved/i,
-    /^provide /i,
-    /^list /i,
-    /^please /i,
-    /^identify /i,
-  ];
-
-  const isQuestionText = v => QUESTION_PATTERNS.some(p => p.test((v||'').trim()));
-
-  // ── Normalizer ───────────────────────────────────────────────────────────────
-  const norm = s => (s||'').toLowerCase().replace(/[^a-z0-9\s]/g,'').trim();
-
-  // ── Scorer: how well does a raw key match a known field? ────────────────────
-  function bestMatch(key){
-    const nk = norm(key);
-    if(nk.length < 3) return null;
-    let bestField=null, bestScore=28;
-    for(const [field,aliases] of Object.entries(SYNONYMS)){
-      for(const alias of aliases){
-        const na=norm(alias);
-        let score=0;
-        if(nk===na) score=100;
-        else if(nk.includes(na)||na.includes(nk)) score=80;
-        else{
-          const hw=new Set(nk.split(/\s+/)), aw=na.split(/\s+/);
-          score = aw.filter(w=>w.length>3&&hw.has(w)).length * 25;
-        }
-        if(score>bestScore){bestScore=score;bestField=field;}
-      }
-    }
-    return bestField;
-  }
-
-  // ── Value cleaner ────────────────────────────────────────────────────────────
-  const cleanVal = v => {
-    v = (v||'').trim();
-    if(!v || v==='-' || v==='\u2014' || v.toLowerCase()==='null' || v.toLowerCase()==='n/a') return '';
-    if(isQuestionText(v)) return '';           // reject question-text masquerading as value
-    if(/^\d{1,4}$/.test(v)) return '';         // reject bare row numbers
-    return v;
-  };
-
-  const lines = raw.split('\n').map(l=>l.trimEnd()).filter(l=>l.trim());
-  let matched=0;
-
-  // ── FORMAT A: Tab-grid — header row(s) + data row ───────────────────────────
-  // Smartsheet copy-paste: first row = column headers, second row = values
-  // BUT: some canvases copy as multiple rows (header, blank, data; or interleaved)
-  // Strategy: find the row that has the most bestMatch hits — that's the header row;
-  // the next non-empty row is the data row.
-  {
-    const tabRows = lines.map(l => l.split('\t'));
-    const wideRows = tabRows.filter(r => r.length >= 3);
-
-    if(wideRows.length >= 2){
-      // Score each row as a potential header row
-      let bestHeaderIdx = -1, bestHeaderScore = 0;
-      wideRows.forEach((row, i) => {
-        const score = row.filter(cell => bestMatch(cell) !== null).length;
-        if(score > bestHeaderScore){ bestHeaderScore = score; bestHeaderIdx = i; }
-      });
-
-      if(bestHeaderScore >= 2 && bestHeaderIdx < wideRows.length - 1){
-        const headerRow = wideRows[bestHeaderIdx];
-        const dataRow   = wideRows[bestHeaderIdx + 1];
-        const colMap = {};
-        headerRow.forEach((hdr,i) => { const f=bestMatch(hdr); if(f) colMap[i]=f; });
-        Object.entries(colMap).forEach(([i,field]) => {
-          const val = cleanVal(dataRow[+i]);
-          if(val){ D[field]=val; matched++; }
-        });
-      }
-    }
-  }
-
-  // ── FORMAT B: "Label: value" or "Label\tvalue" lines (one per line) ─────────
-  if(matched === 0){
-    lines.forEach(line => {
-      const ti = line.indexOf('\t'), ci = line.indexOf(':');
-      let key='', val='';
-      if(ti>0 && ti<60)        { key=line.substring(0,ti).trim(); val=line.substring(ti+1).trim(); }
-      else if(ci>0 && ci<80)   { key=line.substring(0,ci).trim(); val=line.substring(ci+1).trim(); }
-      if(!key || !val) return;
-      val = cleanVal(val);
-      if(!val || val.length < 2) return;
-      const field = bestMatch(key);
-      if(field){ D[field]=val; matched++; }
-    });
-  }
-
-  // ── FORMAT C: Canvas question-answer interleaved (question line, answer line) ─
-  // Some Smartsheet views export as question on one line, answer on the next
-  if(matched === 0){
-    for(let i=0; i < lines.length - 1; i++){
-      const maybeQ = lines[i].trim();
-      const maybeA = lines[i+1].trim();
-      if(!isQuestionText(maybeQ) && !bestMatch(maybeQ)) continue;
-      const field = bestMatch(maybeQ);
-      if(!field) continue;
-      const val = cleanVal(maybeA);
-      if(val && val.length > 1 && !isQuestionText(val)){
-        D[field] = val; matched++;
-        i++; // skip the answer line
-      }
-    }
-  }
-
-  // ── FORMAT D: Single-column Smartsheet view (label in col A, value in col B) ─
-  // Handles vertical canvas layouts: "Opportunity Title\t[value]"
-  if(matched === 0){
-    lines.forEach(line => {
-      const parts = line.split('\t');
-      if(parts.length < 2) return;
-      const key = parts[0].trim();
-      const val = cleanVal(parts.slice(1).join(' ').trim());
-      if(!key || !val || val.length < 2) return;
-      const field = bestMatch(key);
-      if(field){ D[field]=val; matched++; }
-    });
-  }
-
-  if(matched === 0){
-    alert('Could not auto-extract fields from this format.\n\nTIP: For best results, copy the entire Smartsheet row including the header row (select both rows, Ctrl+C).\n\nOr try "Label: Value" format:\nOpportunity Title: Florida Narrow Network\nSponsor: psterling, aalexander\nProblem: [your problem statement]\n\nFor complex formats, set your Anthropic API key (🔑 top-right) for AI extraction.');
-    return;
-  }
-  render(); persist();
-  const populated = Object.keys(SYNONYMS).filter(f=>D[f]&&D[f].trim());
-  alert('✓ Extracted ' + matched + ' field(s): ' + populated.join(', ') + '\n\nReview the form and correct anything that looks off. Use AI extraction (set 🔑 API key) for better accuracy with complex formats.');
-}
-
-
-// ─── AI DOCUMENT PARSING ─────────────────────────────────────────────────────
-function togglePrompt(){
-  const area = document.getElementById('custom-prompt-area');
-  const btn  = document.getElementById('prompt-toggle-btn');
-  if(!area) return;
-  const visible = area.style.display !== 'none';
-  area.style.display = visible ? 'none' : 'block';
-  btn.textContent = visible ? '+ Add Prompt' : '− Hide Prompt';
-}
-
-async function addAndParseDoc(){
-  const name         = document.getElementById('dname').value.trim();
-  const docContent   = document.getElementById('dtext').value.trim();
-  const customPrompt = (document.getElementById('custom-prompt')?.value || '').trim();
-  if(!name||!docContent){ alert('Enter a document name and content'); return; }
-
-  const statusEl = document.getElementById('ai-status-area');
-  statusEl.innerHTML = `<div class="ai-status thinking"><div class="spinner"></div>AI is reading the document and extracting BRD content…</div>`;
-
-  D.documents.push({ name, content: docContent, added: new Date().toISOString() });
-
-  try {
-    await aiParseDocument(name, docContent, statusEl, customPrompt);
-    document.getElementById('dname').value = '';
-    document.getElementById('dtext').value = '';
-    const cp = document.getElementById('custom-prompt');
-    if(cp) cp.value = '';
-    persist();
-    render();
-  } catch(e) {
-    statusEl.innerHTML = `<div class="ai-status error">⚠ AI parse failed: ${e.message}. Document saved as raw reference.</div>`;
-    persist();
-    render();
-  }
-}
-
-async function aiParseDocument(docName, rawContent, statusEl, customPrompt){
-  const prompt = `You are a Business Analyst AI. You will receive a business document (meeting transcript, spec, interview notes, etc.) that may contain timestamps like "0:16", "48:14", "1 minute 30 seconds" — IGNORE AND STRIP all timestamps and speaker label formatting artifacts.
-
-Read the document carefully and extract structured information for a Business Requirements Document (BRD). Return ONLY a valid JSON object with this exact shape (omit any key where no relevant info exists):
-
-{
-  "title": "project name if mentioned",
-  "sponsor": "sponsor names if mentioned",
-  "objective": "business objective extracted from the document",
-  "problem": "problem being solved, described clearly",
-  "audience": "who is affected / who are users",
-  "vision": "future state or goal",
-  "roiValue": "business value or ROI if mentioned",
-  "successMetrics": "how success will be measured",
-  "dependencies": "dependencies mentioned",
-  "inScope": ["scope item 1", "scope item 2"],
-  "outScope": ["out of scope item 1"],
-  "constraints": ["constraint or assumption 1", "constraint 2"],
-  "timelines": ["timeline item 1", "timeline item 2"],
-  "risks": ["risk 1", "risk 2"],
-  "requirements": [
-    {
-      "title": "requirement title",
-      "description": "clear requirement description",
-      "businessValue": "why this matters",
-      "acceptanceCriteria": "how we know it is done",
-      "priority": "High",
-      "stakeholder": "who owns this"
-    }
-  ],
-  "nfrs": [
-    { "cat": "Availability", "req": "specific NFR extracted from document" }
-  ],
-  "stakeholders": [
-    { "name": "Person Name", "type": "Sponsor", "involvement": "Approver", "commsNeeds": "what they need" }
-  ],
-  "docSummary": "2-3 sentence summary of this document for the executive summary"
-}
-
-Rules:
-- Strip ALL timestamps (e.g. "48 minutes 14 seconds", "1:30", "0:52")
-- Strip speaker names from content (keep names only in stakeholders list)
-- Infer BRD sections from context — do not copy verbatim, synthesize into clean business language
-- Only include sections where real information exists
-- Return ONLY the JSON object, no markdown, no explanation
-${customPrompt ? '\n- ADDITIONAL INSTRUCTION FROM USER: ' + customPrompt : ''}
-
-Document: ${rawContent}`;
-
-  const apiKey = localStorage.getItem('portico-api-key');
-  if(!apiKey){ openModal(); throw new Error('API key required — enter your Anthropic API key first'); }
-
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 2000,
-      messages: [{ role: 'user', content: prompt }]
-    })
-  });
-
-  if(!resp.ok){
-    const errText = await resp.text().catch(()=>'');
-    throw new Error(`API ${resp.status}${errText ? ': ' + errText.substring(0,120) : ''}`);
-  }
-  const data = await resp.json();
-  const text = data.content?.find(b=>b.type==='text')?.text || '';
-
-  // Extract JSON from response
-  let extracted;
-  try { extracted = safeParseJSON(text); } catch(e) { throw new Error('Could not parse AI response: ' + e.message); }
-
-  mergeExtracted(extracted, docName);
-
-  statusEl.innerHTML = `<div class="ai-status done">✓ AI successfully extracted and integrated content from "${docName}" into BRD sections.</div>`;
-}
-
-function mergeExtracted(E, docName){
-  // Merge top-level fields (don't overwrite if already filled)
-  const merge = (field, val) => {
-    if(val && (!D[field] || D[field].length < 5)) D[field] = val;
-    else if(val && D[field] && D[field].length > 4 && !D[field].includes(val.substring(0,30))){
-      D[field] = D[field] + '\n\n[From ' + docName + ':] ' + val;
-    }
-  };
-
-  if(E.title)          merge('title',          E.title);
-  if(E.sponsor)        merge('sponsor',         E.sponsor);
-  if(E.objective)      merge('objective',       E.objective);
-  if(E.problem)        merge('problem',         E.problem);
-  if(E.audience)       merge('audience',        E.audience);
-  if(E.vision)         merge('vision',          E.vision);
-  if(E.roiValue)       merge('roiValue',        E.roiValue);
-  if(E.successMetrics) merge('successMetrics',  E.successMetrics);
-  if(E.dependencies)   merge('dependencies',    E.dependencies);
-
-  // Arrays: append unique items
-  const appendUnique = (field, arr) => {
-    if(!arr||!arr.length) return;
-    const existing = D[field].map(v=>v.trim().toLowerCase());
-    arr.forEach(item => {
-      const trimmed = (item||'').trim();
-      if(trimmed && !existing.includes(trimmed.toLowerCase())){
-        D[field].push(trimmed);
-        existing.push(trimmed.toLowerCase());
-      }
-    });
-    D[field] = D[field].filter(Boolean);
-  };
-
-  appendUnique('inScope',     E.inScope);
-  appendUnique('outScope',    E.outScope);
-  appendUnique('constraints', E.constraints);
-  appendUnique('timelines',   E.timelines||[]);
-  appendUnique('risks',       E.risks||[]);
-
-  // Requirements: merge or add
-  if(E.requirements && E.requirements.length){
-    E.requirements.forEach((er, i) => {
-      const existing = D.requirements.find(r => r.title && er.title &&
-        r.title.toLowerCase().includes(er.title.toLowerCase().substring(0,12)));
-      if(existing){
-        // Enrich existing requirement with extracted context
-        if(er.description && !existing.description) existing.description = er.description;
-        if(er.businessValue && !existing.businessValue) existing.businessValue = er.businessValue;
-        if(er.acceptanceCriteria && !existing.acceptanceCriteria) existing.acceptanceCriteria = er.acceptanceCriteria;
-        existing.context = existing.context || [];
-        if(er.description) existing.context.push({ src: docName, text: er.description.substring(0,200) });
-      } else {
-        const n = D.requirements.length + 1;
-        D.requirements.push({
-          id: `BRD-00${n}`,
-          title: er.title||'',
-          priority: er.priority||'High',
-          description: er.description||'',
-          businessValue: er.businessValue||'',
-          acceptanceCriteria: er.acceptanceCriteria||'',
-          actors: er.actors||'',
-          stakeholder: er.stakeholder||'',
-          context: [{ src: docName, text: (er.description||'').substring(0,200) }]
-        });
-      }
-    });
-    // Re-number
-    D.requirements.forEach((r,i) => { r.id='BRD-'+String(i+1).padStart(3,'0'); });
-  }
-
-  // NFRs: add if not duplicated
-  if(E.nfrs && E.nfrs.length){
-    E.nfrs.forEach(en => {
-      if(!D.nfrs.find(n=>n.cat===en.cat&&n.req)) D.nfrs.push({cat:en.cat||'Performance', req:en.req||'', pri:en.pri||'High'});
-      else {
-        const existing = D.nfrs.find(n=>n.cat===en.cat);
-        if(existing && !existing.req) existing.req = en.req;
-      }
-    });
-  }
-
-  // Stakeholders: merge
-  if(E.stakeholders && E.stakeholders.length){
-    E.stakeholders.forEach(es => {
-      if(!D.stakeholders.find(s=>s.name&&es.name&&s.name.toLowerCase().includes(es.name.toLowerCase().substring(0,8)))){
-        D.stakeholders.push({ name:es.name||'', type:es.type||'SME', involvement:es.involvement||'Contributor', commsNeeds:es.commsNeeds||'' });
-      }
-    });
-  }
-
-  // Timelines → constraints if not separate field
-  if(E.timelines && E.timelines.length){
-    appendUnique('constraints', E.timelines.map(t=>`Timeline: ${t}`));
-  }
-}
-
-async function reIntegrate(){
-  if(!D.documents.length){ alert('No documents to integrate'); return; }
-  const statusEl = document.getElementById('ai-status-area');
-  if(!statusEl) return;
-
-  // Reset context
-  D.requirements.forEach(r=>r.context=[]);
-
-  for(const doc of D.documents){
-    statusEl.innerHTML = `<div class="ai-status thinking"><div class="spinner"></div>Re-integrating "${doc.name}"…</div>`;
-    try{
-      await aiParseDocument(doc.name, doc.content, statusEl);
-    }catch(e){
-      statusEl.innerHTML = `<div class="ai-status error">⚠ Failed for "${doc.name}": ${e.message}</div>`;
-    }
-  }
-  persist();
-  render();
-}
-
-function addRawDoc(){
-  const name    = document.getElementById('dname').value.trim();
-  const content = document.getElementById('dtext').value.trim();
-  if(!name||!content){ alert('Enter a document name and content'); return; }
-  D.documents.push({ name, content, added: new Date().toISOString() });
-  document.getElementById('dname').value = '';
-  document.getElementById('dtext').value = '';
-  persist();
-  render();
-}
-
-function uploadDoc(input){
-  const file = input.files[0];
-  if(!file) return;
-  const name = document.getElementById('dname').value.trim() || file.name;
-  const ext = file.name.split('.').pop().toLowerCase();
-  const statusEl = document.getElementById('ai-status-area');
-
-  // DOCX: extract XML text via JSZip-style reading (read as ArrayBuffer, unzip, parse XML)
-  if(ext === 'docx'){
-    statusEl.innerHTML = `<div class="ai-status thinking"><div class="spinner"></div>Reading "${name}" — extracting text from DOCX…</div>`;
-    const reader = new FileReader();
-    reader.onload = async e => {
-      try {
-        // Unzip DOCX (it's a ZIP) and extract word/document.xml
-        const arrayBuf = e.target.result;
-        const bytes = new Uint8Array(arrayBuf);
-
-        // Find word/document.xml inside the ZIP by scanning for its signature
-        // We use a simple approach: convert to string and extract XML text nodes
-        // This works because DOCX XML is UTF-8 and the text content is readable
-        const decoder = new TextDecoder('utf-8', { fatal: false });
-
-        // Find PK entries (ZIP local file headers) and locate document.xml
-        let docXml = '';
-        const zipStr = decoder.decode(bytes);
-
-        // Extract content between <w:t> tags — these are the actual text nodes in DOCX
-        const wt = zipStr.match(/<w:t[^>]*>([^<]*)<\/w:t>/g) || [];
-        const wp = zipStr.match(/<w:p[ >]/g) || [];
-
-        if(wt.length > 0){
-          // Build text from word text nodes, adding line breaks at paragraph boundaries
-          let text = '';
-          let inPara = false;
-
-          // Walk the raw XML preserving paragraph structure
-          const paraRegex = /<w:p[ >][\s\S]*?<\/w:p>/g;
-          const paras = zipStr.match(paraRegex) || [];
-          paras.forEach(para => {
-            const texts = para.match(/<w:t[^>]*>([^<]*)<\/w:t>/g) || [];
-            const line = texts.map(t => t.replace(/<[^>]+>/g,'')).join('').trim();
-            if(line) text += line + '\n';
-          });
-
-          docXml = text.trim();
-        }
-
-        if(!docXml || docXml.length < 20){
-          throw new Error('Could not extract text — please paste the document content instead');
-        }
-
-        document.getElementById('dname').value = '';
-        input.value = '';
-        D.documents.push({ name, content: docXml, added: new Date().toISOString() });
-        statusEl.innerHTML = `<div class="ai-status thinking"><div class="spinner"></div>Text extracted. Running AI analysis…</div>`;
-        try{
-          await aiParseDocument(name, docXml, statusEl);
-        }catch(err){
-          statusEl.innerHTML = `<div class="ai-status error">⚠ AI parse failed: ${err.message}. Document text saved as reference.</div>`;
-        }
-        persist(); render();
-      } catch(err) {
-        statusEl.innerHTML = `<div class="ai-status error">⚠ Could not read DOCX: ${err.message}.<br>Please <strong>copy and paste the document content</strong> using the text box above instead.</div>`;
-        input.value = '';
-      }
-    };
-    reader.readAsArrayBuffer(file);
-    return;
-  }
-
-  // RTF: strip markup and read as text
-  if(ext === 'rtf'){
-    const reader = new FileReader();
-    reader.onload = async e => {
-      let text = e.target.result;
-      // Strip RTF control words, groups, and binary data
-      text = text
-        .replace(/\{[^}]*\}/g, '')           // remove RTF groups like {\fonttbl...}
-        .replace(/\\[a-z]+\\-?[0-9]* ?/gi, '') // remove control words like \par \b0
-        .replace(/[{}\\]/g, ' ')               // remove remaining braces/backslashes
-        .replace(/\s+/g, ' ')
-        .trim();
-      if(!text || text.length < 10){
-        statusEl.innerHTML = `<div class="ai-status error">⚠ Could not read RTF. Please paste the content instead.</div>`;
-        input.value=''; return;
-      }
-      document.getElementById('dname').value = '';
-      input.value = '';
-      D.documents.push({ name, content: text, added: new Date().toISOString() });
-      statusEl.innerHTML = `<div class="ai-status thinking"><div class="spinner"></div>Uploaded "${name}". Running AI extraction…</div>`;
-      try{ await aiParseDocument(name, text, statusEl); }
-      catch(err){ statusEl.innerHTML = `<div class="ai-status error">⚠ AI parse failed: ${err.message}.</div>`; }
-      persist(); render();
-    };
-    reader.readAsText(file);
-    return;
-  }
-
-  // TXT and everything else: read as plain text
-  const reader = new FileReader();
-  reader.onload = async e => {
-    const text = e.target.result;
-    document.getElementById('dname').value = '';
-    input.value = '';
-    D.documents.push({ name, content: text, added: new Date().toISOString() });
-    statusEl.innerHTML = `<div class="ai-status thinking"><div class="spinner"></div>Uploaded "${name}". Running AI extraction…</div>`;
-    try{ await aiParseDocument(name, text, statusEl); }
-    catch(err){ statusEl.innerHTML = `<div class="ai-status error">⚠ AI parse failed: ${err.message}.</div>`; }
-    persist(); render();
-  };
-  reader.readAsText(file);
-}
-
-function removeDoc(i){
-  D.documents.splice(i,1);
-  D.requirements.forEach(r=>r.context=[]);
-  persist();
-  render();
-}
-
-// ─── PREVIEW ─────────────────────────────────────────────────────────────────
+// ─── PREVIEW (BRD HTML) ───────────────────────────────────────────────────────
 function renderPreview(){
   const now = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-  const ev = v => v ? `<span>${x(v)}</span>` : `<span class="empty">[ to be completed ]</span>`;
+  const ev = v => v ? `<span>${x(v)}</span>` : `<span class="empty"></span>`;
   const list = arr => {
-    const items = arr.filter(Boolean);
-    return items.length ? `<ul class="brd-bullets">${items.map(i=>`<li>${x(i)}</li>`).join('')}</ul>`
-                        : `<p class="empty" style="font-size:12px">[ to be defined ]</p>`;
+    const items = (arr||[]).filter(Boolean);
+    return items.length
+      ? `<ul class="brd-bullets">${items.map(i=>`<li>${x(i)}</li>`).join('')}</ul>`
+      : `<p class="empty" style="font-size:11px">[ to be defined ]</p>`;
   };
+  const teamRow = (role, val) => val
+    ? `<tr><td>${role}</td><td>${x(val)}</td><td></td><td></td></tr>`
+    : `<tr><td>${role}</td><td></td><td></td><td></td></tr>`;
+
+  const impTotal = (D.impactOp||0)+(D.impactFin||0)+(D.impactSec||0)+(D.impactComp||0)+(D.impactRep||0);
 
   const reqRows = D.requirements.map(r=>`
     <div class="req-blk">
@@ -1167,28 +645,57 @@ function renderPreview(){
         <tr><td class="lbl">Priority</td><td><strong>${x(r.priority)}</strong></td></tr>
         <tr><td class="lbl">Description</td><td>${ev(r.description)}</td></tr>
         <tr><td class="lbl">Business Value</td><td>${ev(r.businessValue)}</td></tr>
-        <tr><td class="lbl">Acceptance Criteria</td><td>${ev(r.acceptanceCriteria)}</td></tr>
+        ${r.preconditions?`<tr><td class="lbl">Preconditions</td><td>${x(r.preconditions)}</td></tr>`:''}
+        ${r.postconditions?`<tr><td class="lbl">Postconditions</td><td>${x(r.postconditions)}</td></tr>`:''}
+        <tr><td class="lbl">Acceptance Criteria</td><td><div style="white-space:pre-line">${ev(r.acceptanceCriteria)}</div></td></tr>
         <tr><td class="lbl">Primary Actors</td><td>${ev(r.actors)}</td></tr>
-        ${r.context&&r.context.length?`<tr><td class="lbl">Source Context</td><td><div class="ctx-badge"><strong>📄 From documents</strong><br>${r.context.map(c=>`<em>[${x(c.src)}]</em> ${x(c.text)}`).join('<br>')}</div></td></tr>`:''}
+        ${r.context&&r.context.length?`<tr><td class="lbl">Source Context</td><td>${r.context.map(c=>`<em style="font-size:11px;color:#888">[${x(c.src)}]</em> ${x(c.text)}`).join('<br>')}</td></tr>`:''}
       </table>
     </div>`).join('');
 
-  const stRows = D.stakeholders.map((s,i)=>
-    `<tr><td>${ev(s.name)}</td><td>${x(s.type)}</td><td>${x(s.involvement)}</td><td>${ev(s.commsNeeds)}</td></tr>`
+  const stRows = D.stakeholders.filter(s=>s.name).map((s,i)=>
+    `<tr><td>${x(s.name)}</td><td>${x(s.type)}</td><td>${x(s.involvement)}</td><td>${ev(s.commsNeeds)}</td></tr>`
   ).join('');
+
+  const nfrRows = D.nfrs.filter(n=>n.req).map(n=>
+    `<div class="nfr-blk"><strong>${x(n.cat)}</strong> <span style="float:right;font-size:10px;color:var(--gray)">${x(n.pri)}</span><br>${x(n.req)}</div>`
+  ).join('');
+
+  const riskRows = D.risks.filter(r=>r.title).map(r=>
+    `<div class="risk-blk"><strong>${x(r.title)}</strong><br>
+    <span style="font-size:11px">Likelihood: <strong>${x(r.likelihood)}</strong> &nbsp;|&nbsp; Impact: <strong>${x(r.impact)}</strong></span><br>
+    <em style="font-size:11px">${x(r.mitigation)}</em></div>`
+  ).join('');
+
+  const uatRows = D.uatCases.filter(u=>u.scenario||u.given).map((u,i)=>`
+    <div class="uat-blk">
+      <div class="uat-blk-hdr">UAT-00${i+1}: ${x(u.scenario||'Scenario')}</div>
+      <table class="tbl">
+        <tr><td class="lbl" style="color:var(--gray);width:25%">Given</td><td>${ev(u.given)}</td></tr>
+        <tr><td class="lbl" style="color:var(--blue)">When</td><td>${ev(u.when)}</td></tr>
+        <tr><td class="lbl" style="color:var(--green)">Then</td><td>${ev(u.then)}</td></tr>
+        <tr><td class="lbl">Acceptance</td><td><span style="color:#888;font-size:11px">☐ Accepted &nbsp;&nbsp; ☐ Conditionally Accepted &nbsp;&nbsp; ☐ Rejected</span></td></tr>
+      </table>
+    </div>`).join('');
 
   const docSec = D.documents.length ? `
     <div class="brd-sec">
-      <div class="brd-sec-hdr"><div class="brd-sec-num">9</div><div class="brd-sec-title">Appendix: Source Documents & Interviews</div></div>
-      <p style="font-size:11px;color:#666;margin-bottom:10px;font-style:italic">The following documents informed the requirements above.</p>
-      ${D.documents.map(d=>`<div class="brd-sub">${x(d.name)}</div><p style="font-size:11px;color:#555;white-space:pre-line;line-height:1.55">${x(d.content)}</p>`).join('')}
+      <div class="brd-sec-hdr"><div class="brd-sec-num">10</div><div class="brd-sec-title">Source Documents &amp; Interview Notes</div></div>
+      ${D.documents.map(d=>`<div class="brd-sub">${x(d.name)}</div><p style="font-size:11px;color:#555;white-space:pre-line;line-height:1.6">${x(d.content)}</p>`).join('')}
     </div>` : '';
 
   document.getElementById('preview').innerHTML = `
   <div class="brd-cover">
-    <h1>Business Requirements Document</h1><h2>(BRD)</h2>
-    <p>Project Name: ${x(D.title||'[Insert Project Name]')}<br>
-    Date: ${now} | Version: ${x(D.version||'1.0 DRAFT')}</p>
+    <h1>Business Requirements Document</h1>
+    <h2>(BRD)</h2>
+    <div class="brd-cover-meta">
+      <span><strong>Project:</strong> ${x(D.title||'[Insert Project Name]')}</span>
+      <span><strong>Date:</strong> ${now}</span>
+      <span><strong>Version:</strong> ${x(D.version||'1.0 DRAFT')}</span>
+      <span><strong>MoSCoW:</strong> ${x(D.moscow)}</span>
+      ${D.targetDate?`<span><strong>Target:</strong> ${x(D.targetDate)}</span>`:''}
+      ${D.submitter?`<span><strong>Submitter:</strong> ${x(D.submitter)}</span>`:''}
+    </div>
   </div>
   <div class="brd-body">
 
@@ -1196,268 +703,810 @@ function renderPreview(){
       <div class="brd-sec-hdr"><div class="brd-sec-num">1</div><div class="brd-sec-title">Document Control</div></div>
       <table class="tbl">
         <tr><th>Role</th><th>Name</th><th>Signature / Approval</th><th>Date</th></tr>
-        <tr><td>Project Sponsor</td><td>${ev(D.sponsor)}</td><td></td><td></td></tr>
-        <tr><td>Business Analyst</td><td>${ev(D.docOwner)}</td><td></td><td></td></tr>
-        <tr><td>Technical Lead</td><td></td><td></td><td></td></tr>
+        ${teamRow('Sponsor', D.sponsor)}
+        ${teamRow('Product Owner', D.productOwner)}
+        ${teamRow('Business Analyst', D.ba)}
+        <tr><td>Business Analyst Manager</td><td>${x(FIXED_BA_MANAGER)}</td><td></td><td></td></tr>
+        ${teamRow('Project Manager', D.pm)}
+        ${teamRow('Product Specialist', D.productSpecialist)}
+        ${D.developer?teamRow('Developer', D.developer):''}
+        ${D.qaAnalyst?teamRow('QA Analyst', D.qaAnalyst):''}
+        ${D.uatOwner?teamRow('UAT / Business Sign-Off', D.uatOwner):''}
       </table>
+      ${D.sdTicket||D.adoCard?`<div class="meta-row" style="margin-top:8px">
+        ${D.sdTicket?`<div class="meta-item"><strong>SD #</strong>${x(D.sdTicket)}</div>`:''}
+        ${D.adoCard?`<div class="meta-item"><strong>ADO #</strong>${x(D.adoCard)}</div>`:''}
+        ${D.sprintName?`<div class="meta-item"><strong>Sprint:</strong>${x(D.sprintName)}</div>`:''}
+      </div>`:''}
     </div>
 
     <div class="brd-sec">
       <div class="brd-sec-hdr"><div class="brd-sec-num">2</div><div class="brd-sec-title">Executive Summary</div></div>
-      <p style="font-size:12px;color:#555;font-style:italic;padding:10px;background:#fff8e7;border-radius:4px;line-height:1.6">${ev([D.objective,D.problem].filter(Boolean).join('. '))}</p>
+      <p style="font-size:12px;line-height:1.7;color:#444;padding:12px;background:#fff8e7;border-radius:4px;border-left:3px solid var(--gold)">${x(D.problem) || '<span class="empty">[ Complete the problem statement on the Canvas Data tab ]</span>'}</p>
+      ${D.objective?`<div class="brd-sub">Business Objective Alignment</div><p style="font-size:12px;line-height:1.6;color:#444">${x(D.objective)}</p>`:''}
     </div>
+
+    ${D.existingStrategy?`<div class="brd-sec">
+      <div class="brd-sec-hdr"><div class="brd-sec-num">2a</div><div class="brd-sec-title">Strategic Alignment</div></div>
+      <p style="font-size:12px;color:#444"><strong>Existing Strategy:</strong> ${x(D.existingStrategy)}</p>
+    </div>`:''}
 
     <div class="brd-sec">
       <div class="brd-sec-hdr"><div class="brd-sec-num">3</div><div class="brd-sec-title">Project Scope</div></div>
       <div class="brd-sub">3.1 In-Scope</div>${list(D.inScope)}
       <div class="brd-sub">3.2 Out-of-Scope</div>${list(D.outScope)}
+      ${D.constraints.filter(Boolean).length?`<div class="brd-sub">3.3 Constraints &amp; Assumptions</div>${list(D.constraints)}`:''}
     </div>
 
     <div class="brd-sec">
-      <div class="brd-sec-hdr"><div class="brd-sec-num">4</div><div class="brd-sec-title">Business Requirements Summary</div></div>
+      <div class="brd-sec-hdr"><div class="brd-sec-num">4</div><div class="brd-sec-title">Scoring &amp; Priority</div></div>
       <table class="tbl">
-        <tr><th>Req ID</th><th>Description</th><th>Priority</th><th>Stakeholder</th></tr>
-        ${D.requirements.map((r,i)=>`<tr><td>${x(r.id||'BRD-00'+(i+1))}</td><td>${ev(r.description||r.title)}</td><td><strong>${x(r.priority)}</strong></td><td>${ev(r.stakeholder)}</td></tr>`).join('')}
+        <tr><th>Operational</th><th>Financial</th><th>Security</th><th>Compliance</th><th>Reputational</th><th>Total</th><th>Confidence</th></tr>
+        <tr><td>${D.impactOp||0}</td><td>${D.impactFin||0}</td><td>${D.impactSec||0}</td><td>${D.impactComp||0}</td><td>${D.impactRep||0}</td><td><strong>${impTotal}</strong></td><td>${x(D.confidence)||'—'}</td></tr>
       </table>
+      ${D.impactJustification?`<p style="font-size:11px;color:#555;line-height:1.6;white-space:pre-line">${x(D.impactJustification)}</p>`:''}
     </div>
 
     <div class="brd-sec">
-      <div class="brd-sec-hdr"><div class="brd-sec-num">5</div><div class="brd-sec-title">Functional Requirements (Detail)</div></div>
-      ${reqRows}
+      <div class="brd-sec-hdr"><div class="brd-sec-num">5</div><div class="brd-sec-title">Who Are We Solving For?</div></div>
+      ${D.audience?`<p style="font-size:12px;margin-bottom:6px">${x(D.audience)}</p>`:''}
+      ${D.userCount?`<p style="font-size:12px;color:#555;white-space:pre-line">${x(D.userCount)}</p>`:''}
     </div>
 
     <div class="brd-sec">
-      <div class="brd-sec-hdr"><div class="brd-sec-num">6</div><div class="brd-sec-title">Non-Functional Requirements</div></div>
-      <ul class="brd-bullets">${D.nfrs.map(n=>`<li><strong>${x(n.cat)}:</strong> ${n.req?x(n.req):'<span class="empty">[ to be completed ]</span>'}</li>`).join('')}</ul>
+      <div class="brd-sec-hdr"><div class="brd-sec-num">6</div><div class="brd-sec-title">Value &amp; Success Metrics</div></div>
+      ${D.roiValue?`<div class="brd-sub">Targeted Value / ROI</div><p style="font-size:12px;white-space:pre-line">${x(D.roiValue)}</p>`:''}
+      ${D.successMetrics?`<div class="brd-sub">How Will Success Be Measured?</div><p style="font-size:12px;white-space:pre-line">${x(D.successMetrics)}</p>`:''}
+      ${D.severity?`<div class="brd-sub">Severity</div><p style="font-size:12px;color:#a00;white-space:pre-line">${x(D.severity)}</p>`:''}
     </div>
 
     <div class="brd-sec">
-      <div class="brd-sec-hdr"><div class="brd-sec-num">7</div><div class="brd-sec-title">Constraints and Assumptions</div></div>
-      ${list(D.constraints)}
+      <div class="brd-sec-hdr"><div class="brd-sec-num">7</div><div class="brd-sec-title">Future State Vision</div></div>
+      <p style="font-size:12px;line-height:1.7;color:#444">${ev(D.vision)}</p>
+      ${D.dependencies?`<div class="brd-sub">Dependencies</div><p style="font-size:12px;white-space:pre-line">${x(D.dependencies)}</p>`:''}
     </div>
 
+    ${stRows?`<div class="brd-sec">
+      <div class="brd-sec-hdr"><div class="brd-sec-num">7a</div><div class="brd-sec-title">Stakeholders &amp; Roles</div></div>
+      <table class="tbl"><tr><th>Name / Role</th><th>Type</th><th>Involvement</th><th>Communication Needs</th></tr>${stRows}</table>
+    </div>`:''}
+
     <div class="brd-sec">
-      <div class="brd-sec-hdr"><div class="brd-sec-num">8</div><div class="brd-sec-title">Stakeholders & Roles</div></div>
-      <table class="tbl">
-        <tr><th>Name / Role</th><th>Type</th><th>Involvement</th><th>Communication Needs</th></tr>
-        ${stRows}
+      <div class="brd-sec-hdr"><div class="brd-sec-num">8</div><div class="brd-sec-title">Functional Requirements (Detail)</div></div>
+      ${reqRows || '<p class="empty">[ Add requirements on the Requirements tab ]</p>'}
+    </div>
+
+    ${nfrRows?`<div class="brd-sec">
+      <div class="brd-sec-hdr"><div class="brd-sec-num">8a</div><div class="brd-sec-title">Non-Functional Requirements</div></div>
+      ${nfrRows}
+    </div>`:''}
+
+    ${riskRows?`<div class="brd-sec">
+      <div class="brd-sec-hdr"><div class="brd-sec-num">9</div><div class="brd-sec-title">Risks &amp; Mitigations</div></div>
+      ${riskRows}
+    </div>`:''}
+
+    ${uatRows?`<div class="brd-sec">
+      <div class="brd-sec-hdr"><div class="brd-sec-num">9a</div><div class="brd-sec-title">User Acceptance Testing (UAT)</div></div>
+      ${uatRows}
+      <table class="tbl" style="margin-top:12px">
+        <tr><th>Stakeholder / Role</th><th>Signature</th><th>Date</th><th>Decision</th></tr>
+        ${D.productOwner?`<tr><td>${x(D.productOwner)} — Product Owner</td><td>___________________________</td><td>___________</td><td>Accept / Reject</td></tr>`:''}
+        ${D.sponsor?`<tr><td>${x(D.sponsor)} — Sponsor</td><td>___________________________</td><td>___________</td><td>Accept / Reject</td></tr>`:''}
+        <tr><td>Legal / Compliance</td><td>___________________________</td><td>___________</td><td>Accept / Reject</td></tr>
       </table>
-    </div>
+    </div>`:''}
 
     ${docSec}
 
     <div class="brd-sec">
-      <div class="brd-sec-hdr"><div class="brd-sec-num">${D.documents.length?10:9}</div><div class="brd-sec-title">Approvals & Sign-Off</div></div>
+      <div class="brd-sec-hdr"><div class="brd-sec-num">A</div><div class="brd-sec-title">Approvals &amp; Revision History</div></div>
       <table class="tbl">
         <tr><th>Stakeholder / Role</th><th>Signature</th><th>Date</th></tr>
-        <tr><td>Sponsor — ${ev(D.sponsor)}</td><td></td><td></td></tr>
-        <tr><td>BA/PM — ${ev(D.docOwner)}</td><td></td><td></td></tr>
-        <tr><td>IT Lead — [ name ]</td><td></td><td></td></tr>
-        <tr><td>Testing Lead — [ name ]</td><td></td><td></td></tr>
+        ${D.sponsor?`<tr><td>Sponsor — ${x(D.sponsor)}</td><td>___________________________</td><td>___________</td></tr>`:''}
+        ${D.productOwner?`<tr><td>Product Owner — ${x(D.productOwner)}</td><td>___________________________</td><td>___________</td></tr>`:''}
+        ${D.ba?`<tr><td>Business Analyst — ${x(D.ba)}</td><td>___________________________</td><td>___________</td></tr>`:''}
+        <tr><td>BA Manager — ${x(FIXED_BA_MANAGER)}</td><td>___________________________</td><td>___________</td></tr>
+        ${D.pm?`<tr><td>Project Manager — ${x(D.pm)}</td><td>___________________________</td><td>___________</td></tr>`:''}
+      </table>
+      <table class="tbl" style="margin-top:8px">
+        <tr><th>Version</th><th>Date</th><th>Author</th><th>Changes</th></tr>
+        <tr><td>${x(D.version||'1.0 DRAFT')}</td><td>${now}</td><td>${x(D.ba||FIXED_BA_MANAGER)} — Portico</td><td>Initial draft</td></tr>
       </table>
     </div>
 
   </div>`;
 }
 
-// ─── DOWNLOAD ─────────────────────────────────────────────────────────────────
-function downloadBRD(){
-  const now = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-  const fname = (D.title||'BRD').replace(/[^a-zA-Z0-9]+/g,'_')+'.rtf';
-  const e2 = s => String(s||'').replace(/\\/g,'\\\\').replace(/\{/g,'\\{').replace(/\}/g,'\\}').replace(/\r?\n/g,'\\line ');
-  const ev2 = v => v || '[ to be completed ]';
+// ─── SMARTSHEET EXTRACTION ────────────────────────────────────────────────────
+// Complete synonym map including all Portico Canvas question-headers
+const SYNONYMS = {
+  title:         ['opportunity title','title','project name','opportunity name','opp title','name of opportunity'],
+  sponsor:       ['sponsor','sponsors','sponsored by','project sponsor','who are the sponsors'],
+  productOwner:  ['product owner','owner'],
+  ba:            ['business analyst','ba '],
+  pm:            ['project manager','pm '],
+  productSpecialist: ['product specialist','specialist'],
+  submitter:     ['submitter','submitter name','submitted by'],
+  sdTicket:      ['sd ticket','sd #','sd ticket #','service desk'],
+  adoCard:       ['ado card','ado #','ado card #','azure devops'],
+  sprintName:    ['sprint name','sprint','fix version'],
+  businessUnit:  ['business unit','unit','department','team','org','domain','capability'],
+  initiative:    ['initiative name','initiative'],
+  targetDate:    ['target date','deadline','due date','go live','go-live','need by','target completion','when does this','requested by date'],
+  moscow:        ['moscow','must have','should have','could have','priority score','moscow score'],
+  impactOp:      ['impact score - operational','operational impact','impact - operational'],
+  impactFin:     ['impact score - financial','financial impact','impact - financial'],
+  impactSec:     ['impact score - security','security impact','impact - security'],
+  impactComp:    ['impact score - compliance','compliance impact','impact - compliance'],
+  impactRep:     ['impact score - reputational','reputational impact','impact - reputational'],
+  confidence:    ['confidence','confidence %','how confident'],
+  impactJustification: ['impact score justification','justification'],
+  objective:     ['business objective','objective','goal','what business objective','aligns to','what objective','which strategic','what business objective does this problem align to'],
+  problem:       ['problem statement','problem to solve','what problem','what is the problem','what problem are we trying to solve','issue','challenge'],
+  audience:      ['who are we solving','audience','solving for','who is affected','who are we solving this problem for','who we'],
+  userCount:     ['how many people','how many users','user count','number of users','groups affected','how many people / users'],
+  roiValue:      ['targeted value','roi','cost savings','return on investment','targeted value (roi','value'],
+  budgetNeeded:  ['budget needed','budget'],
+  severity:      ['severity','impact if not solved','consequence','severity?'],
+  existingStrategy: ['existing strategy','strategy','connected to','initiative','is this part of an existing strategy'],
+  vision:        ['future state','vision','future state vision','what is the future state vision','desired outcome'],
+  successMetrics:['success metrics','kpi','metrics','how will impact','how will success','how will impact/success be measured'],
+  dependencies:  ['dependencies','dependency','depends on','blockers'],
+  additionalDetails: ['additional details','additional','notes','extra'],
+};
 
-  const sHdr = (num,title) =>
-    `\\trowd\\trkeep\\cellx720\\cellx9360`+
-    `{\\pard\\intbl\\keepn\\b\\f0\\fs26\\cf3 ${num}\\cell}`+
-    `{\\pard\\intbl\\keepn\\b\\f0\\fs22\\cf2\\caps ${e2(title)}\\cell}\\row\n`;
+const QUESTION_PATTERNS = [
+  /^what (is|are|business|does|problem|happens|will|the)/i,
+  /^how (many|will|do we|is|can)/i,
+  /^who (are|is|will|we)/i, /^when (does|is|will|should)/i,
+  /^why (is|are|do|should)/i, /^describe /i, /^which /i,
+  /^does this /i, /\?$/, /^is there /i, /^if not solved/i,
+];
+const isQ = v => QUESTION_PATTERNS.some(p => p.test((v||'').trim()));
+const norm = s => (s||'').toLowerCase().replace(/[^a-z0-9\s]/g,'').trim();
 
-  const tbl2 = (label, value, alt) =>
-    `\\trowd\\trkeep\\cellx2592\\cellx9360`+
-    `{\\pard\\intbl\\b\\f0\\fs20\\cf4 ${e2(label)}\\cell}`+
-    `{\\pard\\intbl\\f0\\fs20${alt?' \\highlight2':''} ${e2(ev2(value))}\\cell}\\row\n`;
+function bestMatch(key){
+  const nk = norm(key);
+  if(nk.length < 2) return null;
+  let bestF=null, bestS=28;
+  for(const [field,aliases] of Object.entries(SYNONYMS)){
+    for(const alias of aliases){
+      const na = norm(alias);
+      let score = 0;
+      if(nk===na) score=100;
+      else if(nk.includes(na)||na.includes(nk)) score=80;
+      else {
+        const hw=new Set(nk.split(/\s+/)), aw=na.split(/\s+/);
+        score = aw.filter(w=>w.length>3&&hw.has(w)).length*25;
+      }
+      if(score>bestS){bestS=score;bestF=field;}
+    }
+  }
+  return bestF;
+}
 
-  const tbl4h = (a,b,c,d) =>
-    `\\trowd\\trkeep\\cellx2160\\cellx5040\\cellx6840\\cellx9360`+
-    `{\\pard\\intbl\\b\\f0\\fs20\\cf3 ${e2(a)}\\cell}`+
-    `{\\pard\\intbl\\b\\f0\\fs20\\cf3 ${e2(b)}\\cell}`+
-    `{\\pard\\intbl\\b\\f0\\fs20\\cf3 ${e2(c)}\\cell}`+
-    `{\\pard\\intbl\\b\\f0\\fs20\\cf3 ${e2(d)}\\cell}\\row\n`;
+function cleanVal(v){
+  v=(v||'').trim();
+  if(!v||v==='-'||v.toLowerCase()==='null'||v.toLowerCase()==='n/a') return '';
+  if(isQ(v)) return '';
+  if(/^\d{1,4}$/.test(v)&&v.length<3) return ''; // bare row numbers only
+  return v;
+}
 
-  const tbl4 = (a,b,c,d) =>
-    `\\trowd\\trkeep\\cellx2160\\cellx5040\\cellx6840\\cellx9360`+
-    `{\\pard\\intbl\\f0\\fs20 ${e2(ev2(a))}\\cell}`+
-    `{\\pard\\intbl\\f0\\fs20 ${e2(ev2(b))}\\cell}`+
-    `{\\pard\\intbl\\f0\\fs20 ${e2(ev2(c))}\\cell}`+
-    `{\\pard\\intbl\\f0\\fs20 ${e2(ev2(d))}\\cell}\\row\n`;
+function applyToD(field, val){
+  if(!field || !val) return false;
+  // Numeric impact fields
+  if(['impactOp','impactFin','impactSec','impactComp','impactRep'].includes(field)){
+    const n = parseInt(val);
+    if(!isNaN(n)) { D[field]=n; return true; }
+  }
+  // Don't overwrite baManager
+  if(field==='baManager') return false;
+  // MoSCoW normalize
+  if(field==='moscow'){
+    const mv = val.toLowerCase();
+    if(mv.includes('must')) D.moscow='Must Have';
+    else if(mv.includes('should')) D.moscow='Should Have';
+    else if(mv.includes('could')) D.moscow='Could Have';
+    else if(mv.includes("won't")||mv.includes('wont')) D.moscow="Won't Have";
+    else D.moscow=val;
+    return true;
+  }
+  if(field in D){ D[field]=val; return true; }
+  return false;
+}
 
-  const bullet = item =>
-    `{\\pard\\li360\\fi-360\\f0\\fs20\\bullet  ${e2(item)}\\par}\n`;
+function extractLocally(raw){
+  const lines = raw.split('\n').map(l=>l.trimEnd()).filter(l=>l.trim());
+  let matched = 0;
 
-  const reqBlock = (r,i) => {
-    const ctx = r.context&&r.context.length
-      ? tbl2('Source Context', r.context.map(c=>`[${c.src}]: ${c.text}`).join(' | '), true)
-      : '';
-    return `{\\pard\\sb120\\b\\f0\\fs22\\cf2 ${e2(r.id||'BRD-00'+(i+1))}: ${e2(r.title)}\\par}\n`+
-      `\\trowd\\cellx2592\\cellx9360`+
-      `{\\pard\\intbl\\b\\f0\\fs20\\cf4 Priority\\cell}{\\pard\\intbl\\f0\\fs20 ${e2(r.priority)}\\cell}\\row\n`+
-      tbl2('Description',         r.description,        false)+
-      tbl2('Business Value',       r.businessValue,       true)+
-      tbl2('Acceptance Criteria',  r.acceptanceCriteria,  false)+
-      tbl2('Primary Actors',       r.actors,              true)+
-      ctx+
-      `{\\pard\\sa80 \\par}\n`;
+  // Format A: Tab-separated grid — find best header row
+  const tabRows = lines.map(l=>l.split('\t'));
+  const wideRows = tabRows.filter(r=>r.length>=3);
+  if(wideRows.length>=2){
+    let bestHdrIdx=-1, bestHdrScore=0;
+    wideRows.forEach((row,i)=>{
+      const score=row.filter(c=>bestMatch(c)!==null).length;
+      if(score>bestHdrScore){bestHdrScore=score;bestHdrIdx=i;}
+    });
+    if(bestHdrScore>=2 && bestHdrIdx<wideRows.length-1){
+      const hdr=wideRows[bestHdrIdx], data=wideRows[bestHdrIdx+1];
+      hdr.forEach((h,i)=>{
+        const field=bestMatch(h);
+        const val=cleanVal(data[i]);
+        if(field&&val){ if(applyToD(field,val)) matched++; }
+      });
+    }
+  }
+
+  // Format B: "Label: value" or "Label\tvalue" lines
+  if(matched===0){
+    lines.forEach(line=>{
+      const ti=line.indexOf('\t'), ci=line.indexOf(':');
+      let key='',val='';
+      if(ti>0&&ti<60){key=line.substring(0,ti).trim();val=line.substring(ti+1).trim();}
+      else if(ci>0&&ci<80){key=line.substring(0,ci).trim();val=line.substring(ci+1).trim();}
+      if(!key||!val) return;
+      val=cleanVal(val);
+      if(!val||val.length<2) return;
+      const field=bestMatch(key);
+      if(field&&applyToD(field,val)) matched++;
+    });
+  }
+
+  // Format C: Question/answer interleaved
+  if(matched===0){
+    for(let i=0;i<lines.length-1;i++){
+      const maybeQ=lines[i].trim(), maybeA=lines[i+1].trim();
+      if(!bestMatch(maybeQ)) continue;
+      const field=bestMatch(maybeQ);
+      if(!field) continue;
+      const val=cleanVal(maybeA);
+      if(val&&val.length>1&&!isQ(val)){ if(applyToD(field,val)){matched++;i++;} }
+    }
+  }
+
+  if(matched===0){
+    const preview=raw.substring(0,200).replace(/\t/g,'→').replace(/\n/g,'↵\n');
+    alert('Could not auto-extract fields.\n\nData preview:\n'+preview+'\n\nTips:\n• Copy BOTH the header row AND data row from Smartsheet\n• Or use Label: Value format\n• Set an API key (🔑) for AI extraction of any format');
+    return;
+  }
+  // Ensure BA Manager is always reset to fixed value
+  D.baManager = FIXED_BA_MANAGER;
+  render(); persist();
+  showToast(`✓ Extracted ${matched} fields from Smartsheet data`);
+}
+
+function safeParseJSON(text){
+  try{return JSON.parse(text);}catch(e){}
+  const s=text.indexOf('{'),e2=text.lastIndexOf('}');
+  if(s===-1||e2===-1||e2<=s) throw new Error('No JSON object found in response');
+  let candidate=text.slice(s,e2+1);
+  try{return JSON.parse(candidate);}catch(e){}
+  for(let i=candidate.length-1;i>candidate.length*0.3;i--){
+    const ch=candidate[i];
+    if(ch==='}'||ch===']'||ch==='"'){
+      try{
+        let sub=candidate.slice(0,i+1);
+        let braces=0,brackets=0,inStr=false,escape=false;
+        for(let j=0;j<sub.length;j++){
+          const c=sub[j];
+          if(escape){escape=false;continue;}
+          if(c==='\\'){escape=true;continue;}
+          if(c==='"'&&!inStr) inStr=true;
+          else if(c==='"'&&inStr) inStr=false;
+          if(!inStr){if(c==='{'&&++braces);else if(c==='}'&&--braces);else if(c==='['&&++brackets);else if(c===']'&&--brackets);}
+        }
+        if(brackets>0) sub+=']'.repeat(brackets);
+        if(braces>0) sub+='}'.repeat(braces);
+        sub=sub.replace(/,\s*([}\]])/g,'$1');
+        return JSON.parse(sub);
+      }catch(e2){continue;}
+    }
+  }
+  throw new Error('Could not parse or repair JSON response');
+}
+
+async function extractWithAI(raw, apiKey){
+  const prompt = `You are a data extraction assistant for Portico Benefit Services. I am pasting raw data copied from a Smartsheet Opportunity Canvas intake form.
+
+CRITICAL RULE: Column headers are often written as QUESTIONS. DO NOT put question text (ending in '?' or starting with What/How/Who/When/Why/Describe) as field values. Extract the actual data values only.
+
+The BA Manager is ALWAYS "Charlie Nadeau" — do not extract or change this field.
+
+Return ONLY a valid JSON object with these exact keys (omit keys where no value is found):
+{
+  "title": "opportunity title",
+  "sponsor": "sponsor name(s) — real person names",
+  "productOwner": "product owner name",
+  "ba": "business analyst name",
+  "pm": "project manager name",
+  "productSpecialist": "product specialist name",
+  "submitter": "submitter name",
+  "sdTicket": "SD ticket number",
+  "adoCard": "ADO card number",
+  "businessUnit": "business unit or domain",
+  "initiative": "initiative name",
+  "targetDate": "target date",
+  "moscow": "Must Have / Should Have / Could Have / Won't Have",
+  "impactOp": 0,
+  "impactFin": 0,
+  "impactSec": 0,
+  "impactComp": 0,
+  "impactRep": 0,
+  "confidence": "80%",
+  "impactJustification": "justification text",
+  "objective": "business objective text",
+  "problem": "problem statement text",
+  "audience": "who are we solving for",
+  "userCount": "number of users/groups",
+  "roiValue": "targeted value or ROI",
+  "budgetNeeded": "budget amount",
+  "severity": "severity description",
+  "existingStrategy": "existing strategy connection",
+  "vision": "future state vision",
+  "successMetrics": "success metrics",
+  "dependencies": "dependencies",
+  "additionalDetails": "additional details"
+}
+
+Rules: NEVER put question text as values. Impact score fields (impactOp, etc.) must be integers 0-100. Return ONLY the JSON object, no explanation, no markdown.
+
+Raw data:
+${raw}`;
+
+  const resp = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':apiKey,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,messages:[{role:'user',content:prompt}]})
+  });
+
+  if(!resp.ok){
+    const errText=await resp.text().catch(()=>'');
+    throw new Error(`API ${resp.status}${errText?': '+errText.substring(0,200):''}`);
+  }
+  const data=await resp.json();
+  const text=data.content?.find(b=>b.type==='text')?.text||'';
+  if(!text) throw new Error('API returned empty response. Check your API key has credits.');
+
+  let extracted;
+  try{ extracted=safeParseJSON(text); }
+  catch(e){ throw new Error('Could not parse AI response. Raw (first 300 chars):\n'+text.substring(0,300)); }
+
+  let count=0;
+  for(const [field,val] of Object.entries(extracted)){
+    if(field==='baManager') continue; // always fixed
+    if(val!==undefined&&val!==null&&val!==''){
+      if(applyToD(field,String(val))) count++;
+    }
+  }
+  D.baManager = FIXED_BA_MANAGER;
+  render(); persist();
+  showToast(`✓ AI extracted ${count} fields`);
+}
+
+async function extractSmartsheet(){
+  const raw=document.getElementById('ss-paste').value.trim();
+  if(!raw){alert('Paste your Smartsheet / Opportunity Canvas data first');return;}
+  const btn=document.querySelector('[onclick="extractSmartsheet()"]');
+  const orig=btn.innerHTML;
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin"></span> Reading data…';
+
+  const apiKey=localStorage.getItem('portico-api-key-v2');
+  if(apiKey){
+    try{
+      await extractWithAI(raw,apiKey);
+      btn.disabled=false;btn.innerHTML=orig;return;
+    }catch(e){
+      btn.disabled=false;btn.innerHTML=orig;
+      const isCors=e.message.includes('fetch')||e.message.includes('Network')||e.message.includes('CORS')||e.message.includes('Failed');
+      if(isCors){
+        showToast('API blocked by browser (CORS) — using local extraction','warn');
+        extractLocally(raw);
+      }else{
+        alert('AI extraction error: '+e.message+'\n\nFalling back to local extraction...');
+        extractLocally(raw);
+      }
+      return;
+    }
+  }
+  extractLocally(raw);
+  btn.disabled=false;btn.innerHTML=orig;
+}
+
+// ─── AI EXPAND: Generate BRD content from canvas data ────────────────────────
+async function expandWithAI(){
+  const apiKey=localStorage.getItem('portico-api-key-v2');
+  if(!apiKey){
+    alert('Set your Anthropic API key first (🔑 top right) to use AI expansion.\n\nThis feature uses Claude to generate full BRD content (problem statements, requirements, risks, UAT cases) from your canvas data.');
+    return;
+  }
+  if(!D.problem&&!D.title){
+    alert('Add at least an Opportunity Title and Problem Statement before expanding with AI.');
+    return;
+  }
+
+  const btn=document.querySelector('[onclick="expandWithAI()"]');
+  const orig=btn.innerHTML;
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin"></span> AI Expanding…';
+
+  const prompt=`You are a senior Business Analyst at Portico Benefit Services. Generate BRD content from this canvas data:
+
+Title: ${D.title}
+Problem: ${D.problem}
+Audience: ${D.audience} (${D.userCount})
+Future State: ${D.vision}
+Business Objective: ${D.objective}
+Existing Strategy: ${D.existingStrategy}
+Success Metrics: ${D.successMetrics}
+Dependencies: ${D.dependencies}
+Severity: ${D.severity}
+ROI: ${D.roiValue}
+Additional: ${D.additionalDetails}
+
+Return ONLY a JSON object:
+{
+  "inScope": ["5-7 specific in-scope items"],
+  "outScope": ["4-5 specific out-of-scope items"],
+  "requirements": [
+    {"id":"BRD-001","title":"short title","priority":"High","description":"2-3 sentence desc","businessValue":"1-2 sentences","acceptanceCriteria":"1. criteria\\n2. criteria\\n3. criteria","actors":"team names","preconditions":"conditions","postconditions":"end state"},
+    {"id":"BRD-002","title":"..."},
+    {"id":"BRD-003","title":"..."},
+    {"id":"BRD-004","title":"..."}
+  ],
+  "nfrs": [
+    {"cat":"Compliance","req":"specific NFR","pri":"Critical"},
+    {"cat":"Security","req":"specific NFR","pri":"High"},
+    {"cat":"Performance","req":"specific NFR","pri":"High"},
+    {"cat":"Scalability","req":"specific NFR","pri":"High"},
+    {"cat":"Auditability","req":"specific NFR","pri":"High"}
+  ],
+  "risks": [
+    {"title":"risk title","likelihood":"Medium","impact":"High","mitigation":"mitigation strategy"},
+    {"title":"risk 2","likelihood":"High","impact":"High","mitigation":"strategy"},
+    {"title":"risk 3","likelihood":"Low","impact":"Critical","mitigation":"strategy"},
+    {"title":"risk 4","likelihood":"Medium","impact":"Medium","mitigation":"strategy"}
+  ],
+  "uatCases": [
+    {"scenario":"business scenario title","given":"starting state","when":"action taken","then":"expected result"},
+    {"scenario":"scenario 2","given":"...","when":"...","then":"..."},
+    {"scenario":"scenario 3","given":"...","when":"...","then":"..."}
+  ]
+}
+
+Write professional BA-quality content. Be specific and concrete — no generic placeholders. Return ONLY the JSON object.`;
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:3000,messages:[{role:'user',content:prompt}]})
+    });
+    if(!resp.ok) throw new Error('API '+resp.status);
+    const data=await resp.json();
+    const text=data.content?.find(b=>b.type==='text')?.text||'';
+    const result=safeParseJSON(text);
+
+    if(result.inScope) D.inScope=result.inScope;
+    if(result.outScope) D.outScope=result.outScope;
+    if(result.requirements&&result.requirements.length){
+      D.requirements=result.requirements.map(r=>({
+        id:r.id||'BRD-001',title:r.title||'',priority:r.priority||'High',
+        description:r.description||'',businessValue:r.businessValue||'',
+        acceptanceCriteria:r.acceptanceCriteria||'',actors:r.actors||'',
+        stakeholder:r.stakeholder||'',preconditions:r.preconditions||'',
+        postconditions:r.postconditions||'',context:[]
+      }));
+    }
+    if(result.nfrs&&result.nfrs.length) D.nfrs=result.nfrs;
+    if(result.risks&&result.risks.length) D.risks=result.risks;
+    if(result.uatCases&&result.uatCases.length) D.uatCases=result.uatCases;
+
+    render(); persist();
+    showToast('✓ AI expanded BRD — review all sections');
+    goto(2);
+  }catch(e){
+    alert('AI expansion error: '+e.message);
+  }finally{
+    btn.disabled=false;btn.innerHTML=orig;
+  }
+}
+
+// ─── DOCUMENT UPLOAD / PARSE ──────────────────────────────────────────────────
+function uploadDoc(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    let text=e.target.result;
+    // RTF: strip control codes
+    if(file.name.endsWith('.rtf')){
+      text=text.replace(/\{[^}]*\}/g,'').replace(/\\[a-z]+\\-?[0-9]* ?/gi,'').replace(/[{}\\]/g,' ').replace(/\s+/g,' ').trim();
+    }
+    if(!text||text.length<10){alert('Could not read file. Try pasting the content instead.');input.value='';return;}
+    const docName=file.name;
+    input.value='';
+    await parseDocContent(text,docName);
   };
+  if(file.name.endsWith('.docx')||file.name.endsWith('.doc')){
+    reader.readAsBinaryString(file);
+  }else{
+    reader.readAsText(file);
+  }
+}
 
-  const docSections = D.documents.map(d =>
-    `{\\pard\\sb120\\b\\f0\\fs22\\cf2 ${e2(d.name)}\\par}\n`+
-    `{\\pard\\f0\\fs20 ${e2(d.content)}\\par}\n{\\pard\\sa80 \\par}\n`
-  ).join('');
+function addDocManual(){
+  const el=document.getElementById('paste-doc');
+  const text=(el?.value||'').trim();
+  if(!text){alert('Paste some content first');return;}
+  D.documents.push({name:'Pasted Note — '+new Date().toLocaleDateString(),content:text});
+  el.value='';
+  render();persist();
+  showToast('Note added');
+}
 
-  const inSc  = D.inScope.filter(Boolean).map(bullet).join('');
-  const outSc = D.outScope.filter(Boolean).map(bullet).join('');
-  const cons  = D.constraints.filter(Boolean).map(bullet).join('');
-  const nfrB  = D.nfrs.map(n=>bullet(`${n.cat}: ${ev2(n.req)}`)).join('');
+async function parsePastedDoc(){
+  const el=document.getElementById('paste-doc');
+  const text=(el?.value||'').trim();
+  if(!text){alert('Paste some content first');return;}
+  await parseDocContent(text,'Meeting Notes — '+new Date().toLocaleDateString());
+  el.value='';
+}
 
-  const rtf = `{\\rtf1\\ansi\\deff0
+async function parseDocContent(text,docName){
+  const apiKey=localStorage.getItem('portico-api-key-v2');
+  D.documents.push({name:docName,content:text.substring(0,2000)+(text.length>2000?'…':'')});
+
+  if(!apiKey){render();persist();showToast('Document added (no AI key — manual review)');return;}
+
+  const prompt=`Extract BRD-relevant content from this document for the initiative "${D.title||'current project'}". Focus on: requirements, constraints, risks, success criteria, stakeholders, scope.
+
+Return ONLY a JSON object:
+{
+  "reqContext": [{"src":"${docName.substring(0,30)}","text":"extracted requirement or context"}],
+  "scopeItems": ["additional in-scope items"],
+  "outScopeItems": ["additional out-of-scope items"],
+  "risks": [{"title":"risk","likelihood":"Medium","impact":"High","mitigation":"mitigation"}]
+}
+
+Document content:
+${text.substring(0,3000)}`;
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    if(!resp.ok) throw new Error('API '+resp.status);
+    const data=await resp.json();
+    const txt=data.content?.find(b=>b.type==='text')?.text||'';
+    const result=safeParseJSON(txt);
+    let merged=0;
+    if(result.reqContext){
+      result.reqContext.forEach(ctx=>{
+        if(D.requirements.length&&ctx.text){
+          D.requirements[D.requirements.length-1].context=D.requirements[D.requirements.length-1].context||[];
+          D.requirements[D.requirements.length-1].context.push(ctx);
+          merged++;
+        }
+      });
+    }
+    if(result.scopeItems) result.scopeItems.forEach(s=>{if(s&&!D.inScope.includes(s)) D.inScope.push(s);});
+    if(result.outScopeItems) result.outScopeItems.forEach(s=>{if(s&&!D.outScope.includes(s)) D.outScope.push(s);});
+    if(result.risks) result.risks.forEach(r=>{if(r.title) D.risks.push(r);});
+    render();persist();
+    showToast(`✓ Document parsed — ${merged} context items added`);
+  }catch(e){
+    render();persist();
+    showToast('Document added (AI parse failed — manual review)','warn');
+  }
+}
+
+// ─── DOWNLOAD (RTF) ───────────────────────────────────────────────────────────
+function downloadBRD(){
+  const now=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const fname=(D.title||'BRD').replace(/[^a-zA-Z0-9]+/g,'_')+'_BRD.rtf';
+  const e2=s=>String(s||'').replace(/\\/g,'\\\\').replace(/\{/g,'\\{').replace(/\}/g,'\\}').replace(/\r?\n/g,'\\line ');
+  const ev=v=>v||'[ to be completed ]';
+  const impTotal=(D.impactOp||0)+(D.impactFin||0)+(D.impactSec||0)+(D.impactComp||0)+(D.impactRep||0);
+
+  // RTF helpers
+  const sHdr=(n,t)=>`\\trowd\\trkeep\\cellx720\\cellx9360{\\pard\\intbl\\keepn\\b\\f0\\fs26\\cf3 ${n}\\cell}{\\pard\\intbl\\keepn\\b\\f0\\fs22\\cf2\\caps ${e2(t)}\\cell}\\row\n`;
+  const row2=(l,v,alt)=>`\\trowd\\trkeep\\cellx2592\\cellx9360{\\pard\\intbl\\b\\f0\\fs20\\cf4 ${e2(l)}\\cell}{\\pard\\intbl\\f0\\fs20${alt?' \\highlight2':''} ${e2(ev(v))}\\cell}\\row\n`;
+  const row4=(a,b,c,dd)=>`\\trowd\\cellx2340\\cellx4680\\cellx7020\\cellx9360{\\pard\\intbl\\f0\\fs20 ${e2(a)}\\cell}{\\pard\\intbl\\f0\\fs20 ${e2(b)}\\cell}{\\pard\\intbl\\f0\\fs20 ${e2(c)}\\cell}{\\pard\\intbl\\f0\\fs20 ${e2(dd)}\\cell}\\row\n`;
+  const th4=(a,b,c,dd)=>`\\trowd\\cellx2340\\cellx4680\\cellx7020\\cellx9360{\\pard\\intbl\\b\\cf5\\f0\\fs20 ${e2(a)}\\cell}{\\pard\\intbl\\b\\cf5\\f0\\fs20 ${e2(b)}\\cell}{\\pard\\intbl\\b\\cf5\\f0\\fs20 ${e2(c)}\\cell}{\\pard\\intbl\\b\\cf5\\f0\\fs20 ${e2(dd)}\\cell}\\row\n`;
+  const bullet=arr=>(arr||[]).filter(Boolean).map(i=>`{\\pard\\f0\\fs20\\li300\\bullet  ${e2(i)}\\par}\n`).join('');
+
+  let rtf=`{\\rtf1\\ansi\\deff0
 {\\fonttbl{\\f0 Calibri;}}
-{\\colortbl ;\\red255\\green255\\blue255;\\red46\\green117\\blue182;\\red46\\green58\\blue78;\\red242\\green242\\blue242;\\red255\\green255\\blue255;}
-{\\*\\highlight2\\red240\\green255\\blue244;}
-\\widowctrl\\hyphauto\\f0
-\\paperw12240\\paperh15840\\margl1080\\margr1080\\margt1080\\margb1080
+{\\colortbl;\\red255\\green255\\blue255;\\red0\\green156\\blue222;\\red84\\green88\\blue90;\\red84\\green88\\blue90;\\red255\\green255\\blue255;\\red241\\green196\\blue0;\\red255\\green165\\blue0;}
+{\\info{\\title ${e2(D.title)}}}
 
-{\\pard\\qc\\sb360\\b\\fs40\\cf3 Business Requirements Document\\par}
-{\\pard\\qc\\b\\fs28\\cf3 (BRD)\\par}
-{\\pard\\qc\\fs20\\cf2 Project Name: ${e2(D.title||'[Insert Project Name]')}\\par}
-{\\pard\\qc\\fs20\\cf2 Date: ${e2(now)} | Version: ${e2(D.version||'1.0 DRAFT')}\\par}
-{\\pard\\sa240 \\par}
+{\\pard\\cb3\\f0\\fs42\\b\\cf6 BUSINESS REQUIREMENTS DOCUMENT\\par}
+{\\pard\\f0\\fs28\\b\\cf2 ${e2(D.title)}\\par}
+{\\pard\\f0\\fs20\\cf3 Portico Benefit Services | Version: ${e2(D.version)} | Date: ${e2(now)}\\par}
+\\par
 
-${sHdr(1,'Document Control')}
-${tbl4h('Role','Name','Signature / Approval','Date')}
-${tbl4('Project Sponsor',D.sponsor,'','')}
-${tbl4('Business Analyst',D.docOwner,'','')}
-${tbl4('Technical Lead','','','')}
-{\\pard\\sa120 \\par}
+${sHdr('1','Document Control')}
+${th4('Role','Name','Signature','Date')}
+${row4('Sponsor',D.sponsor,'','')}
+${row4('Product Owner',D.productOwner,'','')}
+${row4('Business Analyst',D.ba,'','')}
+${row4('BA Manager',FIXED_BA_MANAGER,'','')}
+${row4('Project Manager',D.pm,'','')}
+${row4('Product Specialist',D.productSpecialist,'','')}
+${D.developer?row4('Developer',D.developer,'',''):''}
+${D.qaAnalyst?row4('QA Analyst',D.qaAnalyst,'',''):''}
+${D.uatOwner?row4('UAT / Sign-Off',D.uatOwner,'',''):''}
+\\par
 
-${sHdr(2,'Executive Summary')}
-{\\pard\\f0\\fs20\\highlight2 ${e2([D.objective,D.problem].filter(Boolean).join('. '))||'[ Insert high-level summary here ]'}\\par}
-{\\pard\\sa100 \\par}
+${sHdr('2','Executive Summary')}
+{\\pard\\f0\\fs20\\sb100 ${e2(D.problem)}\\par}
+${D.objective?`{\\pard\\b\\f0\\fs20 Business Objective:\\par}{\\pard\\f0\\fs20 ${e2(D.objective)}\\par}`:''}
+\\par
 
-${sHdr(3,'Project Scope')}
+${sHdr('3','Project Scope')}
 {\\pard\\b\\f0\\fs22\\cf2 3.1 In-Scope\\par}
-${inSc||bullet('[ to be defined ]')}
+${bullet(D.inScope)}
 {\\pard\\b\\f0\\fs22\\cf2 3.2 Out-of-Scope\\par}
-${outSc||bullet('[ to be defined ]')}
-{\\pard\\sa80 \\par}
+${bullet(D.outScope)}
+${D.constraints.filter(Boolean).length?`{\\pard\\b\\f0\\fs22\\cf2 3.3 Constraints & Assumptions\\par}${bullet(D.constraints)}`:''}
+\\par
 
-${sHdr(4,'Business Requirements Summary')}
-${tbl4h('Req ID','Description','Priority','Stakeholder')}
-${D.requirements.map((r,i)=>tbl4(r.id||'BRD-00'+(i+1),r.description||r.title||'',r.priority||'High',r.stakeholder||'')).join('')}
-{\\pard\\sa80 \\par}
+${sHdr('4','Scoring & Priority')}
+${row2('MoSCoW',D.moscow)}
+${row2('Total Impact Score',String(impTotal)+' / 500')}
+${row2('Confidence',D.confidence)}
+${row2('Severity',D.severity)}
+${row2('Targeted Value / ROI',D.roiValue)}
+${D.impactJustification?row2('Impact Justification',D.impactJustification,true):''}
+\\par
 
-${sHdr(5,'Functional Requirements (Detail)')}
-${D.requirements.map((r,i)=>reqBlock(r,i)).join('')}
+${sHdr('5','Who Are We Solving For?')}
+${row2('Audience',D.audience)}
+${row2('Users / Groups',D.userCount)}
+\\par
 
-${sHdr(6,'Non-Functional Requirements')}
-${nfrB||bullet('[ to be defined ]')}
-{\\pard\\sa80 \\par}
+${sHdr('6','Future State Vision')}
+{\\pard\\f0\\fs20\\sb100 ${e2(D.vision)}\\par}
+${D.dependencies?row2('Dependencies',D.dependencies):''}
+${D.existingStrategy?row2('Existing Strategy',D.existingStrategy):''}
+\\par
 
-${sHdr(7,'Constraints and Assumptions')}
-${cons||bullet('[ to be defined ]')}
-{\\pard\\sa80 \\par}
+${sHdr('7','Value & Success Metrics')}
+${row2('Targeted Value / ROI',D.roiValue)}
+${row2('Success Metrics',D.successMetrics)}
+\\par
 
-${sHdr(8,'Stakeholders & Roles')}
-${tbl4h('Name / Role','Type','Involvement','Communication Needs')}
-${D.stakeholders.map(s=>tbl4(s.name,s.type,s.involvement,s.commsNeeds)).join('')}
-{\\pard\\sa80 \\par}
+${sHdr('8','Functional Requirements')}
+${D.requirements.map(r=>`
+{\\pard\\cb3\\b\\f0\\fs22\\cf5 ${e2(r.id||'BRD-001')}: ${e2(r.title||'[ title ]')}\\par}
+${row2('Priority',r.priority)}
+${row2('Description',r.description,true)}
+${row2('Business Value',r.businessValue)}
+${r.preconditions?row2('Preconditions',r.preconditions):''}
+${r.postconditions?row2('Postconditions',r.postconditions):''}
+${row2('Acceptance Criteria',r.acceptanceCriteria,true)}
+${row2('Primary Actors',r.actors)}
+`).join('\\par\n')}
+\\par
 
-${D.documents.length ? sHdr(9,'Appendix: Source Documents & Interviews')+
-  `{\\pard\\i\\f0\\fs20 The following documents informed the requirements above.\\par}\n{\\pard\\sa60 \\par}\n`+
-  docSections : ''}
+${D.nfrs.filter(n=>n.req).length?`${sHdr('8a','Non-Functional Requirements')}
+${th4('Category','Requirement','Priority','')}
+${D.nfrs.filter(n=>n.req).map(n=>row4(n.cat,n.req,n.pri,'')).join('')}
+\\par`:''}
 
-${sHdr(D.documents.length?10:9,'Approvals & Sign-Off')}
-${tbl4h('Stakeholder / Role','Signature','Date','')}
-${tbl4(`Sponsor — ${D.sponsor||'[ name ]'}`,'','','')}
-${tbl4(`BA/PM — ${D.docOwner||'[ name ]'}`,'','','')}
-${tbl4('IT Lead — [ name ]','','','')}
-${tbl4('Testing Lead — [ name ]','','','')}
-{\\pard\\sa80 \\par}
+${D.risks.filter(r=>r.title).length?`${sHdr('9','Risks & Mitigations')}
+${th4('Risk','Likelihood','Impact','Mitigation')}
+${D.risks.filter(r=>r.title).map(r=>row4(r.title,r.likelihood,r.impact,r.mitigation)).join('')}
+\\par`:''}
 
-{\\pard\\brdrb\\brdrs\\brdrw10\\brdrsp60 \\par}
-{\\pard\\qc\\f0\\fs18\\cf2 Portico Benefit Services | Business Requirements Document | Confidential \\emdash  Internal Use Only\\par}
+${D.uatCases.filter(u=>u.scenario).length?`${sHdr('9a','User Acceptance Testing')}
+${D.uatCases.filter(u=>u.scenario).map((u,i)=>`
+{\\pard\\b\\f0\\fs20\\cf2 UAT-00${i+1}: ${e2(u.scenario)}\\par}
+${row2('Given',u.given)}
+${row2('When',u.when)}
+${row2('Then',u.then)}
+${row2('Acceptance','Accepted / Conditionally Accepted / Rejected')}
+`).join('\\par\n')}
+\\par`:''}
+
+${sHdr('A','Approvals')}
+${th4('Role','Signature','Date','')}
+${D.sponsor?row4('Sponsor — '+D.sponsor,'___________________________','___________',''):''}
+${D.productOwner?row4('Product Owner — '+D.productOwner,'___________________________','___________',''):''}
+${D.ba?row4('Business Analyst — '+D.ba,'___________________________','___________',''):''}
+${row4('BA Manager — '+FIXED_BA_MANAGER,'___________________________','___________','')}
+${D.pm?row4('Project Manager — '+D.pm,'___________________________','___________',''):''}
+\\par
 }`;
 
-  const blob = new Blob([rtf], {type:'application/rtf'});
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href=url; a.download=fname; a.click();
-  URL.revokeObjectURL(url);
+  const blob=new Blob([rtf],{type:'application/rtf'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=fname;a.click();URL.revokeObjectURL(url);
+  showToast('✓ BRD downloaded as '+fname);
 }
 
-// ─── SAVE / LOAD ──────────────────────────────────────────────────────────────
-function getSaved(){ try{ return JSON.parse(localStorage.getItem(SAVED)||'[]'); }catch(e){ return []; } }
-
+// ─── PERSISTENCE ─────────────────────────────────────────────────────────────
+function persist(){
+  try{localStorage.setItem(SAVED+'-current',JSON.stringify(D));}catch(e){}
+}
+function loadCurrent(){
+  try{
+    const s=localStorage.getItem(SAVED+'-current');
+    if(s){const d=JSON.parse(s);D={...blankState(),...d};D.baManager=FIXED_BA_MANAGER;}
+  }catch(e){}
+}
+function getSaved(){
+  try{return JSON.parse(localStorage.getItem(SAVED)||'[]');}catch(e){return[];}
+}
 function saveBRD(){
-  const name = prompt('Save BRD as:', D.title||'New BRD');
+  const name=prompt('Save BRD as:',D.title||'New BRD');
   if(!name) return;
-  D.title = D.title || name;
-  const saved = getSaved();
-  saved.unshift({...JSON.parse(JSON.stringify(D)), savedAt: new Date().toISOString()});
-  localStorage.setItem(SAVED, JSON.stringify(saved.slice(0,20)));
-  alert(`✓ Saved as "${name}"`);
+  D.title=D.title||name;
+  const saved=getSaved();
+  saved.unshift({...JSON.parse(JSON.stringify(D)),savedAt:new Date().toISOString()});
+  localStorage.setItem(SAVED,JSON.stringify(saved.slice(0,20)));
+  showToast(`✓ Saved as "${name}"`);
   goto(5);
 }
-
-function loadSaved(i){ const s=getSaved(); if(s[i]){ D={...blankState(),...s[i]}; goto(1); } }
-function loadAndDownload(i){ loadSaved(i); setTimeout(downloadBRD, 200); }
-function deleteSaved(i){ if(!confirm('Delete?')) return; const s=getSaved(); s.splice(i,1); localStorage.setItem(SAVED,JSON.stringify(s)); render(); }
-function newBRD(){ if(!confirm('Start new BRD? Unsaved changes will be lost.')) return; D=blankState(); goto(1); }
+function loadSaved(i){const s=getSaved();if(s[i]){D={...blankState(),...s[i]};D.baManager=FIXED_BA_MANAGER;goto(1);}}
+function loadAndDownload(i){loadSaved(i);setTimeout(downloadBRD,200);}
+function deleteSaved(i){if(!confirm('Delete this BRD?')) return;const s=getSaved();s.splice(i,1);localStorage.setItem(SAVED,JSON.stringify(s));render();}
+function newBRD(){if(!confirm('Start a new BRD? Unsaved changes will be lost.')) return;D=blankState();goto(1);}
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 function addReq(){
-  D.requirements.push({id:'BRD-'+String(D.requirements.length+1).padStart(3,'0'),title:'',priority:'High',description:'',businessValue:'',acceptanceCriteria:'',actors:'',stakeholder:'',context:[]});
+  D.requirements.push({id:'BRD-'+String(D.requirements.length+1).padStart(3,'0'),title:'',priority:'High',description:'',businessValue:'',acceptanceCriteria:'',actors:'',stakeholder:'',preconditions:'',postconditions:'',context:[]});
   render();
 }
-function showPane(showId,hideId,btn){
-  document.getElementById(showId).style.display='block';
-  document.getElementById(hideId).style.display='none';
-  btn.closest('.subtabs').querySelectorAll('.stab').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-}
-const x = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const rp = () => { persist(); renderPreview(); };
-
-// ─── API KEY MANAGEMENT ───────────────────────────────────────────────────────
-function openModal(){
-  const stored = localStorage.getItem('portico-api-key') || '';
-  document.getElementById('api-key-input').value = stored;
-  document.getElementById('api-modal').classList.remove('hidden');
-}
-function closeModal(){ document.getElementById('api-modal').classList.add('hidden'); }
-function saveApiKey(){
-  const key = document.getElementById('api-key-input').value.trim();
-  if(!key){ alert('Please enter your API key'); return; }
-  if(!key.startsWith('sk-ant-')){ if(!confirm('This doesn\'t look like an Anthropic API key (should start with sk-ant-). Save anyway?')) return; }
-  localStorage.setItem('portico-api-key', key);
-  updateKeyIndicator();
-  closeModal();
-  alert('✓ API key saved. You can now use AI document parsing.');
-}
-function clearApiKey(){
-  if(!confirm('Remove stored API key?')) return;
-  localStorage.removeItem('portico-api-key');
-  updateKeyIndicator();
-  closeModal();
-}
-function updateKeyIndicator(){
-  const btn = document.getElementById('api-key-btn');
-  const hasKey = !!localStorage.getItem('portico-api-key');
-  btn.textContent = hasKey ? '🔑 API Key ✓' : '🔑 Set API Key';
-  btn.className = 'api-key-indicator ' + (hasKey ? 'set' : 'unset');
+function renum(){
+  D.requirements.forEach((r,i)=>{r.id='BRD-'+String(i+1).padStart(3,'0');});
 }
 
-// ─── INIT ────────────────────────────────────────────────────────────────────
-window.addEventListener('load', ()=>{ load(); goto(1); updateKeyIndicator(); });
+// ─── API KEY ─────────────────────────────────────────────────────────────────
+function setApiKey(){
+  const current=localStorage.getItem('portico-api-key-v2')||'';
+  const key=prompt('Enter your Anthropic API key (sk-ant-...):\n\nThis enables AI field extraction and AI BRD expansion. Leave blank to clear.',current);
+  if(key===null) return;
+  if(key){
+    localStorage.setItem('portico-api-key-v2',key.trim());
+    document.getElementById('api-badge').classList.add('has-key');
+    document.getElementById('api-label').textContent='API Key ✓';
+    showToast('✓ API key saved');
+  }else{
+    localStorage.removeItem('portico-api-key-v2');
+    document.getElementById('api-badge').classList.remove('has-key');
+    document.getElementById('api-label').textContent='Set API Key';
+    showToast('API key cleared');
+  }
+}
+
+function showToast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.background=type==='warn'?'#a0601a':type==='err'?'#8a0023':'#2d5a27';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  loadCurrent();
+  if(localStorage.getItem('portico-api-key-v2')){
+    document.getElementById('api-badge').classList.add('has-key');
+    document.getElementById('api-label').textContent='API Key ✓';
+  }
+  render();
+});
 </script>
 </body>
 </html>
